@@ -74,40 +74,44 @@ local mats = {
 
 local rankNames = {
     ["*"]              = "Владелец",
+    ["co*"]            = "Со-Владелец",
     ["uprav"]          = "Управляющий",
-    ["team"]           = "Команда Проекта",
-    ["supervisior"]    = "Руководитель",
-    ["zam-supervisior"]= "Зам.Руководителя",
-    ["overwatch"]      = "Куратор",
-    ["root"]           = "Рут",
-    ["d-creator"]      = "Д-Создатель",
-    ["d-arizona"]      = "Д-Команда",
-    ["support"]        = "Саппорт",
+    ["zamuprav"]       = "Зам.Управляющего",
+    ["arizonateam"]    = "Команда Проекта",
+    ["project-team"]   = "Д-Команда",
+    ["manager"]        = "Менеджер",
+    ["vice-manager"]   = "Вице-Менеджер",
+    ["headcurator"]    = "Главный Куратор",
+    ["curator"]        = "Куратор",
+    ["headadmin"]      = "Главный Админ",
     ["admin"]          = "Админ",
-    ["sponsor"]        = "Спонсор",
-    ["moder"]          = "Модератор",
-    ["mlmoder"]        = "Мл.Модератор",
-    ["assistant"]      = "Ассистент",
-    ["d-admin"]        = "Д.Админ",
-    ["d-moderator"]    = "Д.Модератор",
-    ["Premium"]        = "Премиум",
-    ["VIP"]            = "ВИП",
-    ["User"]           = "Юзер",
+    ["moderator"]      = "Модератор",
+    ["helper"]         = "Хелпер",
+    ["intern"]         = "Стажёр",
+    ["owner"]          = "Овнер",
+    ["superadmin"]     = "Супер-Админ",
+    ["dadmin"]         = "Д.Админ",
+    ["dmoderator"]     = "Д.Модератор",
+    ["vip"]            = "вип",
+    ["user"]           = "игрок",
 }
 
 local staffRanks = {
-    ["*"]               = true,
-    ["uprav"]           = true,
-    ["team"]            = true,
-    ["supervisior"]     = true,
-    ["zam-supervisior"] = true,
-    ["overwatch"]       = true,
-    ["root"]            = true,
-    ["support"]         = true,
-    ["admin"]           = true,
-    ["moder"]           = true,
-    ["mlmoder"]         = true,
-    ["assistant"]       = true,
+    ["*"]              = true,
+    ["co*"]            = true,
+    ["uprav"]          = true,
+    ["zamuprav"]       = true,
+    ["arizonateam"]    = true,
+    ["project-team"]   = true,
+    ["manager"]        = true,
+    ["vice-manager"]   = true,
+    ["headcurator"]    = true,
+    ["curator"]        = true,
+    ["headadmin"]      = true,
+    ["admin"]          = true,
+    ["moderator"]      = true,
+    ["helper"]         = true,
+    ["intern"]         = true,
 }
 
 local function LocalizeRank(g)
@@ -1593,7 +1597,7 @@ local function BuildShop(parent, p, categories)
             item.DoClick = function()
                 if ent.ammoType then cmd.Run('buyammo',ent.ammoType)
                 elseif ent.shipmodel then cmd.Run('buyshipment',ent.name)
-                else LocalPlayer():ConCommand(ent.cmd) end
+                else LocalPlayer():ConCommand('say ' .. ent.cmd) end
                 NewClose(fr)
             end
         end
