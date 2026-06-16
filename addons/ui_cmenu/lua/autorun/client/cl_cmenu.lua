@@ -11,9 +11,18 @@ local NEWACCENT = Color(218, 62, 68)
 local gradmat   = Material("vgui/gradient-d")
 
 local function grad(w, h)
-    surface.SetDrawColor(218, 62, 68, 26)
-    surface.SetMaterial(gradmat)
-    surface.DrawTexturedRect(0, 0, w, h)
+    local r, g, b = 218, 62, 68
+    local maxAlpha = 26 
+
+    draw.RoundedBox(15, 0, h - 15, w, 15, Color(r, g, b, maxAlpha))
+
+    for i = 15, h - 16 do
+        local alpha = math.floor((i / h) * maxAlpha)
+        surface.SetDrawColor(r, g, b, alpha)
+        surface.DrawRect(0, i, w, 1)
+    end
+
+    draw.RoundedBox(15, 0, 0, w, 15, Color(r, g, b, 0))
 end
 
 local leftpanel, chk
@@ -26,13 +35,16 @@ hook.Add("OnContextMenuOpen", "new.enccmenu.open", function()
     enccmenumfr:SetX(enc.w(56))
     enccmenumfr:MakePopup()
 
+    function enccmenumfr:Paint(w,h)
+        box(15,0,0,w,h,NEWBG)
+        grad(w,h)
+    end
+
     do
         chk = vgui.Create('Panel', enccmenumfr)
         chk:Dock(TOP)
         chk:SetTall(enc.h(59))
         function chk:Paint(w,h)
-            box(15,0,0,w,h,NEWBG)
-            grad(w,h)
         end
 
         local chkb = ui.Create('ui_checkbox', chk)
@@ -48,8 +60,7 @@ hook.Add("OnContextMenuOpen", "new.enccmenu.open", function()
     fr:Dock(FILL)
     fr:DockMargin(0,enc.h(7),0,0)
     function fr:Paint(w,h)
-        box(15,0,0,w,h,NEWBG)
-        grad(w,h)
+        -- Фон теперь рисуется в родительском контейнере
     end
 
     local categories = {}

@@ -296,7 +296,7 @@ local function BuildMain(parent, p)
         draw.RoundedBox(s(8),0,0,w,h,self:IsHovered() and C.card_s or C.btn)
         draw.SimpleText('Подать жалобу','MKfont.15',w/2,h/2,C.white,TEXT_ALIGN_CENTER,TEXT_ALIGN_CENTER)
     end
-    rBtn.DoClick = function() LocalPlayer():ConCommand('say /report'); NewClose(fr) end
+    rBtn.DoClick = function() LocalPlayer():ConCommand('say /report Жалоба (F4)'); NewClose(fr) end
 
     local wCard = Card(leftCol)
     wCard:Dock(FILL)
@@ -1927,7 +1927,7 @@ local function OpenF4Menu()
         draw.RoundedBox(s(10),0,0,w,h,col)
         draw.SimpleText('Discord','MKfont.16',w/2,h/2,C.white,TEXT_ALIGN_CENTER,TEXT_ALIGN_CENTER)
     end
-    discBtn.DoClick = function() gui.OpenURL('https://discord.gg/') end
+    discBtn.DoClick = function() gui.OpenURL('https://discord.gg/arizonarp') end
 
     local tgBtn = row:Add('DButton')
     tgBtn:Dock(FILL)
@@ -1937,7 +1937,7 @@ local function OpenF4Menu()
         draw.RoundedBox(s(10),0,0,w,h,col)
         draw.SimpleText('Telegram','MKfont.16',w/2,h/2,C.white,TEXT_ALIGN_CENTER,TEXT_ALIGN_CENTER)
     end
-    tgBtn.DoClick = function() gui.OpenURL('https://t.me/') end
+    tgBtn.DoClick = function() gui.OpenURL('https://t.me/arizonarpgpromo') end
 
     row.PerformLayout = function(self,w,h)
         discBtn:SetWide(math.floor((w - s(8)) / 2))

@@ -4,9 +4,7 @@
 --ds server - https://discord.gg/V329W7Ce8g
 --ds - matveicher
 
--- Запрашивает покупку итема в инвентарь
 function IGS.Purchase(sItemUID, count, callback)
-    -- Если второй аргумент - функция, значит count не указан
     if type(count) == "function" then
         callback = count
         count = 1
@@ -38,7 +36,6 @@ function IGS.Purchase(sItemUID, count, callback)
     end)
 end
 
--- Активирует купленный итем (Только если IGS.C.Inv_Enabled)
 function IGS.Activate(iInvID, callback)
     net.Start("IGS.Activate")
         net.WriteUInt(iInvID, IGS.BIT_INV_ID)
@@ -66,9 +63,6 @@ function IGS.UseCoupon(sCoupon, callback)
     end)
 end
 
---[[-------------------------------------------------------------------------
-    Ссылки
----------------------------------------------------------------------------]]
 function IGS.GetPaymentURL(iSum, fCallback)
     net.Start("IGS.GetPaymentURL")
         net.WriteDouble(iSum)
@@ -77,6 +71,13 @@ function IGS.GetPaymentURL(iSum, fCallback)
     net.Receive("IGS.GetPaymentURL", function()
         if fCallback then
             fCallback(net.ReadString())
+        end
+    end)
+end
+function IGS.UICharge(iSum)
+    IGS.GetPaymentURL(iSum, function(url)
+        if url and url ~= "" then
+            gui.OpenURL(url)
         end
     end)
 end
@@ -138,9 +139,6 @@ function IGS.GetMyPurchases(fCallback)
     end)
 end
 
---[[-------------------------------------------------------------------------
-    Инвентарь
----------------------------------------------------------------------------]]
 function IGS.GetInventory(fCallback)
     if not fCallback then return end
     

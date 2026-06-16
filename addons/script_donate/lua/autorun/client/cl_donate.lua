@@ -228,7 +228,11 @@ function OpenDonateUI()
         oplat.DoClick = function()
             local am = tonumber(text:GetValue() or 0)
             if am > 0 then
-                IGS.UICharge(am)
+                IGS.GetPaymentURL(am, function(url)
+                    if url and url ~= "" then
+                        gui.OpenURL(url)
+                    end
+                end)
                 Dep:Remove()
             end
         end

@@ -16,13 +16,13 @@ function ENT:Initialize()
 end
 
 function ENT:Use(activator, caller)
-    if not IsValid(caller) or not caller:IsPlayer() then return end
+    if not IsValid(activator) or not activator:IsPlayer() then return end
 
-    if not CamersSystem.IsPolice(caller) then
-        caller:ChatPrint("[Камеры] У вас нет доступа к системе наблюдения!")
+    if not CamersSystem.IsPolice(activator) then
+        activator:ChatPrint("[Камеры] У вас нет доступа к системе наблюдения!")
         return
     end
 
     net.Start("CamersSystem_Open")
-    net.Send(caller)
+    net.Send(activator)
 end

@@ -1791,7 +1791,7 @@ TEAM_HRANITEL = rp.addTeam("Хранитель", {
  })
 
 TEAM_MOTOMOTO = rp.addTeam("Мото мото", {
-    color = Color(206, 255, 29),
+    color = Color(150, 75, 0),
     model = 'models/a_thing/madagascar/motomoto_pm.mdl',
     description = [[Вы хранитель этого штата. Можете заниматься криминалом, а можете помогать полиции. Выбирайте свой род деятельности и охраняйте то, что вам дорого!]],
     weapons = {'lockpick'},

@@ -39,7 +39,7 @@ local function SetPrice(pl, args)
 
 	if not IsValid(tr.Entity) then rp.Notify(pl, NOTIFY_ERROR, term.Get('LookAtEntity')) return '' end
 
-	if IsValid(tr.Entity) and tr.Entity.MaxPrice and (tr.Entity.ItemOwner == pl) then
+	if IsValid(tr.Entity) and tr.Entity.MaxPrice and tr.Entity.MinPrice and (tr.Entity.ItemOwner == pl) then
 		tr.Entity:Setprice(math.Clamp(amount, tr.Entity.MinPrice, tr.Entity.MaxPrice))
 	else
 		rp.Notify(pl, NOTIFY_ERROR, term.Get('CannotSetPrice'))
@@ -77,7 +77,7 @@ local function BuyPistol(ply, args)
 			price = v.pricesep
 			local canbuy = false
 
-			if tblEnt.allowed[ply:Team()] then
+			if shipment.allowed[ply:Team()] then
 				canbuy = true
 			end
 
@@ -108,7 +108,8 @@ local function BuyPistol(ply, args)
 	weapon.weaponclass = class
 	weapon.ShareGravgun = true
 	weapon:SetPos(tr.HitPos)
-	weapon.ammoadd = weapons.Get(class) and weapons.Get(class).Primary.DefaultClip
+	local wepInfo = weapons.Get(class)
+	weapon.ammoadd = wepInfo and wepInfo.Primary and wepInfo.Primary.DefaultClip
 	weapon.nodupe = true
 	weapon:Spawn()
 
@@ -195,12 +196,11 @@ local function BuyShipment(ply, args)
 	crate:SetContents(foundKey, found.amount)
 
 	if rp.shipments[foundKey].onBought then
-		rp.shipments[foundKey].onBought(ply, rp.shipments[foundKey], weapon)
+		rp.shipments[foundKey].onBought(ply, rp.shipments[foundKey], crate)
 	end
-	hook.Call('playerBoughtShipment', nil, ply, rp.shipments[foundKey], weapon)
+	hook.Call('playerBoughtShipment', nil, ply, rp.shipments[foundKey], crate)
 
 	if IsValid( crate ) then
-		print(cost)
 		ply:AddMoney(-cost, 'Купил коробку ' .. rp.shipments[foundKey].name)
 			-- rp.achievements.AddProgress(ply, ACHIEVEMENT_MERCHANT, 1)
 		rp.Notify(ply, NOTIFY_SUCCESS, term.Get('RPItemBought'), args, rp.FormatMoney(cost))
@@ -542,34 +542,34 @@ end
 rp.AddCommand('give', GiveMoney)
 :AddParam(cmd.NUMBER)
 
--- local function DropMoney(ply, args)
--- 	local amount = math.floor(tonumber(args))
+local function DropMoney(ply, args)
+	local amount = math.floor(tonumber(args) or 0)
 
--- 	if amount <= 1 then
--- 		rp.Notify(ply, NOTIFY_ERROR, term.Get('DropMoneyLimit'))
--- 		return ''
--- 	end
+	if amount < 1 then
+		rp.Notify(ply, NOTIFY_ERROR, term.Get('DropMoneyLimit'))
+		return ''
+	end
 
--- 	if not ply:CanAfford(amount) then
--- 		rp.Notify(ply, NOTIFY_ERROR, term.Get('CannotAfford'))
--- 		return ''
--- 	end
+	if not ply:CanAfford(amount) then
+		rp.Notify(ply, NOTIFY_ERROR, term.Get('CannotAfford'))
+		return ''
+	end
 
--- 	local trace = {}
--- 	trace.start = ply:EyePos()
--- 	trace.endpos = trace.start + ply:GetAimVector() * 85
--- 	trace.filter = ply
+	local trace = {}
+	trace.start = ply:EyePos()
+	trace.endpos = trace.start + ply:GetAimVector() * 85
+	trace.filter = ply
 
--- 	local tr = util.TraceLine(trace)
--- 	hook.Call('PlayerDropRPMoney', GAMEMODE, ply, amount, ply:GetMoney())
--- 	ply:AddMoney(-amount)
--- 	rp.SpawnMoney(tr.HitPos, amount)
+	local tr = util.TraceLine(trace)
+	hook.Call('PlayerDropRPMoney', GAMEMODE, ply, amount, ply:GetMoney())
+	ply:AddMoney(-amount, 'Выбросил деньги')
+	rp.SpawnMoney(tr.HitPos, amount)
 
--- 	return ''
--- end
--- rp.AddCommand('dropmoney', DropMoney)
--- :AddParam(cmd.NUMBER)
--- :AddAlias 'moneydrop'
+	return ''
+end
+rp.AddCommand('dropmoney', DropMoney)
+:AddParam(cmd.NUMBER)
+:AddAlias 'moneydrop'
 
 local function MakeZombieSoundsAsHobo(ply)
 	if not ply.nospamtime then
@@ -607,8 +607,9 @@ rp.AddCommand("tolknyl_loxa", function(ply)
 	if ply.tolknyl_kd > CurTime() then return false end
 	local tr = ply:GetEyeTrace()
 	local target = tr.Entity
+	if not IsValid(target) then return "" end
 	if target:InSpawn() then return rp.Notify(ply, NOTIFY_ERROR, 'На спавне запрещено толкать.') end
-	if IsValid(target) and target:IsPlayer() and ply:GetPos():Distance( target:GetPos() ) <= 114 and target:IsOnGround() then
+	if target:IsPlayer() and ply:GetPos():Distance( target:GetPos() ) <= 114 and target:IsOnGround() then
 		local pushDirection = tr.Normal
 		local pushForce = 1000
 
@@ -625,7 +626,12 @@ local no = {
 }
 
 rp.AddCommand("destroy", function(pl, text, args)
-	local active = pl:GetActiveWeapon():GetClass()
+	local activeWep = pl:GetActiveWeapon()
+	if not IsValid(activeWep) then
+		rp.Notify(pl, NOTIFY_ERROR, term.Get('CannotDestroyWeapon'))
+		return
+	end
+	local active = activeWep:GetClass()
 	if no[active] then
 		rp.Notify(pl, NOTIFY_ERROR, term.Get('CannotDestroyWeapon'))
 		return

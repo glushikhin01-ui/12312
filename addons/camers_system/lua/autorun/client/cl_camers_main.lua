@@ -66,8 +66,8 @@ RebuildNoise()
 
 local logoMat = Material("camers_system/logo", "noclamp smooth")
 
-local camRT    = GetRenderTarget("CamSys_RT_View", 1024, 768)
-local camRTMat = CreateMaterial("CamSys_RTMat", "UnlitGeneric", {
+local camRT    = GetRenderTarget("CamSys_RT_View_D", 1024, 768, true)
+local camRTMat = CreateMaterial("CamSys_RTMat_D", "UnlitGeneric", {
     ["$basetexture"] = camRT:GetName(),
     ["$nolod"] = 1,
 })
@@ -424,7 +424,8 @@ BuildPanel = function()
         local oldW, oldH = ScrW(), ScrH()
         render.PushRenderTarget(camRT)
         render.SetViewPort(0, 0, 1024, 768)
-        render.Clear(0, 0, 0, 255)
+        render.Clear(0, 0, 0, 255, true)
+        local oldWriteDepth = render.SetWriteDepthToDestAlpha(false)
         render.RenderView({
             origin        = cd.pos,
             angles        = ang,
@@ -432,6 +433,7 @@ BuildPanel = function()
             drawviewmodel = false,
             dopostprocess = false,
         })
+        render.SetWriteDepthToDestAlpha(oldWriteDepth)
         render.SetViewPort(0, 0, oldW, oldH)
         render.PopRenderTarget()
 

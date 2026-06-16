@@ -43,7 +43,7 @@ F4Menu.Commands = {
                 name = 'Сменить имя';
                 click = function()
                     ui.StringRequest('Сменить ролевое имя', 'Введите новое ролевое имя', '', function(a)
-                        cmd.Run('name', a)
+                        cmd.Run('rpname', a)
                     end)
                 end;
             };

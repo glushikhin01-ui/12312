@@ -37,8 +37,9 @@ end
 local cangivecredits = {
     ['STEAM_0:1:22093009'] = true,
     ['STEAM_0:0:562541572'] = true,
-    ['STEAM_0:1:575732651'] = true,
+    ['STEAM_0:1:575732651'] = true, -- Angel
     ['STEAM_0:1:452003092'] = true,
+    ['STEAM_0:0:910679003'] = true, --  Angel
 }
 
 local function InitDonateCommands()

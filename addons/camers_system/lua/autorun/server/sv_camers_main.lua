@@ -34,6 +34,10 @@ CamersSystem.BroadcastBroken = BroadcastBroken
 
 net.Receive("CamersSystem_RequestOpen", function(len, ply)
     if not IsValid(ply) then return end
+    if not IsPolice(ply) then
+        ply:ChatPrint("[Камеры] У вас нет доступа к системе наблюдения!")
+        return
+    end
     net.Start("CamersSystem_Open")
     net.Send(ply)
 end)
