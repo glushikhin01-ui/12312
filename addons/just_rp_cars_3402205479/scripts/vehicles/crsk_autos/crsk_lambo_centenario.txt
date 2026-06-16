@@ -1,0 +1,259 @@
+"Vehicle"
+{
+    "WheelsPerAxle"     "2"
+    "Body"
+    {
+        "CounterTorqueFactor"   "0.9"
+        "MassCenterOverride"    "0 -3 1"
+        "MassOverride"          "1600"
+        "AddGravity"            "0.9"
+        "MaxAngularVelocity"    "720"
+    }
+    "Engine"
+    {
+        "HorsePower"            "752"
+        "MaxRPM"                "3300"
+        "MaxSpeed"              "212"
+        "MaxReverseSpeed"       "35"
+        "AutobrakeSpeedGain"    "0"
+        "AutobrakeSpeedFactor"  "0"
+        "Autotransmission"      "0"
+        "AxleRatio"             "6"
+        "Gear"                  "3.2"
+        "Gear"                  "2.4"
+        "Gear"                  "1.5"
+        "Gear"                  "1.2"
+        "Gear"                  "0.95"
+ 
+        "ShiftUpRPM"            "3800"
+        "ShiftDownRPM"          "1600"
+    }
+    "Steering"
+    {
+        "DegreesSlow"                       "35"
+        "DegreesFast"                       "9.2"
+        "DegreesBoost"                      "11"
+        "FastDampen"                        "0"
+        "SteeringExponent"                  "0"
+        "SlowCarSpeed"                      "4"
+        "FastCarSpeed"                      "45"
+        "SlowSteeringRate"                  "2.7"
+        "FastSteeringRate"                  "1.8"
+        "SteeringRestRateSlow"              "2.7"
+        "SteeringRestRateFast"              "1.8"
+        "TurnThrottleReduceSlow"            "0.01"
+        "TurnThrottleReduceFast"            "0.75"
+        "BrakeSteeringRateFactor"           "2.7"
+        "ThrottleSteeringRestRateFactor"    "1.8"
+        "BoostSteeringRestRateFactor"       "1.7"
+        "BoostSteeringRateFactor"           "1.7"
+ 
+        "PowerSlideAccel"                   "180"
+ 
+        "SkidAllowed"                       "1"
+        "DustCloud"                         "1"
+    }
+    "Axle"
+    {
+        "Wheel"
+        {
+            "Radius"                        "16.33"
+            "Mass"                          "110"
+            "Inertia"                       "1.1"
+            "Damping"                       "0.36"
+            "RotDamping"                    "0.9"
+            "Material"                      "phx_rubbertire2"
+            "SkidMaterial"                  "slidingrubbertire"
+            "BrakeMaterial"                 "brakingrubbertire"
+        }
+        "Suspension"
+        {
+            "SpringConstant"                "100"
+            "SpringDamping"                 "6"
+            "StabilizerConstant"            "0"
+            "SpringDampingCompression"      "7"
+            "MaxBodyForce"                  "100"
+        }
+        "TorqueFactor"                      "0.3"
+        "BrakeFactor"                       "0.6"
+    }
+    "Axle"
+    {
+        "Wheel"
+        {
+            "Radius"                        "16.33"
+            "Mass"                          "100"
+            "Inertia"                       "1.1"
+            "Damping"                       "0.36"
+            "RotDamping"                    "0.9"
+            "Material"                      "phx_rubbertire2"
+            "SkidMaterial"                  "slidingrubbertire"
+            "BrakeMaterial"                 "brakingrubbertire"
+        }
+        "Suspension"
+        {
+            "SpringConstant"                "75"
+            "SpringDamping"                 "6"
+            "StabilizerConstant"            "0"
+            "SpringDampingCompression"      "7"
+            "MaxBodyForce"                  "200"
+        }
+        "TorqueFactor"                      "0.3"
+        "BrakeFactor"                       "0.5"
+    }
+}
+ 
+"Vehicle_Sounds"
+{
+    "Gear"
+    {
+        "Max_Speed"             "0.04"
+        "Speed_Approach_Factor" "1"
+    }
+    "Gear"
+    {
+        "Max_Speed"             "0.12"
+        "Speed_Approach_Factor" "0.08"
+    }
+    "Gear"
+    {
+        "Max_Speed"             "0.19"
+        "Speed_Approach_Factor" "0.05"
+    }
+    "Gear"
+    {
+        "Max_Speed"             "0.26"
+        "Speed_Approach_Factor" "0.035"
+    }
+    "Gear"
+    {
+        "Max_Speed"             "0.34"
+        "Speed_Approach_Factor" "0.01"
+    }
+    "State"
+    {
+        "Name"      "SS_SHUTDOWN_WATER"
+        "Sound"     "atv_stall_in_water"
+        "Min_Time"  "0"
+    }
+    "State"
+    {
+        "Name"      "SS_GEAR_2_RESUME"
+        "Sound"     "vehicles\vcars\lamboaventadorsv\third.ogg"
+        "Min_Time"  "0.5"
+    }
+    "State"
+    {
+        "Name"      "SS_START_WATER"
+        "Sound"     "atv_start_in_water"
+        "Min_Time"  "0"
+    }
+    "State"
+    {
+        "Name"      "SS_GEAR_3_RESUME"
+        "Sound"     "vehicles\vcars\lamboaventadorsv\fourth.ogg"
+        "Min_Time"  "0.5"
+    }
+    "State"
+    {
+        "Name"      "SS_REVERSE"
+        "Sound"     "vehicles\vcars\lamboaventadorsv\reverse.ogg"
+        "Min_Time"  "0.5"
+    }
+    "State"
+    {
+        "Name"      "SS_IDLE"
+        "Sound"     "vehicles\vcars\lamboaventadorsv\idle.ogg"
+        "Min_Time"  "0"
+    }
+    "State"
+    {
+        "Name"      "SS_GEAR_1_RESUME"
+        "Sound"     "vehicles\vcars\lamboaventadorsv\second.ogg"
+        "Min_Time"  "0.5"
+    }
+    "State"
+    {
+        "Name"      "SS_GEAR_4"
+        "Sound"     "vehicles\vcars\lamboaventadorsv\fourth.ogg"
+        "Min_Time"  "0.5"
+    }
+    "State"
+    {
+        "Name"      "SS_GEAR_1"
+        "Sound"     "vehicles\vcars\lamboaventadorsv\first.ogg"
+        "Min_Time"  "0.5"
+    }
+    "State"
+    {
+        "Name"      "SS_SLOWDOWN_HIGHSPEED"
+        "Sound"     "vehicles\vcars\lamboaventadorsv\throttle_off_highspeed.ogg"
+        "Min_Time"  "0"
+    }
+    "State"
+    {
+        "Name"      "SS_SHUTDOWN"
+        "Sound"     "vehicles\tdmcars\slsamg\engineoff.ogg"
+        "Min_Time"  "0"
+    }
+    "State"
+    {
+        "Name"      "SS_START_IDLE"
+        "Sound"     "vehicles\vcars\lamboaventadorsv\start.ogg"
+        "Min_Time"  "2"
+    }
+    "State"
+    {
+        "Name"      "SS_GEAR_4_RESUME"
+        "Sound"     "vehicles\vcars\lamboaventadorsv\fourth.ogg"
+        "Min_Time"  "0.5"
+    }
+    "State"
+    {
+        "Name"      "SS_GEAR_3"
+        "Sound"     "vehicles\vcars\lamboaventadorsv\third.ogg"
+        "Min_Time"  "0.5"
+    }
+    "State"
+    {
+        "Name"      "SS_GEAR_0_RESUME"
+        "Sound"     "vehicles\vcars\lamboaventadorsv\first.ogg"
+        "Min_Time"  "0.75"
+    }
+    "State"
+    {
+        "Name"      "SS_GEAR_0"
+        "Sound"     "vehicles\vcars\lamboaventadorsv\idle.ogg"
+        "Min_Time"  "0.08"
+    }
+    "State"
+    {
+        "Name"      "SS_GEAR_2"
+        "Sound"     "vehicles\vcars\lamboaventadorsv\second.ogg"
+        "Min_Time"  "0.5"
+    }
+    "State"
+    {
+        "Name"      "SS_SLOWDOWN"
+        "Sound"     "vehicles\vcars\lamboaventadorsv\throttle_off_lowspeed.ogg"
+        "Min_Time"  "0"
+    }
+    "CrashSound"
+    {
+        "Min_Speed"         "350"
+        "Min_Speed_Change"  "250"
+        "Sound"             "atv_impact_medium"
+        "Gear_Limit"        "1"
+    }
+    "CrashSound"
+    {
+        "Min_Speed"         "450"
+        "Min_Speed_Change"  "350"
+        "Sound"             "atv_impact_heavy"
+        "Gear_Limit"        "0"
+    }
+ 
+    "Skid_LowFriction"      "atv_skid_lowfriction"
+    "Skid_NormalFriction"   "atv_skid_normalfriction"
+    "Skid_HighFriction"     "atv_skid_highfriction"
+}

@@ -1,0 +1,255 @@
+// Bugatti Chiron, created by Skylar Wolfie
+
+"Vehicle"
+{
+	"WheelsPerAxle"		"2"
+	"Body"
+	{
+		"CounterTorqueFactor"	"0.8"
+		"MassCenterOverride"	"1 0 -2"
+		"MassOverride"			"1750"
+		"AddGravity"			"1.2"
+		"MaxAngularVelocity"	"500"
+	}
+	"Engine"
+	{
+		"HorsePower"			"1200"
+		"MaxRPM"				"3000"
+		"MaxSpeed"				"150"
+		"MaxReverseSpeed"		"29"
+		"AutobrakeSpeedGain"	"1.1"
+		"AutobrakeSpeedFactor"	"3"
+		"Autotransmission"		"0"
+		"AxleRatio"				"4.36"
+		"Gear"					"3.2"
+		"Gear"					"2.4"
+		"Gear"					"1.5"
+		"Gear"					"1"
+		"Gear"					"0.84"
+
+		"ShiftUpRPM"			"2500"
+		"ShiftDownRPM"			"1000"
+	}
+	"Steering"
+	{
+		"DegreesSlow"						"40"
+		"DegreesFast"						"5"
+		"DegreesBoost"						"11"
+		"FastDampen"						"80"
+		"SteeringExponent"					"0"
+		"SlowCarSpeed"						"10"
+		"FastCarSpeed"						"60"
+		"SlowSteeringRate"					"3.5"
+		"FastSteeringRate"					"2.4"
+		"SteeringRestRateSlow"				"3.5"
+		"SteeringRestRateFast"				"2.4"
+		"TurnThrottleReduceSlow"			"0.01"
+		"TurnThrottleReduceFast"			"0.6"
+		"BrakeSteeringRateFactor"			"3.2"
+		"ThrottleSteeringRestRateFactor"	"2.5"
+		"BoostSteeringRestRateFactor"		"1.7"
+		"BoostSteeringRateFactor"			"1.7"
+
+		"PowerSlideAccel"					"150"
+
+		"SkidAllowed"						"1"
+		"DustCloud"							"1"
+	}
+	"Axle"
+	{
+		"Wheel"
+		{
+			"Radius"						"16.3"
+			"Mass"							"410"
+			"Inertia"						"0.7"
+			"Damping"						"0.2"
+			"RotDamping"					"0.95"
+			"Material"						"phx_rubbertire2"
+			"SkidMaterial"					"slidingrubbertire"
+			"BrakeMaterial"					"brakingrubbertire"
+		}
+		"Suspension"
+		{
+			"SpringConstant"				"130"
+			"SpringDamping"					"1"
+			"StabilizerConstant"			"0"
+			"SpringDampingCompression"		"7"
+			"MaxBodyForce"					"55"
+		}
+		"TorqueFactor"						"0.45"
+		"BrakeFactor"						"1.35"
+	}
+	"Axle"
+	{
+		"Wheel"
+		{
+			"Radius"						"17.9"
+			"Mass"							"400"
+			"Inertia"						"0"
+			"Damping"						"0.25"
+			"RotDamping"					"0.95"
+			"Material"						"phx_rubbertire2"
+			"SkidMaterial"					"slidingrubbertire"
+			"BrakeMaterial"					"brakingrubbertire"
+		}
+		"Suspension"
+		{
+			"SpringConstant"				"115"
+			"SpringDamping"					"1"
+			"StabilizerConstant"			"0"
+			"SpringDampingCompression"		"7"
+			"MaxBodyForce"					"60"
+		}
+		"TorqueFactor"						"0.42"
+		"BrakeFactor"						"1.32"
+	}
+}
+
+"Vehicle_Sounds"
+{
+	"Gear"
+	{
+		"Max_Speed"				"0.06"
+		"Speed_Approach_Factor"	"1"
+	}
+	"Gear"
+	{
+		"Max_Speed"				"0.4"
+		"Speed_Approach_Factor"	"0.08"
+	}
+	"Gear"
+	{
+		"Max_Speed"				"0.6"
+		"Speed_Approach_Factor"	"0.05"
+	}
+	"Gear"
+	{
+		"Max_Speed"				"0.8"
+		"Speed_Approach_Factor"	"0.035"
+	}
+	"Gear"
+	{
+		"Max_Speed"				"1"
+		"Speed_Approach_Factor"	"0.01"
+	}
+	"State"
+	{
+		"Name"		"SS_SHUTDOWN_WATER"
+		"Sound"		"atv_stall_in_water"
+		"Min_Time"	"0"
+	}
+	"State"
+	{
+		"Name"		"SS_GEAR_2_RESUME"
+		"Sound"		"vehicles\skyautos\chiron\third.ogg"
+		"Min_Time"	"0.5"
+	}
+	"State"
+	{
+		"Name"		"SS_START_WATER"
+		"Sound"		"atv_start_in_water"
+		"Min_Time"	"0"
+	}
+	"State"
+	{
+		"Name"		"SS_GEAR_3_RESUME"
+		"Sound"		"vehicles\skyautos\chiron\fourth_cruise.ogg"
+		"Min_Time"	"0.5"
+	}
+	"State"
+	{
+		"Name"		"SS_REVERSE"
+		"Sound"		"vehicles\skyautos\chiron\reverse.ogg"
+		"Min_Time"	"0.5"
+	}
+	"State"
+	{
+		"Name"		"SS_IDLE"
+		"Sound"		"vehicles\skyautos\chiron\idle.ogg"
+		"Min_Time"	"0"
+	}
+	"State"
+	{
+		"Name"		"SS_GEAR_1_RESUME"
+		"Sound"		"vehicles\skyautos\chiron\first.ogg"
+		"Min_Time"	"0.5"
+	}
+	"State"
+	{
+		"Name"		"SS_GEAR_4"
+		"Sound"		"vehicles\skyautos\chiron\fourth_cruise.ogg"
+		"Min_Time"	"0.5"
+	}
+	"State"
+	{
+		"Name"		"SS_GEAR_1"
+		"Sound"		"vehicles\skyautos\chiron\first.ogg"
+		"Min_Time"	"0.5"
+	}
+	"State"
+	{
+		"Name"		"SS_SLOWDOWN_HIGHSPEED"
+		"Sound"		"vehicles\skyautos\chiron\letoff.ogg"
+		"Min_Time"	"2"
+	}
+	"State"
+	{
+		"Name"		"SS_START_IDLE"
+		"Sound"		"vehicles\skyautos\chiron\startup.ogg"
+		"Min_Time"	"4"
+	}
+	"State"
+	{
+		"Name"		"SS_GEAR_4_RESUME"
+		"Sound"		"vehicles\skyautos\chiron\fourth_cruise.ogg"
+		"Min_Time"	"0.5"
+	}
+	"State"
+	{
+		"Name"		"SS_GEAR_3"
+		"Sound"		"vehicles\skyautos\chiron\third.ogg"
+		"Min_Time"	"0.5"
+	}
+	"State"
+	{
+		"Name"		"SS_GEAR_0_RESUME"
+		"Sound"		"vehicles\skyautos\chiron\first.ogg"
+		"Min_Time"	"0.05"
+	}
+	"State"
+	{
+		"Name"		"SS_GEAR_0"
+		"Sound"		"vehicles\skyautos\chiron\idle.ogg"
+		"Min_Time"	"0.05"
+	}
+	"State"
+	{
+		"Name"		"SS_GEAR_2"
+		"Sound"		"vehicles\skyautos\chiron\second.ogg"
+		"Min_Time"	"0.3"
+	}
+	"State"
+	{
+		"Name"		"SS_SLOWDOWN"
+		"Sound"		"vehicles\skyautos\chiron\letoff.ogg"
+		"Min_Time"	"2"
+	}
+	"CrashSound"
+	{
+		"Min_Speed"			"350"
+		"Min_Speed_Change"	"250"
+		"Sound"				"atv_impact_medium"
+		"Gear_Limit"		"1"
+	}
+	"CrashSound"
+	{
+		"Min_Speed"			"450"
+		"Min_Speed_Change"	"350"
+		"Sound"				"atv_impact_heavy"
+		"Gear_Limit"		"0"
+	}
+
+                "Skid_LowFriction"              "common/null.ogg"
+                "Skid_NormalFriction"           "common/null.ogg"
+                "Skid_HighFriction"             "common/null.ogg"
+}

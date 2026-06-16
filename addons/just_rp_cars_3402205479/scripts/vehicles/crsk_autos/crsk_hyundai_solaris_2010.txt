@@ -1,0 +1,242 @@
+"Vehicle"
+{
+        "WheelsPerAxle"         "2"
+        "Body"
+        {
+                "CounterTorqueFactor"   		"1.25"
+                "MassCenterOverride"    		"0 -7 8"
+                "MassOverride"                  "2000"
+                "AddGravity"                    "0.86"
+                "MaxAngularVelocity"    		"1000"
+        }
+        "Engine"
+        {
+                "HorsePower"                    "160"
+                "MaxRPM"                        "7000"
+                "MaxSpeed"                      "110"
+                "MaxReverseSpeed"               "20"
+                "AutobrakeSpeedGain"    		"1.01"
+                "AutobrakeSpeedFactor"  		"6"
+                "Autotransmission"              "0"
+                "AxleRatio"                     "17"
+                "Gear"                          "2.9"
+
+ 
+                "ShiftUpRPM"                    "3800"
+                "ShiftDownRPM"                  "1600"
+        }
+        "Steering"
+        {
+                "DegreesSlow"                                           "40"
+                "DegreesFast"                                           "10"
+                "DegreesBoost"                                          "11"
+                "FastDampen"                                            "60"
+                "SteeringExponent"                                      "0"
+                "SlowCarSpeed"                                          "4"
+                "FastCarSpeed"                                          "45"
+                "SlowSteeringRate"                                      "2.7"
+                "FastSteeringRate"                                      "1.67"
+                "SteeringRestRateSlow"                          		"2.7"
+                "SteeringRestRateFast"                          		"1.67"
+                "TurnThrottleReduceSlow"                        		"0.01"
+                "TurnThrottleReduceFast"                        		"0.6"
+                "BrakeSteeringRateFactor"                       		"2.7"
+                "ThrottleSteeringRestRateFactor"        				"1.67"
+                "BoostSteeringRestRateFactor"           				"1.7"
+                "BoostSteeringRateFactor"                       		"1.7"
+ 
+                "PowerSlideAccel"                                       "200"
+ 
+                "SkidAllowed"                                           "1"
+                "DustCloud"                                             "1"
+        }
+        "Axle"
+        {
+                "Wheel"
+                {
+                        "Radius"                                                "15"
+                        "Mass"                                                  "150"
+                        "Inertia"                                               "1.04"
+                        "Damping"                                               "0"
+                        "RotDamping"                                    		"0"
+                        "Material"                                              "phx_rubbertire2"
+                        "SkidMaterial"                                  		"slidingrubbertire"
+                        "BrakeMaterial"                                 		"brakingrubbertire"
+                }
+                "Suspension"
+                {
+                                "SpringConstant"                                "80"
+                                "SpringDamping"                                 "3.14"
+                                "StabilizerConstant"                    		"75"
+                                "SpringDampingCompression"              		"9"
+                                "MaxBodyForce"                                  "13"
+                }
+								"TorqueFactor"                                  "0.4"
+								"BrakeFactor"                                   "0.5"
+        }
+        "Axle"
+        {
+                "Wheel"
+                {
+                        "Radius"                                                "14.6"
+                        "Mass"                                                  "200"
+                        "Inertia"                                               "1.05"
+                        "Damping"                                               "0.4"
+                        "RotDamping"                                    		"0.6"
+                        "Material"                                              "phx_rubbertire2"
+                        "SkidMaterial"                                  		"slidingrubbertire"
+                        "BrakeMaterial"                                 		"brakingrubbertire"
+                }
+                "Suspension"
+                {
+                                "SpringConstant"                                "90"
+                                "SpringDamping"                                 "3.14"
+                                "StabilizerConstant"                    		"85"
+                                "SpringDampingCompression"              		"9"
+                                "MaxBodyForce"                                  "13"
+                }
+								"TorqueFactor"                                  "0.4"
+								"BrakeFactor"                                   "0.5"
+        }
+}
+"Vehicle_Sounds"
+{
+	"Gear"
+	{
+		"Max_Speed"				"0.02"
+		"Speed_Approach_Factor"	"1"
+	}
+	"Gear"
+	{
+		"Max_Speed"				"0.2"
+		"Speed_Approach_Factor"	"0.05"
+	}
+	"Gear"
+	{
+		"Max_Speed"				"0.38"
+		"Speed_Approach_Factor"	"0.052"
+	}
+	"Gear"
+	{
+		"Max_Speed"				"0.49"
+		"Speed_Approach_Factor"	"0.034"
+	}
+	"Gear"
+	{
+		"Max_Speed"				"1.5"
+		"Speed_Approach_Factor"	"0.033"
+	}
+	"Gear"
+	{
+		"Max_Speed"				"2"
+		"Speed_Approach_Factor"	"0.03"
+	}
+	"State"
+	{
+		"Name"		"SS_GEAR_2_RESUME"
+		"Sound"		"vehicles/lwcars/ren_meganers/second.ogg"
+		"Min_Time"	"0.5"
+	}
+	"State"
+	{
+		"Name"		"SS_GEAR_3_RESUME"
+		"Sound"		"vehicles/lwcars/ren_meganers/third.ogg"
+		"Min_Time"	"0.5"
+	}
+	"State"
+	{
+		"Name"		"SS_REVERSE"
+		"Sound"		"vehicles/lwcars/ren_meganers/rev.ogg"
+		"Min_Time"	"0.5"
+	}
+	"State"
+	{
+		"Name"		"SS_IDLE"
+		"Sound"		"vehicles/lwcars/ren_meganers/idle.ogg"
+		"Min_Time"	"0"
+	}
+	"State"
+	{
+		"Name"		"SS_GEAR_1_RESUME"
+		"Sound"		"vehicles/lwcars/ren_meganers/first.ogg"
+		"Min_Time"	"0.5"
+	}
+	"State"
+	{
+		"Name"		"SS_GEAR_4"
+		"Sound"		"vehicles/lwcars/ren_meganers/fourth_cruise.ogg"
+		"Min_Time"	"0.5"
+	}
+	"State"
+	{
+		"Name"		"SS_GEAR_1"
+		"Sound"		"vehicles/lwcars/ren_meganers/first.ogg"
+		"Min_Time"	"0.5"
+	}
+	"State"
+	{
+		"Name"		"SS_SLOWDOWN_HIGHSPEED"
+		"Sound"		"vehicles/lwcars/ren_meganers/slowdown.ogg"
+		"Min_Time"	"2"
+	}
+	"State"
+	{
+		"Name"		"SS_START_IDLE"
+		"Sound"		"vehicles/lwcars/ren_meganers/startup.ogg"
+		"Min_Time"	"4"
+	}
+	"State"
+	{
+		"Name"		"SS_GEAR_4_RESUME"
+		"Sound"		"vehicles/lwcars/ren_meganers/fourth_cruise.ogg"
+		"Min_Time"	"0.5"
+	}
+	"State"
+	{
+		"Name"		"SS_GEAR_3"
+		"Sound"		"vehicles/lwcars/ren_meganers/third.ogg"
+		"Min_Time"	"0.5"
+	}
+	"State"
+	{
+		"Name"		"SS_GEAR_0_RESUME"
+		"Sound"		"vehicles/lwcars/ren_meganers/idle.ogg"
+		"Min_Time"	"0.05"
+	}
+	"State"
+	{
+		"Name"		"SS_GEAR_0"
+		"Sound"		"vehicles/lwcars/ren_meganers/idle.ogg"
+		"Min_Time"	"0.05"
+	}
+	"State"
+	{
+		"Name"		"SS_GEAR_2"
+		"Sound"		"vehicles/lwcars/ren_meganers/second.ogg"
+		"Min_Time"	"0.5"
+	}
+	"State"
+	{
+		"Name"		"SS_SLOWDOWN"
+		"Sound"		"vehicles/lwcars/ren_meganers/slowdown.ogg"
+		"Min_Time"	"2"
+	}
+	"CrashSound"
+	{
+		"Min_Speed"			"350"
+		"Min_Speed_Change"	"250"
+		"Sound"				"atv_impact_medium"
+		"Gear_Limit"		"1"
+	}
+	"CrashSound"
+	{
+		"Min_Speed"			"450"
+		"Min_Speed_Change"	"350"
+		"Sound"				"atv_impact_heavy"
+		"Gear_Limit"		"0"
+	}
+
+	"Skid_LowFriction"		"common/null.ogg"
+	"Skid_NormalFriction"	"common/null.ogg"
+	"Skid_HighFriction"		"common/null.ogg"
+}

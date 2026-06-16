@@ -1,0 +1,276 @@
+"vehicle"
+{
+	"wheelsperaxle"	"2"
+	"body"
+	{
+		"countertorquefactor"	"0.5"
+		"massCenterOverride"	"0 -20 25"
+		"massoverride"		"3200"		// kg
+		"addgravity"		"0.5"
+		"maxAngularVelocity"	"420"
+	}
+	"engine"
+	{
+		"horsepower"		"210"
+		"maxrpm"		"1900"
+		"maxspeed"		"55"		// mph
+		"maxReverseSpeed"	"13"		// mph
+		"autobrakeSpeedGain"	"1.1"		// 10% speed gain while coasting, put on the brakes after that
+		"autobrakeSpeedFactor"	"3.0"		// Brake is this times the speed gain
+		"autotransmission"	"1"
+		"axleratio"		"4.10"
+		"gear"			"5.3"		// 1st gear
+		"gear"			"4.2"		// 2nd gear
+		"gear"			"6.0"		// 3rd gear
+		"gear"			"1.0"		// 4th gear
+		"gear"			"0.84"		// 5th gear
+		"shiftuprpm"		"1750"
+		"shiftdownrpm"		"1200"
+	
+		"boost"
+		{
+//			
+		}
+	}
+	"steering"
+	{
+		"degreesSlow"		"37"	// steering cone at zero to slow speed
+		"degreesFast"		"15"	// steering cone at fast speed to max speed
+		"degreesBoost"		"10"	// steering cone at max boost speed (blend toward this after max speed)
+		"steeringExponent"	"1.4"	// steering function is linear, then raised to this power to be slower at the beginning of the curve, faster at the end
+		"slowcarspeed"		"20"
+		"fastcarspeed"		"40"
+		"slowSteeringRate"	"3.0"		
+		"fastSteeringRate"	"2.5"
+		"steeringRestRateSlow"	"3.0"
+		"steeringRestRateFast"	"2.5"
+		"turnThrottleReduceSlow" "0.5"
+		"turnThrottleReduceFast" "0.5"
+		"brakeSteeringRateFactor"	"2"
+		"throttleSteeringRestRateFactor"	"2"
+		"boostSteeringRestRateFactor"	"1.7"
+		"boostSteeringRateFactor"	"1.7"
+
+		"powerSlideAccel"	"250"
+
+		"skidallowed"		"1"
+		"dustcloud"		"1"
+
+	}
+	// front axle
+	"axle"
+	{
+		"wheel"
+		{
+			"radius"	"24"
+			"mass"		"1000"
+			"inertia"	"0"		// steady the car (fixes the oscillation of the axles about z)
+			"damping"	"0"
+			"rotdamping"	"0"
+            "Material"						"phx_rubbertire2"
+			"SkidMaterial"					"slidingrubbertire"
+			"BrakeMaterial"					"brakingrubbertire"
+		}
+		"suspension"
+		{
+			"SpringConstant"				"70"
+			"SpringDamping"					"0.3"
+			"StabilizerConstant"			"3"
+			"SpringDampingCompression"		"5"
+			"MaxBodyForce"					"25"
+		}
+
+		"torquefactor"	"0.4"
+		"brakefactor"	"0.0"
+	}
+
+	// rear axle
+	"axle"
+	{
+		"wheel"
+		{
+			"radius"	"24"
+			"mass"		"1000"
+			"Inertia"						"0"
+			"Damping"						"0"
+			"RotDamping"					"0"
+            "Material"						"phx_rubbertire2"
+			"SkidMaterial"					"slidingrubbertire"
+			"BrakeMaterial"					"brakingrubbertire"
+		}
+		"suspension"
+		{
+			"SpringConstant"				"70"
+			"SpringDamping"					"0.3"
+			"StabilizerConstant"			"3"
+			"SpringDampingCompression"		"5"
+			"MaxBodyForce"					"28"
+		}
+		"torquefactor"	"1.0"
+		"brakefactor"	"1.0"
+	}
+}
+
+"vehicle_sounds"
+{
+	// List gears in order from lowest speed to highest speed
+
+	"gear"
+	{
+		"max_speed"		"0.05"
+		"speed_approach_factor" "1.0"
+	}
+
+	"gear"
+	{
+		"max_speed"		"0.2"
+		"speed_approach_factor" "0.07"
+	}
+	"gear"
+	{
+		"max_speed"		"0.5"
+		"speed_approach_factor" "0.07"
+	}
+	"gear"
+	{
+		"max_speed"		"0.69"
+		"speed_approach_factor" "0.035"
+	}
+	"gear"
+	{
+		"max_speed"		"0.82"
+		"speed_approach_factor" "0.015"
+	}
+	"gear"
+	{
+		"max_speed"		"2.0"
+		"speed_approach_factor" "0.03"
+	}
+	"state"
+	{
+		"name"		"SS_START_WATER"
+		"sound"		"vehicles/jetski/jetski_no_gas_start.ogg"
+	}
+
+	"state"
+	{
+		"name"		"SS_START_IDLE"
+		"sound"		"vehicles/lwcars/kamaz/start.ogg"
+		"min_time"	"5.0"
+	}
+	"state"
+	{
+		"name"		"SS_SHUTDOWN_WATER"
+		"sound"		"vehicles/jetski/jetski_off.ogg"
+	}
+	"state"
+	{
+		"name"		"SS_IDLE"
+		"sound"		"vehicles/lwcars/kamaz/idle.ogg"
+	}
+	"state"
+	{
+		"name"		"SS_REVERSE"
+		"sound"		"vehicles/lwcars/kamaz/rev.ogg"
+		"min_time"	"0.5"
+	}
+	"state"
+	{
+		"name"		"SS_GEAR_0"
+		"sound"		"vehicles/lwcars/kamaz/rev.ogg"
+		"min_time"	"0.75"
+	}
+	"state"
+	{
+		"name"		"SS_GEAR_0_RESUME"
+		"sound"		"vehicles/lwcars/kamaz/rev.ogg"
+		"min_time"	"0.75"
+	}
+	"state"
+	{
+		"name"		"SS_GEAR_1"
+		"sound"		"vehicles/lwcars/kamaz/first.ogg"
+		"min_time"	"1.25"
+	}
+	"state"
+	{
+		"name"		"SS_GEAR_1_RESUME"
+		"sound"		"vehicles/lwcars/kamaz/first.ogg"
+		"min_time"	"0.5"
+	}
+	"state"
+	{
+		"name"		"SS_GEAR_2"
+		"sound"		"vehicles/lwcars/kamaz/second.ogg"
+		"min_time"	"1.25"
+	}
+	"state"
+	{
+		"name"		"SS_GEAR_2_RESUME"
+		"sound"		"vehicles/lwcars/kamaz/second.ogg"
+		"min_time"	"0.5"
+	}
+	"state"
+	{
+		"name"		"SS_GEAR_3"
+		"sound"		"vehicles/lwcars/kamaz/third.ogg"
+		"min_time"	"0.5"
+	}
+	"state"
+	{
+		"name"		"SS_GEAR_3_RESUME"
+		"sound"		"vehicles/lwcars/kamaz/third.ogg"
+		"min_time"	"0.5"
+	}
+	"state"
+	{
+		"name"		"SS_GEAR_4"
+		"sound"		"vehicles/lwcars/kamaz/fourth_cruise.ogg"
+		"min_time"	"0.5"
+	}
+	"state"
+	{
+		"name"		"SS_GEAR_4_RESUME"
+		"sound"		"vehicles/lwcars/kamaz/fourth_cruise.ogg"
+		"min_time"	"0.5"
+	}
+	"state"
+	{
+		"name"		"SS_SLOWDOWN_HIGHSPEED"
+		"sound"		"vehicles/lwcars/kamaz/throttle_off.ogg"
+	}
+	"state"
+	{
+		"name"		"SS_SLOWDOWN"
+		"sound"		"vehicles/lwcars/kamaz/throttle_off.ogg"
+	}
+	"state"
+	{
+		"name"		"SS_TURBO"
+		"sound"		"vehicles/lwcars/kamaz/"
+		"min_time"	"2.5"
+	}
+	"state"
+	{
+		"name"		"SS_SHUTDOWN"
+		"sound"		"vehicles/lwcars/kamaz/turn_off.ogg"
+	}
+	"crashsound"
+	{
+		"min_speed"			"350"
+		"min_speed_change"	"250"
+		"sound"				"ATV_impact_medium"
+		"gear_limit"		"1"
+	}
+	"crashsound"
+	{
+		"min_speed"			"450"
+		"min_speed_change"	"350"
+		"sound"				"ATV_impact_heavy"
+	}
+
+	
+	"skid_lowfriction"		"ATV_skid_lowfriction"
+	"skid_normalfriction"	"ATV_skid_normalfriction"
+	"skid_highfriction"		"ATV_skid_highfriction"
+}

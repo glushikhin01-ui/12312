@@ -1,0 +1,261 @@
+// crsk_maserati_alfieri_concept, created by ᶜʳᵉᵉᵖᵉʳᵀᵛ in Thu Jan 25 18:39:47 2018, using Vehicle Controller (VCMod).
+
+"Vehicle"
+{
+ "WheelsPerAxle" "2"
+ "Body"
+ {
+ "CounterTorqueFactor" "0.5"
+ "MassCenterOverride" "0 -15 3"
+ "MassOverride" "1500"
+ "AddGravity" "1.25"
+ "MaxAngularVelocity" "100"
+ }
+ "Engine"
+ {
+ "HorsePower" "520"
+ "MaxRPM" "3000"
+ "MaxSpeed" "155"
+ "MaxReverseSpeed" "24"
+ "AutobrakeSpeedGain" "1.1"
+ "AutobrakeSpeedFactor" "4"
+ "Autotransmission" "0"
+ "AxleRatio" "5"
+ "Gear" "3.2"
+ "Gear" "2.4"
+ "Gear" "1.5"
+ "Gear" "1"
+ "Gear" "0.84"
+
+ "ShiftUpRPM" "3800"
+ "ShiftDownRPM" "1600"
+ }
+ "Steering"
+ {
+ "DegreesSlow" "40"
+ "DegreesFast" "5"
+ "DegreesBoost" "11"
+ "FastDampen" "80"
+ "SteeringExponent" "0"
+ "SlowCarSpeed" "5"
+ "FastCarSpeed" "60"
+ "SlowSteeringRate" "3"
+ "FastSteeringRate" "2"
+ "SteeringRestRateSlow" "3"
+ "SteeringRestRateFast" "2"
+ "TurnThrottleReduceSlow" "0.01"
+ "TurnThrottleReduceFast" "0.6"
+ "BrakeSteeringRateFactor" "1.8"
+ "ThrottleSteeringRestRateFactor" "2"
+ "BoostSteeringRestRateFactor" "1.7"
+ "BoostSteeringRateFactor" "1.7"
+
+ "PowerSlideAccel" "250"
+
+ "SkidAllowed" "1"
+ "DustCloud" "1"
+ }
+ "Axle"
+ {
+ "Wheel"
+ {
+ "Radius" "15.8"
+ "Mass" "400"
+ "Inertia" "0.9"
+ "Damping" "0.2"
+ "RotDamping" "0"
+ "Material" "phx_rubbertire2"
+ "SkidMaterial" "phx_rubbertire2"
+ "BrakeMaterial" "brakingrubbertire"
+ }
+ "Suspension"
+ {
+ "SpringConstant" "100"
+ "SpringDamping" "1"
+ "StabilizerConstant" "0"
+ "SpringDampingCompression" "7"
+ "MaxBodyForce" "100"
+ }
+ "TorqueFactor" "0.55"
+ "BrakeFactor" "0.8"
+ }
+ "Axle"
+ {
+ "Wheel"
+ {
+ "Radius" "15.5"
+ "Mass" "450"
+ "Inertia" "0.9"
+ "Damping" "0.2"
+ "RotDamping" "0"
+ "Material" "phx_rubbertire2"
+ "SkidMaterial" "phx_rubbertire2"
+ "BrakeMaterial" "brakingrubbertire"
+ }
+ "Suspension"
+ {
+ "SpringConstant" "100"
+ "SpringDamping" "1"
+ "StabilizerConstant" "0"
+ "SpringDampingCompression" "7"
+ "MaxBodyForce" "100"
+ }
+ "TorqueFactor" "0.45"
+ "BrakeFactor" "0.8"
+ }
+}
+
+"Vehicle_Sounds"
+{
+ "Gear"
+ {
+ "Max_Speed" "0.02"
+ "Speed_Approach_Factor" "1"
+ }
+ "Gear"
+ {
+ "Max_Speed" "0.3"
+ "Speed_Approach_Factor" "0.08"
+ }
+ "Gear"
+ {
+ "Max_Speed" "0.42"
+ "Speed_Approach_Factor" "0.05"
+ }
+ "Gear"
+ {
+ "Max_Speed" "0.5"
+ "Speed_Approach_Factor" "0.035"
+ }
+ "Gear"
+ {
+ "Max_Speed" "1"
+ "Speed_Approach_Factor" "0.01"
+ }
+ "State"
+ {
+ "Name" "SS_SHUTDOWN_WATER"
+ "Sound" "atv_stall_in_water"
+ "Min_Time" "0"
+ }
+ "State"
+ {
+ "Name" "SS_GEAR_2_RESUME"
+ "Sound" "vehicles\tdmcars\mas_ghibli\third.ogg"
+ "Min_Time" "0.5"
+ }
+ "State"
+ {
+ "Name" "SS_START_WATER"
+ "Sound" "atv_start_in_water"
+ "Min_Time" "0"
+ }
+ "State"
+ {
+ "Name" "SS_GEAR_3_RESUME"
+ "Sound" "vehicles\tdmcars\mas_ghibli\fourth_cruise.ogg"
+ "Min_Time" "0.5"
+ }
+ "State"
+ {
+ "Name" "SS_REVERSE"
+ "Sound" "vehicles\tdmcars\mas_ghibli\rev.ogg"
+ "Min_Time" "0.5"
+ }
+ "State"
+ {
+ "Name" "SS_IDLE"
+ "Sound" "vehicles\tdmcars\mas_ghibli\idle.ogg"
+ "Min_Time" "0"
+ }
+ "State"
+ {
+ "Name" "SS_GEAR_1_RESUME"
+ "Sound" "vehicles\tdmcars\mas_ghibli\first.ogg"
+ "Min_Time" "0.5"
+ }
+ "State"
+ {
+ "Name" "SS_GEAR_4"
+ "Sound" "vehicles\tdmcars\mas_ghibli\fourth_cruise.ogg"
+ "Min_Time" "0.5"
+ }
+ "State"
+ {
+ "Name" "SS_GEAR_1"
+ "Sound" "vehicles\tdmcars\mas_ghibli\first.ogg"
+ "Min_Time" "0.5"
+ }
+ "State"
+ {
+ "Name" "SS_SLOWDOWN_HIGHSPEED"
+ "Sound" "vehicles\tdmcars\mas_ghibli\throttle_off.ogg"
+ "Min_Time" "0"
+ }
+ "State"
+ {
+ "Name" "SS_SHUTDOWN"
+ "Sound" "vehicles\tdmcars\mas_ghibli\engineoff.ogg"
+ "Min_Time" "0"
+ }
+ "State"
+ {
+ "Name" "SS_START_IDLE"
+ "Sound" "vehicles\tdmcars\mas_ghibli\enginestart.ogg"
+ "Min_Time" "2"
+ }
+ "State"
+ {
+ "Name" "SS_GEAR_4_RESUME"
+ "Sound" "vehicles\tdmcars\mas_ghibli\fourth_cruise.ogg"
+ "Min_Time" "0.5"
+ }
+ "State"
+ {
+ "Name" "SS_GEAR_3"
+ "Sound" "vehicles\tdmcars\mas_ghibli\third.ogg"
+ "Min_Time" "0.5"
+ }
+ "State"
+ {
+ "Name" "SS_GEAR_0_RESUME"
+ "Sound" "vehicles\tdmcars\mas_ghibli\first.ogg"
+ "Min_Time" "0.75"
+ }
+ "State"
+ {
+ "Name" "SS_GEAR_0"
+ "Sound" "vehicles\tdmcars\mas_ghibli\idle.ogg"
+ "Min_Time" "0.08"
+ }
+ "State"
+ {
+ "Name" "SS_GEAR_2"
+ "Sound" "vehicles\tdmcars\mas_ghibli\second.ogg"
+ "Min_Time" "0.5"
+ }
+ "State"
+ {
+ "Name" "SS_SLOWDOWN"
+ "Sound" "vehicles\tdmcars\mas_ghibli\idle.ogg"
+ "Min_Time" "0"
+ }
+ "CrashSound"
+ {
+ "Min_Speed" "350"
+ "Min_Speed_Change" "250"
+ "Sound" "atv_impact_medium"
+ "Gear_Limit" "1"
+ }
+ "CrashSound"
+ {
+ "Min_Speed" "450"
+ "Min_Speed_Change" "350"
+ "Sound" "atv_impact_heavy"
+ "Gear_Limit" "0"
+ }
+
+ "Skid_LowFriction" ""
+ "Skid_NormalFriction" ""
+ "Skid_HighFriction" ""
+}

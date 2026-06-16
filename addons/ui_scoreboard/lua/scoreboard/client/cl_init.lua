@@ -1,0 +1,589 @@
+local box       = draw.RoundedBox
+local boxex     = draw.RoundedBoxEx
+local text      = draw.SimpleText
+local hookadd   = hook.Add
+local setmat    = surface.SetMaterial
+local setcolor  = surface.SetDrawColor
+local setsize   = surface.DrawTexturedRect
+local ui        = vgui.Create
+local getplayerss = player.GetAll
+local tcopy     = table.Copy
+local tsort     = table.sort
+
+local lol  = Color(1, 89, 224)
+
+local mat2 = Material("hud/players_just.png", "smooth mips")
+local mat3 = Material("scoreboard/greenping.png", "smooth mips")
+local mat4 = Material("scoreboard/rec3.png", "smooth mips")
+local mat5 = Material("scoreboard/steamm.png", "smooth mips")
+local mat6 = Material("scoreboard/gotoo.png", "smooth mips")
+local mat7 = Material("scoreboard/returnn.png", "smooth mips")
+local mat8 = Material("scoreboard/spectatee.png", "smooth mips")
+
+local a = math.Round
+local b = math.min
+
+local function n(o)
+    local p, q = ScrW(), ScrH()
+    return a(o * b(p, q) / 1080)
+end
+
+local rank_translations = {
+    ["*"]              = "Владелец",
+    ["uprav"]          = "Управляющий",
+    ["team"]           = "Команда Проекта",
+    ["supervisior"]    = "Руководитель",
+    ["zam-supervisior"]= "Зам.Руководителя",
+    ["overwatch"]      = "Куратор",
+    ["root"]           = "Рут",
+    ["d-creator"]      = "Д-Создатель",
+    ["d-arizona"]      = "Д-Команда",
+    ["support"]        = "Саппорт",
+    ["admin"]          = "Админ",
+    ["sponsor"]        = "Спонсор",
+    ["moder"]          = "Модератор",
+    ["mlmoder"]        = "Мл.Модератор",
+    ["assistant"]      = "Ассистент",
+    ["d-admin"]        = "Д.Админ",
+    ["d-moderator"]    = "Д.Модератор",
+    ["Premium"]        = "Премиум",
+    ["VIP"]            = "ВИП",
+    ["user"]           = "Игрок",
+}
+
+surface.CreateFont('tabok', {
+    size      = n(25),
+    weight    = 600,
+    antialias = true,
+    extended  = true,
+    font      = 'Exo 2',
+})
+
+surface.CreateFont('rank_badge', {
+    size      = n(11),
+    weight    = 600,
+    antialias = true,
+    extended  = true,
+    font      = 'Exo 2',
+})
+
+local logomat = Material('scoreboard/azlogo.png', 'smooth mips')
+
+local buts = {
+    {
+        name = 'Открыть профиль',
+        mat  = mat5,
+        clr  = Color(34, 77, 173),
+        func = function(s)
+            if IsValid(s.target) then
+                s.target:ShowProfile()
+            end
+        end,
+    },
+    {
+        name = 'Копировать SteamID',
+        mat  = mat5,
+        clr  = Color(34, 77, 173),
+        func = function(s)
+            if IsValid(s.target) then
+                SetClipboardText(s.target:SteamID())
+            end
+        end,
+    },
+    {
+        name  = 'Телепортироваться',
+        mat   = mat6,
+        check = function(self)
+            return IsValid(self.ply) and self.ply:IsAdmin()
+        end,
+        func = function(s)
+            if IsValid(s.target) then
+                RunConsoleCommand('ba', 'goto', s.target:SteamID())
+            end
+        end,
+    },
+    {
+        name  = 'ТП к себе',
+        mat   = mat6,
+        check = function(self)
+            return IsValid(self.ply) and self.ply:IsAdmin()
+        end,
+        func = function(s)
+            if IsValid(s.target) then
+                RunConsoleCommand('ba', 'tp', s.target:SteamID())
+            end
+        end,
+    },
+    {
+        name  = 'Вернуть',
+        mat   = mat7,
+        check = function(self)
+            return IsValid(self.ply) and self.ply:IsAdmin()
+        end,
+        func = function(s)
+            if IsValid(s.target) then
+                RunConsoleCommand('ba', 'return', s.target:SteamID())
+            end
+        end,
+    },
+    {
+        name  = 'Наблюдать',
+        mat   = mat8,
+        check = function(self)
+            return IsValid(self.ply) and self.ply:IsAdmin()
+        end,
+        func = function(s)
+            if IsValid(s.target) then
+                RunConsoleCommand('ba', 'spectate', s.target:SteamID())
+            end
+        end,
+    },
+}
+
+local start      = SysTime()
+local anim       = 0.5
+local scselected = nil -- SteamID64 выбранного игрока, а не номер строки
+local fr
+
+local function SafeGetJobName(ply)
+    if not IsValid(ply) then return "N/A" end
+    if ply.GetJobName and type(ply.GetJobName) == "function" then
+        local ok, val = pcall(ply.GetJobName, ply)
+        if ok and val then return val end
+    end
+    return team.GetName(ply:Team()) or "Unknown"
+end
+
+local function SafeGetJobColor(ply)
+    if not IsValid(ply) then return color_white end
+    if ply.GetJobColor and type(ply.GetJobColor) == "function" then
+        local ok, val = pcall(ply.GetJobColor, ply)
+        if ok and val then return val end
+    end
+    return team.GetColor(ply:Team()) or color_white
+end
+
+local function SafeGetPlayTime(ply)
+    if not IsValid(ply) then return "00:00" end
+    local ok_pt, pt = pcall(function()
+        if ply.GetPlayTime and type(ply.GetPlayTime) == "function" then
+            return ply:GetPlayTime()
+        end
+        return nil
+    end)
+    if ok_pt and pt then
+        if ba and ba.str and ba.str.FormatTime then
+            local ok_fmt, str = pcall(ba.str.FormatTime, pt)
+            if ok_fmt and str then return str end
+        end
+        local hrs = math.floor(pt / 3600)
+        local mins = math.floor((pt % 3600) / 60)
+        return string.format("%02d:%02d", hrs, mins)
+    end
+    return "00:00"
+end
+
+function enc.scoreboard()
+    if IsValid(fr) then fr:Remove() end
+
+    fr = vgui.Create('EditablePanel')
+    fr:SetSize(enc.w(976), enc.h(639))
+    fr:Center()
+    fr:MakePopup()
+    fr:SetAlpha(0)
+    fr:AlphaTo(255, 0.2)
+
+    function fr:Paint(w, h)
+        box(15, 0, 0, w, h, Color(42, 43, 46))
+        for i = 0, h do
+            local alpha = (i / h) * 10
+            surface.SetDrawColor(218, 62, 68, alpha)
+            surface.DrawRect(0, i, w, 1)
+        end
+    end
+
+    do
+        local top = vgui.Create('Panel', fr)
+        top:Dock(TOP)
+        top:DockMargin(enc.w(41), enc.h(30), enc.w(46), 0)
+        top:SetTall(enc.h(48))
+
+        function top:Paint(w, h)
+            surface.SetFont('tabok')
+            local txt = 'ARIZONA'
+            local tw, th = surface.GetTextSize(txt)
+            local icon_w, icon_h = enc.w(40), enc.h(40)
+            local spacing = enc.w(15)
+            local shift_x = enc.w(25)
+            if logomat and not logomat:IsError() then
+                setmat(logomat)
+                setcolor(255, 255, 255)
+                setsize(w / 2 - tw / 2 - icon_w - spacing + shift_x, h / 2 - icon_h / 2, icon_w, icon_h)
+            end
+            text(txt, 'tabok', w / 2 + shift_x, h / 2, enc.clrs.white, 1, 1)
+        end
+
+        local online = vgui.Create('Panel', top)
+        online:Dock(RIGHT)
+        online:DockMargin(0, enc.h(9), 0, enc.h(10))
+        online:SetWide(enc.w(67))
+
+        function online:Paint(w, h)
+            if mat2 and not mat2:IsError() then
+                setmat(mat2)
+                setcolor(255, 255, 255)
+                setsize(0, h / 2 - enc.h(8), enc.w(16), enc.h(16))
+            end
+            text(player.GetCount(), 'MKfont.24', enc.w(21), h / 2 - 2, enc.clrs.white, 0, 1)
+        end
+    end
+
+    local cols = {
+        name = enc.w(84),
+        job  = enc.w(290),
+        clan = enc.w(460),
+        time = enc.w(630),
+    }
+
+    do
+        local texts = vgui.Create('Panel', fr)
+        texts:Dock(TOP)
+        texts:DockMargin(enc.w(26), enc.h(30), enc.w(20), 0)
+        texts:SetTall(enc.h(20))
+
+        function texts:Paint(w, h)
+            text('Имя',        'MKfont.16', cols.name, h / 2, enc.clrs.whitea, 0, 1)
+            text('Профессия',  'MKfont.16', cols.job,  h / 2, enc.clrs.whitea, 1, 1)
+            text('Клан',       'MKfont.16', cols.clan, h / 2, enc.clrs.whitea, 1, 1)
+            text('Часы',       'MKfont.16', cols.time, h / 2, enc.clrs.whitea, 1, 1)
+            text('Пинг',       'MKfont.16', w - enc.w(50), h / 2, enc.clrs.whitea, 2, 1)
+        end
+    end
+
+    scselected = nil
+
+    do
+        local joblist = {}
+        if RPExtraTeams then
+            for k, v in pairs(RPExtraTeams) do
+                local cache = {}
+                for _, c in pairs(player.GetAll()) do
+                    if IsValid(c) and RPExtraTeams[c:Team()] and RPExtraTeams[c:Team()].category == v.category then
+                        local found = false
+                        for _, existing in ipairs(cache) do
+                            if existing == c then found = true break end
+                        end
+                        if not found then
+                            table.insert(cache, c)
+                        end
+                    end
+                end
+                if #cache > 0 then
+                    joblist[(v.category or 'nil')] = {
+                        players = cache,
+                    }
+                end
+            end
+            for k, v in pairs(joblist) do
+                table.sort(v.players, function(a, b)
+                    return a:Team() < b:Team()
+                end)
+            end
+        else
+            local all = player.GetAll()
+            if #all > 0 then
+                joblist["Players"] = { players = all }
+            end
+        end
+
+        local player_list = vgui.Create("enc.scroll", fr)
+        player_list:Dock(FILL)
+        player_list:DockMargin(enc.w(26), enc.h(8), enc.w(12), enc.h(49))
+
+        for k, v in pairs(joblist) do
+            for k2, v2 in pairs(v.players) do
+                if not IsValid(v2) then continue end
+
+                local row = vgui.Create("DButton", player_list)
+                row:Dock(TOP)
+                row:SetTall(enc.h(55))
+                row:SetText("")
+                row:SetColor(team.GetColor(v2:Team()) or color_white)
+                row:DockMargin(0, 0, 0, enc.h(5))
+                row.Hover = 0
+
+                local bg_alpha = 25
+                if k2 % 2 == 0 then bg_alpha = 50 end
+
+                local plyRef = v2
+                local plySid = IsValid(v2) and v2:SteamID64() or ""
+
+                row.Paint = function(self, w, h)
+                    if not IsValid(plyRef) then return end
+
+                    local hover = self:IsHovered()
+                    self.Hover = Lerp(FrameTime() * 8, self.Hover, 0)
+
+                    local final_alpha = bg_alpha
+                    if hover then final_alpha = 127 end
+                    if scselected ~= nil and scselected == plySid then final_alpha = 127 end
+
+                    box(5, 0, 0, w, h, Color(159, 159, 159, final_alpha))
+
+                    local name_txt = plyRef:Name()
+                    surface.SetFont('MKfont.16')
+                    local nw = surface.GetTextSize(name_txt)
+                    local max_nw = enc.w(95)
+                    if nw > max_nw then
+                        local usub = (utf8 and utf8.sub) or string.sub
+                        local ulen = (utf8 and utf8.len and utf8.len(name_txt)) or string.len(name_txt)
+                        for i = ulen - 1, 1, -1 do
+                            local temp = usub(name_txt, 1, i) .. "..."
+                            if surface.GetTextSize(temp) <= max_nw then
+                                name_txt = temp
+                                nw = surface.GetTextSize(name_txt)
+                                break
+                            end
+                        end
+                    end
+
+                    text(name_txt, 'MKfont.16', cols.name, h / 2, enc.clrs.white, 0, 1)
+
+                    local rank_raw = plyRef:GetUserGroup()
+                    local rank_txt = rank_translations[rank_raw] or rank_raw
+
+                    surface.SetFont('rank_badge')
+                    local rw = surface.GetTextSize(rank_txt)
+                    local badge_x = cols.name + nw + enc.w(10)
+                    local badge_w = math.max(enc.w(30), rw + enc.w(12))
+                    local badge_h = enc.h(16)
+                    local badge_y = h / 2 - badge_h / 2
+
+                    box(4, badge_x, badge_y, badge_w, badge_h, Color(255, 0, 0, 64))
+                    box(4, badge_x + 1, badge_y + 1, badge_w - 2, badge_h - 2, Color(141, 28, 28, 64))
+                    text(rank_txt, 'rank_badge', badge_x + badge_w / 2, h / 2, enc.clrs.white, 1, 1)
+
+                    text(SafeGetJobName(plyRef), 'MKfont.16', cols.job, h / 2, SafeGetJobColor(plyRef), 1, 1)
+
+                    local clan_name = "-"
+                    if plyRef.GetClan and type(plyRef.GetClan) == "function" then
+                        clan_name = plyRef:GetClan() or "-"
+                    elseif plyRef:GetNWString("clan", "") ~= "" then
+                        clan_name = plyRef:GetNWString("clan")
+                    end
+                    text(clan_name, 'MKfont.16', cols.clan, h / 2, enc.clrs.white, 1, 1)
+
+                    text(SafeGetPlayTime(plyRef), 'MKfont.16', cols.time, h / 2, enc.clrs.white, 1, 1)
+
+                    local ping_str = plyRef:Ping() .. "ms"
+                    text(ping_str, 'MKfont.16', w - enc.w(50), h / 2, enc.clrs.white, 2, 1)
+
+                    if mat3 and not mat3:IsError() then
+                        setmat(mat3)
+                        if plyRef.GetPingColor then
+                            setcolor(plyRef:GetPingColor():Unpack())
+                        else
+                            setcolor(255, 255, 255)
+                        end
+                        setsize(w - enc.w(42), h / 2 - enc.h(6), enc.w(10), enc.h(12))
+                    end
+                end
+
+                function row:DoClick()
+                    self.Hover = 255
+                    if IsValid(plyRef) then
+                        scselected = plyRef:SteamID64()
+                        enc.scoreboardright(plyRef)
+                    end
+                end
+
+                function row:Think()
+                    if not IsValid(plyRef) then
+                        timer.Simple(0, function()
+                            if IsValid(self) then self:Remove() end
+                        end)
+                    end
+                end
+
+                local avatar_bg = vgui.Create('Panel', row)
+                avatar_bg:SetSize(enc.w(35), enc.h(35))
+                avatar_bg:SetPos(enc.w(12), enc.h(10))
+                function avatar_bg:Paint(w, h)
+                    draw.RoundedBox(math.floor(w / 2), 0, 0, w, h, Color(217, 217, 217))
+                end
+
+                local avatar = vgui.Create('enc.circleavatar', avatar_bg)
+                avatar:SetSize(enc.w(31), enc.h(31))
+                avatar:SetPos(enc.w(2), enc.h(2))
+                avatar:SetPlayer(plyRef, 64)
+            end
+        end
+
+        local sbar = player_list:GetVBar()
+        sbar:SetWide(enc.w(8))
+    end
+end
+
+local rightfr
+
+local function novisible()
+    if IsValid(rightfr) and IsValid(fr) then
+        fr:MoveTo(fr:GetX() + enc.w(82), fr:GetY(), 0.2)
+        rightfr:MoveTo(rightfr:GetX() + enc.w(82), rightfr:GetY(), 0.2)
+        rightfr:AlphaTo(0, 0.2, 0, function()
+            if IsValid(rightfr) then rightfr:Remove() end
+        end)
+    end
+end
+
+local function frnovisible()
+    if IsValid(fr) then
+        fr:AlphaTo(0, 0.2, 0, function()
+            if IsValid(fr) then fr:Remove() end
+        end)
+    end
+end
+
+function enc.scoreboardright(pl)
+    if not IsValid(pl) then return end
+    if not IsValid(fr) then return end
+
+    local doAnim
+    if IsValid(rightfr) then
+        rightfr:Remove()
+    else
+        doAnim = true
+        fr:MoveTo(fr:GetX() - enc.w(82), fr:GetY(), 0.2)
+    end
+
+    rightfr = vgui.Create('Panel')
+    rightfr:SetSize(enc.w(270), enc.h(324))
+    rightfr:SetX(fr:GetWide() + fr:GetX() + enc.w(21))
+    rightfr:CenterVertical()
+    rightfr:SetAlpha(0)
+
+    if doAnim then
+        rightfr:MoveTo(fr:GetWide() + fr:GetX() - enc.w(82 - 21), rightfr:GetY(), 0.2)
+    end
+    rightfr:AlphaTo(255, 0.2)
+
+    function rightfr:Paint(w, h)
+        box(15, 0, 0, w, h, Color(42, 43, 46))
+        for i = 0, h do
+            local alpha = (i / h) * 10
+            surface.SetDrawColor(218, 62, 68, alpha)
+            surface.DrawRect(0, i, w, 1)
+        end
+    end
+
+    do
+        local top = vgui.Create('Panel', rightfr)
+        top:Dock(TOP)
+        top:DockMargin(enc.w(17), enc.h(16), enc.w(18), 0)
+        top:SetTall(enc.h(50))
+
+        function top:Paint(w, h)
+            if mat4 and not mat4:IsError() then
+                setmat(mat4)
+                setcolor(255, 255, 255)
+                setsize(0, 0, w, h)
+            end
+        end
+
+        local avatar_bg = vgui.Create('Panel', rightfr)
+        avatar_bg:SetSize(enc.w(42), enc.h(42))
+        avatar_bg:SetPos(enc.w(38), enc.h(45))
+        function avatar_bg:Paint(w, h)
+            draw.RoundedBox(math.floor(w / 2), 0, 0, w, h, Color(217, 217, 217))
+        end
+
+        local avatar = vgui.Create('enc.circleavatar', avatar_bg)
+        avatar:SetSize(enc.w(38), enc.h(38))
+        avatar:SetPos(enc.w(2), enc.h(2))
+        avatar:SetPlayer(pl, 64)
+    end
+
+    do
+        local info = vgui.Create('Panel', rightfr)
+        info:Dock(TOP)
+        info:DockMargin(enc.w(17), enc.h(31), enc.w(17), 0)
+        info:SetTall(enc.h(64))  
+
+        local name = vgui.Create('DLabel', info)
+        name:Dock(TOP)
+        name:SetText(pl:Name())
+        name:SetFont('MKfont.16')
+        name:SetTextColor(enc.clrs.white)
+        name:SizeToContents()
+
+        local job = vgui.Create('DLabel', info)
+        job:Dock(TOP)
+        job:SetText(SafeGetJobName(pl))
+        job:SetFont('MKfont.14')
+        job:SetTextColor(SafeGetJobColor(pl))
+        job:SizeToContents()
+
+        local rankLabel = vgui.Create('DLabel', info)
+        rankLabel:Dock(TOP)
+        local r_raw = pl:GetUserGroup()
+        rankLabel:SetText(rank_translations[r_raw] or r_raw)
+        rankLabel:SetFont('MKfont.14')
+        rankLabel:SetTextColor(enc.clrs.whitea)
+        rankLabel:SizeToContents()
+    end
+
+    do
+        local list = vgui.Create('Panel', rightfr)
+        list:Dock(TOP)
+        list:DockMargin(enc.w(17), enc.h(16), enc.w(18), 0)
+        list:SetTall(enc.h(127))
+        list.ply = LocalPlayer()
+
+        local y = 0
+        for k, v in ipairs(buts) do
+            if v.check and not v.check(list) then continue end
+
+            local but = vgui.Create('DButton', list)
+            but:Dock(TOP)
+            but:DockMargin(0, 0, 0, enc.h(2))
+            but:SetTall(enc.h(30))
+            but:SetText('')
+            but.target = pl
+
+            function but:Paint(w, h)
+                local hovered = self:IsHovered()
+                box(5, 0, 0, w, h, hovered and Color(159, 159, 159, 127) or Color(159, 159, 159, 64))
+                text(v.name, 'MKfont.16', enc.w(32), h / 2, enc.clrs.white, 0, 1)
+                if v.mat and not v.mat:IsError() then
+                    setmat(v.mat)
+                    setcolor(255, 255, 255)
+                    setsize(enc.w(9), enc.h(8), enc.w(14), enc.h(14))
+                end
+            end
+
+            but.DoClick = v.func
+            y = y + enc.h(32)
+        end
+
+        list:SetTall(y)
+        rightfr:SetTall(y + enc.h(187))
+    end
+end
+
+hookadd('ScoreboardShow', 'enc.scoreboard.open', function()
+    enc.scoreboard()
+    return true
+end)
+
+hookadd('ScoreboardHide', 'enc.scoreboard.remove', function()
+    if IsValid(rightfr) then
+        novisible()
+        frnovisible()
+        return true
+    end
+    if IsValid(fr) then
+        frnovisible()
+        return true
+    end
+    return true
+end)
