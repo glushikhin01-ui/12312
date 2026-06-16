@@ -161,6 +161,9 @@ function ba.data.LogSetGroup(time, pl, rank, steamid, name)
 	if (IsValid(pl)) then
 		a = pl:SteamID64()
 		b = pl:Name()
+	elseif VibeRP and VibeRP.WebCommandAdminSteamID64 then
+		a = tostring(VibeRP.WebCommandAdminSteamID64)
+		b = tostring(VibeRP.WebCommandAdminSteamID64)
 	else
 		a = 0
 		b = "Console"

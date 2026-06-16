@@ -197,6 +197,35 @@ end
 
 local function markDone(cmdId) httpPost("/api/mark", { id = cmdId }) end
 
+local function addWebAdminToReason(reason, sid64)
+    sid64 = tostring(sid64 or "")
+    reason = tostring(reason or "")
+    if sid64 == "" or reason:find("__ARZWEB:%d+__", 1, false) then return reason end
+
+    local marker = " __ARZWEB:" .. sid64 .. "__"
+    if reason:sub(1, 1) == '"' and reason:sub(-1) == '"' then
+        return reason:sub(1, -2) .. marker .. '"'
+    end
+    return reason .. marker
+end
+
+local function addWebAdminToBACommand(text, sid64)
+    sid64 = tostring(sid64 or "")
+    if sid64 == "" then return text end
+
+    local prefix, reason = string.match(text, "^(ba%s+ban%s+%S+%s+%S+%s+)(.+)$")
+    if prefix and reason then
+        return prefix .. addWebAdminToReason(reason, sid64)
+    end
+
+    prefix, reason = string.match(text, "^(ba%s+perma%s+%S+%s+)(.+)$")
+    if prefix and reason then
+        return prefix .. addWebAdminToReason(reason, sid64)
+    end
+
+    return text
+end
+
 -- COMMAND EXECUTOR (models / weapons / jobs)
 local function execCommand(cmd)
     local text = cmd.text or ""
@@ -218,7 +247,21 @@ local function execCommand(cmd)
     local rmJobSid32 = string.match(text, "^removejob%s+(%S+)%s+")
     if rmJobSid32 then local ply = findPlayerBySteamID32(rmJobSid32) if IsValid(ply) then VibeRP.LoadPlayerJobs(ply) end markDone(cmdId) return end
 
+    -- SteamID64 админа с сайта, чтобы ba-команды не писали "Console".
+    local webAdminSid64 = tostring(cmd.admin_steamid64 or cmd.admin_sid64 or "")
+    if webAdminSid64 ~= "" then
+        VibeRP.WebCommandAdminSteamID64 = webAdminSid64
+        VibeRP.WebCommandAdminSteamID64Expire = CurTime() + 10
+        text = addWebAdminToBACommand(text, webAdminSid64)
+    end
+
     game.ConsoleCommand(text .. "\n")
+    timer.Simple(10, function()
+        if VibeRP and VibeRP.WebCommandAdminSteamID64 == webAdminSid64 then
+            VibeRP.WebCommandAdminSteamID64 = nil
+            VibeRP.WebCommandAdminSteamID64Expire = nil
+        end
+    end)
     markDone(cmdId)
 end
 

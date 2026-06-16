@@ -20,14 +20,20 @@ end
 
 function ba.bans.GetAdminInfo(admin, reason)
  local web_sid, clean_reason = ba.bans.ParseWebAdminReason(reason)
+ if not web_sid and not isplayer(admin) and VibeRP and VibeRP.WebCommandAdminSteamID64 then
+  web_sid = tostring(VibeRP.WebCommandAdminSteamID64)
+ end
  if web_sid and not isplayer(admin) then
-  return tostring(web_sid), 'ARZManager', clean_reason
+  return tostring(web_sid), 'Console', clean_reason
  end
  return tostring(isplayer(admin) and admin:SteamID64() or '0'), (isplayer(admin) and admin:Name() or 'Console'), clean_reason
 end
 
 function ba.bans.GetNotifyAdmin(admin, reason)
  local web_sid, clean_reason = ba.bans.ParseWebAdminReason(reason)
+ if not web_sid and not isplayer(admin) and VibeRP and VibeRP.WebCommandAdminSteamID64 then
+  web_sid = tostring(VibeRP.WebCommandAdminSteamID64)
+ end
  if web_sid and not isplayer(admin) then
   return tostring(web_sid), clean_reason
  end

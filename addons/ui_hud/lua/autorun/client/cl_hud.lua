@@ -218,9 +218,19 @@ end
 
 local smoothHP, smoothArmor, smoothHunger = 0, 0, 0
 
+local function drawArizonaLogo(scrW)
+	drawSimpleText("ARIZONA", "hFont5", scrW - s(80), s(32), clr.white, 2, 3)
+	drawSimpleText("RP", "hFont5", scrW - s(10), s(32), clr.logo, 2, 3)
+end
+
 hook.Add("HUDPaint", "JustRP.HUD", function()
 	local P = LocalPlayer()
 	local scrW, scrH = ScrW(), ScrH()
+
+	if P.IsBanned and P:IsBanned() then
+		drawArizonaLogo(scrW)
+		return
+	end
 
 	if not P:Alive() then return end
 	if IsValid(accs) then return end
@@ -282,8 +292,7 @@ hook.Add("HUDPaint", "JustRP.HUD", function()
 	end
 
 	drawMat(scrW - s(403), 0, s(403), s(235), mat.right_back, clr.white)
-	drawSimpleText("ARIZONA", "hFont5", scrW - s(80), s(32), clr.white, 2, 3)
-	drawSimpleText("RP", "hFont5", scrW - s(10), s(32), clr.logo, 2, 3)
+	drawArizonaLogo(scrW)
 
 	DrawRoundedBox(s(8), scrW - s(330), s(92), s(90), s(30), clr.back2)
 	drawMat(scrW - s(320), s(97), s(20), s(20), mat.players, clr.white)

@@ -215,12 +215,29 @@ local function showNotifBar(jorb)
     end
 end
 
+local function formatAdminName(name)
+    name = tostring(name or "")
+    if name == "" or name == "0" or name == "Console" or name:match("^%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d$") then
+        return "(Console)"
+    end
+    return name
+end
+
+local function formatAdminSteamID(sid)
+    sid = tostring(sid or "")
+    if sid == "" or sid == "STEAM_6:9:2281337" then return "STEAM_0:0:0" end
+    return sid
+end
+
 function enc.bans(jorb, pl, banner, bannersid, timeBan, reason)
     if IsValid(mainFrame) then mainFrame:Remove() end
     if IsValid(notifBar) then notifBar:Remove() end
 
     banData.jorb = jorb
     banData.pl = pl
+    banner = formatAdminName(banner)
+    bannersid = formatAdminSteamID(bannersid)
+
     banData.banner = banner
     banData.bannersid = bannersid
     banData.timeBan = timeBan
@@ -311,7 +328,7 @@ function enc.bans(jorb, pl, banner, bannersid, timeBan, reason)
         draw.RoundedBox(cardR, 0, 0, w, h, enc.Colors.card)
         text('Администратор', 'enc.Label', innerPad, enc.h(10 * S), enc.Colors.w70, 0, 0)
         text(banner, 'enc.Value', innerPad, enc.h(24 * S), enc.Colors.w, 0, 0)
-        text('(' .. bannersid .. ')', 'enc.Value', innerPad, enc.h(48 * S), enc.Colors.w, 0, 0)
+        text(bannersid, 'enc.Value', innerPad, enc.h(48 * S), enc.Colors.w, 0, 0)
     end
 
     local rtX = pad + leftW + gap

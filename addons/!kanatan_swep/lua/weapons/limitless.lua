@@ -2253,13 +2253,19 @@ end
 
 end
 hook.Add("GetFallDamage", "limitless_GetFallDamage", function(ply)
-	if ply:GetActiveWeapon():GetClass() == "limitless" then
+	if not IsValid(ply) then return end
+	local wep = ply:GetActiveWeapon()
+	if IsValid(wep) and wep:GetClass() == "limitless" then
 		return 0
 	end
 end)
 
 hook.Add("PlayerButtonDown", "limitless_SwitchModes", function(ply, button)
-    if button == KEY_LALT and ply:GetActiveWeapon():GetClass() == "limitless" then
+    if button ~= KEY_LALT then return end
+    if not IsValid(ply) then return end
+
+    local wep = ply:GetActiveWeapon()
+    if IsValid(wep) and wep:GetClass() == "limitless" then
         if ply:GetNWBool("limitless_debounce") then return end
         ply:SetNWBool("limitless_debounce", true)
         if !ply:GetNWBool("limitless_SixEyes") then

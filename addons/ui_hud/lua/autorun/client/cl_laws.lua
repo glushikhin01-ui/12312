@@ -203,6 +203,7 @@ hook.Add('eui.Loaded', 'hud.loaded', function()
 	hook.Add("HUDPaint", "huddata", function()
 		local P = LocalPlayer()
 		if not P:Alive() then return end
+		if P.IsBanned and P:IsBanned() then return end
 		if IsValid(accs) then return end
 
 		local targetY = a(150)

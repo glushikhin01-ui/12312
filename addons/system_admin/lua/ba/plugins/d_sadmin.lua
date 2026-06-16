@@ -180,7 +180,11 @@ end
 -- Kick
 -------------------------------------------------
 ba.cmd.Create('Kick', function(pl, args)
-	ba.notify_all(term.Get('AdminKickedPlayer'), pl, args.target, args.reason)
+	local notify_admin = pl
+	if (not isplayer(pl)) and VibeRP and VibeRP.WebCommandAdminSteamID64 then
+		notify_admin = tostring(VibeRP.WebCommandAdminSteamID64)
+	end
+	ba.notify_all(term.Get('AdminKickedPlayer'), notify_admin, args.target, args.reason)
 	args.target:Kick(args.reason)
 end)
 :AddParam('player_entity', 'target')

@@ -21,6 +21,7 @@ local canClaim = false
 hook.Add('HUDPaint', 'eui.bonus:HUDPaint:Fixed', function()
 	local P = LocalPlayer()
 	if not P:Alive() then return end
+	if P.IsBanned and P:IsBanned() then return end
 	if P:GetNetVar('eui.bonus:Claimed') then return end
 
 	local after = math.max(0, (seconds + eui.bonus.time) - CurTime() - playerTime)
@@ -91,6 +92,7 @@ hook.Add('GUIMousePressed', 'eui.bonus:Claim', function(code)
 
 	local P = LocalPlayer()
 	if not IsValid(P) then return end
+	if P.IsBanned and P:IsBanned() then return end
 	if P:GetNetVar('eui.bonus:Claimed') then return end
 
 	-- Проверяем что клик был по области бонуса

@@ -14,7 +14,12 @@ local function writeargs(...)
 			net.WriteUInt(0, 2)
 			net.WritePlayer(v)
 		elseif (t == 'Entity') then
-			net.WriteUInt(1, 2)
+			if SERVER and VibeRP and VibeRP.WebCommandAdminSteamID64 and (not IsValid(v) or v:IsWorld()) then
+				net.WriteUInt(3, 2)
+				net.WriteString(tostring(VibeRP.WebCommandAdminSteamID64))
+			else
+				net.WriteUInt(1, 2)
+			end
 		elseif (t == 'Number') then
 			net.WriteUInt(2, 2)
 			net.WriteUInt(v, 32)
