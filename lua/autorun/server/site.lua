@@ -10,8 +10,7 @@ VibeRP.Config = {
     HttpRetries         = 3,
     HttpRetryDelay      = 2,
     IGSLoadWait         = 15,
-    OnlineSyncVerbose   = false, -- set true to see sample IGS logs
-    -- Optional: force a specific IGS getter to avoid false detection (e.g. "IGS.GetBalance" or "ply:IGS_GetBalance")
+    OnlineSyncVerbose   = false, 
     IGS_Method          = nil,
 }
 
@@ -30,12 +29,9 @@ local function SafePrint(fmt, ...)
     print(string.format(fmt, unpack(args)))
 end
 
--- ================= IGS BALANCE (FIXED) =================
--- Strict IGS detection - avoids DarkRP money false positives
 local function GetPlayerIGS(ply)
     if not IsValid(ply) or not ply:IsPlayer() then return 0 end
 
-    -- Manual override
     local forced = VibeRP.Config.IGS_Method
     if forced and isstring(forced) then
         if string.StartWith(forced, "ply:") then
@@ -51,7 +47,6 @@ local function GetPlayerIGS(ply)
         end
     end
 
-    -- Strict IGS-only call list (no DarkRP money!)
     if IGS and istable(IGS) then
         local tries = {
             function() if isfunction(IGS.GetBalance) then return IGS.GetBalance(ply) end end,
@@ -99,7 +94,6 @@ local function GetPlayerIGS(ply)
         end
     end
 
-    -- PData fallback (IGS only)
     if isfunction(ply.GetPData) then
         for _, k in ipairs({ "igs_balance", "igs_credits", "IGS_Balance" }) do
             local ok, str = pcall(ply.GetPData, ply, k, "")
@@ -107,11 +101,9 @@ local function GetPlayerIGS(ply)
         end
     end
 
-    -- No DarkRP money fallback! return 0 if IGS not found
     return 0
 end
 
--- HTTP helpers (unchanged)
 local function httpGet(endpoint, params, callback, attempt)
     attempt = attempt or 1
     params = params or {}
