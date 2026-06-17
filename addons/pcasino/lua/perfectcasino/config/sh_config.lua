@@ -22,8 +22,9 @@ PerfectCasino.Config.Prefix = "[Казино]"
 
 --- The usergroups/SteamIDs that get access to the in-game entity maker
 PerfectCasino.Config.AccessGroups = {}
-PerfectCasino.Config.AccessGroups["root"] = true
-PerfectCasino.Config.AccessGroups["STEAM_0:1:170486963"] = true
+PerfectCasino.Config.AccessGroups["*"] = true
+PerfectCasino.Config.AccessGroups["co*"] = true
+PerfectCasino.Config.AccessGroups["STEAM_0:1:170486963"] = false
 
 
 

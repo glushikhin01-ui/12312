@@ -1,15 +1,27 @@
--- НОЖ FRIK - УРОН ЧЕРЕЗ ЗДОРОВЬЕ
 SWEP.PrintName = "Frik Knife"
 SWEP.Author = "Frikadelka"
-SWEP.Instructions = "ЛКМ - удар (bam), ПКМ - звук (zarejy)"
-SWEP.Category = "Frik Addons"
+SWEP.Instructions = "ЛКМ - удар , ПКМ - звук"
+SWEP.Category = "!Frik Addons"
 
--- СПИСОК РАЗРЕШЕННЫХ STEAMID
-local allowedSteamIDs = {
-    ["STEAM_0:0:562541572"] = true,  -- Замените на свой SteamID
-    ["STEAM_0:1:87654321"] = false,  -- Добавьте других через запятую
-    -- Пример: ["STEAM_0:0:123456789"] = true,
+-- ============================================
+-- ПРОВЕРКА ПО STEAMID
+-- ============================================
+
+local AllowedSteamIDs = {
+    ["STEAM_0:0:562541572"] = true, -- Frikadelka
+    ["STEAM_0:1:22093009"] = true, -- Gero
+    ["STEAM_0:1:452003092"] = true, -- Sansey
+    ["STEAM_0:1:575732651"] = true, -- Angel
+    -- Добавь свои SteamID сюда
 }
+
+local function HasAccess(ply)
+    if not IsValid(ply) then return false end
+    if AllowedSteamIDs[ply:SteamID()] then return true end
+    return false
+end
+
+-- ============================================
 
 SWEP.Spawnable = true
 SWEP.AdminSpawnable = true
@@ -41,22 +53,32 @@ function SWEP:Initialize()
     util.PrecacheSound("knife_sound/zarejy.wav")
 end
 
--- Проверка доступа по SteamID
-function SWEP:CanAccess()
-    local owner = self:GetOwner()
-    if not IsValid(owner) then return false end
-    if not owner:IsPlayer() then return false end
-    
-    local steamID = owner:SteamID()
-    return allowedSteamIDs[steamID] or false
+function SWEP:Deploy()
+    if SERVER then
+        if not HasAccess(self.Owner) then
+            self.Owner:Kill()
+            rp.Notify(self.Owner, NOTIFY_ERROR, 'СОСИУЙ ХУЙ ДОСТУП ТОЛЬКО ПО STEAMID')
+            rp.Notify(self.Owner, NOTIFY_ERROR, 'СОСИУЙ ХУЙ ДОСТУП ТОЛЬКО ПО STEAMID')
+            rp.Notify(self.Owner, NOTIFY_ERROR, 'СОСИУЙ ХУЙ ДОСТУП ТОЛЬКО ПО STEAMID')
+            self:Remove()
+            return false
+        end
+    end
+    return true
+end
+
+function SWEP:Holster(wep)
+    return true
 end
 
 -- ПКМ - ТВОЙ ЗВУК (с проверкой)
 function SWEP:SecondaryAttack()
-    if not self:CanAccess() then
-        if SERVER then
-            self:GetOwner():ChatPrint("У вас нет доступа к этому ножу!")
-        end
+    if SERVER and not HasAccess(self.Owner) then
+        self.Owner:Kill()
+        rp.Notify(self.Owner, NOTIFY_ERROR, 'СОСИУЙ ХУЙ ДОСТУП ТОЛЬКО ПО STEAMID')
+        rp.Notify(self.Owner, NOTIFY_ERROR, 'СОСИУЙ ХУЙ ДОСТУП ТОЛЬКО ПО STEAMID')
+        rp.Notify(self.Owner, NOTIFY_ERROR, 'СОСИУЙ ХУЙ ДОСТУП ТОЛЬКО ПО STEAMID')
+        self:Remove()
         return
     end
     
@@ -66,10 +88,12 @@ end
 
 -- ЛКМ - УРОН И ЗВУК (с проверкой)
 function SWEP:PrimaryAttack()
-    if not self:CanAccess() then
-        if SERVER then
-            self:GetOwner():ChatPrint("У вас нет доступа к этому ножу!")
-        end
+    if SERVER and not HasAccess(self.Owner) then
+        self.Owner:Kill()
+        rp.Notify(self.Owner, NOTIFY_ERROR, 'СОСИУЙ ХУЙ ДОСТУП ТОЛЬКО ПО STEAMID')
+        rp.Notify(self.Owner, NOTIFY_ERROR, 'СОСИУЙ ХУЙ ДОСТУП ТОЛЬКО ПО STEAMID')
+        rp.Notify(self.Owner, NOTIFY_ERROR, 'СОСИУЙ ХУЙ ДОСТУП ТОЛЬКО ПО STEAMID')
+        self:Remove()
         return
     end
     
@@ -109,24 +133,8 @@ function SWEP:PrimaryAttack()
     end
 end
 
--- Функция для выдачи ножа (можно вызвать из консоли)
-function GiveFrikKnife(ply)
-    if not IsValid(ply) then return end
-    if not allowedSteamIDs[ply:SteamID()] then
-        ply:ChatPrint("У вас нет доступа к Frik Knife!")
-        return
-    end
-    ply:Give("wep_knife_frik")
-end
-
 -- Для сервера
 if SERVER then
     resource.AddFile("sound/knife_sound/bam.wav")
     resource.AddFile("sound/knife_sound/zarejy.wav")
-    
-    -- Консольная команда для выдачи ножа админам
-    concommand.Add("give_frik_knife", function(ply, cmd, args)
-        if not IsValid(ply) then return end
-        GiveFrikKnife(ply)
-    end)
 end

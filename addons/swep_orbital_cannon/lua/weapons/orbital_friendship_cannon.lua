@@ -1,7 +1,7 @@
 --This code is probably very sloppy since I am not a professional and most of this code I learned from the gmod wiki and by looking at other scripts.
 SWEP.Spawnable				= true
 SWEP.AdminSpawnable			= false
-SWEP.Category				= "MLP:FiM"
+SWEP.Category				= "!Sansey Sweps"
 SWEP.PrintName				= "Orbital Friendship Cannon"
 SWEP.Slot					= 3
 SWEP.SlotPos				= 1
