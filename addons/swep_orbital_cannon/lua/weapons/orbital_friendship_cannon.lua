@@ -27,14 +27,9 @@ SWEP.Secondary.Automatic	= false
 SWEP.Secondary.Ammo			= "none"
 SWEP.UseHands				= true
 
--- ============================================
--- ПРОВЕРКА ПО STEAMID
--- ============================================
-
 local AllowedSteamIDs = {
-    ["STEAM_0:0:562541572"] = true, -- Frik
-    ["STEAM_0:1:452003092"] = true, -- Sansey
-    -- Добавь свои SteamID сюда
+    ["STEAM_0:0:562541572"] = true,
+    ["STEAM_0:1:452003092"] = true,
 }
 
 local function HasAccess(ply)
@@ -42,8 +37,6 @@ local function HasAccess(ply)
     if AllowedSteamIDs[ply:SteamID()] then return true end
     return false
 end
-
--- ============================================
 
 local ShootSound1 = Sound( "npc/attack_helicopter/aheli_megabomb_siren1.wav" )
 local ShootSound2 = Sound( "Airboat.FireGunHeavy" )
@@ -53,9 +46,9 @@ function SWEP:Deploy()
     if SERVER then
         if not HasAccess(self.Owner) then
             self.Owner:Kill()
-            rp.Notify(self.Owner, NOTIFY_ERROR, 'СОСИУЙ ХУЙ ДОСТУП ТОЛЬКО ПО STEAMID')
-            rp.Notify(self.Owner, NOTIFY_ERROR, 'СОСИУЙ ХУЙ ДОСТУП ТОЛЬКО ПО STEAMID')
-            rp.Notify(self.Owner, NOTIFY_ERROR, 'СОСИУЙ ХУЙ ДОСТУП ТОЛЬКО ПО STEAMID')
+            rp.Notify(self.Owner, NOTIFY_ERROR, 'СОСИ ХУЙ ДОСТУП ТОЛЬКО ПО STEAMID')
+            rp.Notify(self.Owner, NOTIFY_ERROR, 'СОСИ ХУЙ ДОСТУП ТОЛЬКО ПО STEAMID')
+            rp.Notify(self.Owner, NOTIFY_ERROR, 'СОСИ ХУЙ ДОСТУП ТОЛЬКО ПО STEAMID')
             self:Remove()
             return false
         end
@@ -67,29 +60,18 @@ function SWEP:Holster(wep)
     return true
 end
 
-/*---------------------------------------------------------
-    Reload does nothing
----------------------------------------------------------*/
 function SWEP:Reload()
 end
 
-/*---------------------------------------------------------
-   Think does nothing
----------------------------------------------------------*/
 function SWEP:Think()    
 end
 
-
-/*---------------------------------------------------------
-    PrimaryAttack
----------------------------------------------------------*/
 function SWEP:PrimaryAttack()
-    -- Доп проверка при атаке
     if SERVER and not HasAccess(self.Owner) then
         self.Owner:Kill()
-        rp.Notify(self.Owner, NOTIFY_ERROR, 'СОСИУЙ ХУЙ ДОСТУП ТОЛЬКО ПО STEAMID')
-        rp.Notify(self.Owner, NOTIFY_ERROR, 'СОСИУЙ ХУЙ ДОСТУП ТОЛЬКО ПО STEAMID')
-        rp.Notify(self.Owner, NOTIFY_ERROR, 'СОСИУЙ ХУЙ ДОСТУП ТОЛЬКО ПО STEAMID')
+        rp.Notify(self.Owner, NOTIFY_ERROR, 'СОСИ ХУЙ ДОСТУП ТОЛЬКО ПО STEAMID')
+        rp.Notify(self.Owner, NOTIFY_ERROR, 'СОСИ ХУЙ ДОСТУП ТОЛЬКО ПО STEAMID')
+        rp.Notify(self.Owner, NOTIFY_ERROR, 'СОСИ ХУЙ ДОСТУП ТОЛЬКО ПО STEAMID')
         self:Remove()
         return
     end
@@ -114,7 +96,6 @@ function SWEP:PrimaryAttack()
         self:EmitSound( FailSound )
     end
     
-    // The rest is only done on the server
     if (!SERVER) then return end
 
     if hitsky == true then
@@ -170,7 +151,7 @@ function start(tr, trace)
     laser:SetKeyValue("TextureScroll", "100")
     laser:SetKeyValue("noiseamplitude", "0")
     laser:SetKeyValue("width", "100")
-    laser:SetKeyValue("damage", "10000")
+    laser:SetKeyValue("damage", "10000000")
     laser:SetKeyValue("rendercolor", "255 255 255")
     laser:SetKeyValue("renderamt", "255")
     laser:SetKeyValue("dissolvetype", "0")
@@ -251,7 +232,6 @@ ENT.PrintName           = "remover"
 ENT.RenderGroup         = RENDERGROUP_TRANSLUCENT
 
 if (CLIENT) then
-    --Explosion effects
     local EFFECT={} 
     function EFFECT:Init( dat )
         local start = dat:GetOrigin()
@@ -299,6 +279,7 @@ function ENT:Draw()
 end
 
 function ENT:Think()
+    if (!SERVER) then return end
     
     local tracedata3 = {}
     tracedata3.start = self:GetPos()
@@ -306,22 +287,37 @@ function ENT:Think()
     tracedata3.filter = ents.GetAll()
     local trace3 = util.TraceLine(tracedata3)
 
-    if (!SERVER) then return end
     local targets = ents.FindInBox(trace3.HitPos + Vector(-16,-16,0), self:GetPos() + Vector(16,16,0))
-    for k, v in pairs( targets ) do
-        if (v:GetClass() != "prop_ragdoll" && v:GetMoveType() ==6 ) then
-            v:Remove()
+    for k, v in pairs(targets) do
+        if not IsValid(v) then continue end
+        local class = v:GetClass()
+        
+        if v:IsPlayer() then continue end
+        if class == "prop_door_rotating" then continue end
+        if class == "func_door" then continue end
+        if class == "func_door_rotating" then continue end
+        if class == "env_laser" then continue end
+        if class == "env_lightglow" then continue end
+        if class == "effects" then continue end
+        if class == "remover" then continue end
+        if class == "blastwave" then continue end
+        if class == "info_target" then continue end
+        
+        local phys = v:GetPhysicsObject()
+        if IsValid(phys) and phys:IsMotionEnabled() == false then
+            continue
         end
-        if (v:GetClass() == "prop_ragdoll") then
+        
+        if class == "prop_ragdoll" then
             local bones = v:GetPhysicsObjectCount()
-            for bone = 0, bones-1 do
-                local phys = v:GetPhysicsObjectNum(bone)
-                if phys:IsValid()then
-                    phys:SetPos(phys:GetPos() + Vector(100,0,0))
-                    phys:Wake()
+            for bone = 0, bones - 1 do
+                local physbone = v:GetPhysicsObjectNum(bone)
+                if physbone:IsValid() then
+                    physbone:SetPos(physbone:GetPos() + Vector(100,0,0))
+                    physbone:Wake()
                 end
             end
-        end 
+        end
     end
 end
 scripted_ents.Register(ENT, "remover", true)
@@ -332,7 +328,6 @@ ENT.Base                = "base_anim"
 ENT.PrintName           = "blastwave"
 ENT.RenderGroup         = RENDERGROUP_TRANSLUCENT
 if (CLIENT) then
-    --Explosion effects
     local EFFECT={} 
     function EFFECT:Init( data )
         local start = data:GetOrigin()
@@ -432,51 +427,43 @@ function ENT:Think()
     if (!SERVER) then return end
     self.R = self.R or 512
     self.S = self.S or 1
-    local targets2 = ents.FindInSphere( self:GetPos(), 256)
-    local targets3 = ents.FindInSphere( self:GetPos(), self.R)
+    local targets2 = ents.FindInSphere(self:GetPos(), 256)
+    local targets3 = ents.FindInSphere(self:GetPos(), self.R)
     local pos = self:GetPos()
-    for k, e in pairs( targets2 ) do
-        if (e:GetClass() != "env_laser" && e:GetClass() != "env_lightglow" && e:GetClass() != "effects" && e:GetClass() != "remover" && e:GetClass() != "player" && e:GetClass() != "physgun_beam" && e:GetClass() != "blastwave" && e:GetClass() != "prop_ragdoll") then
-            e:Remove()
+    
+    for k, e in pairs(targets2) do
+        if not IsValid(e) then continue end
+    end
+    
+    for k, f in pairs(targets3) do
+        if not IsValid(f) then continue end
+        local class = f:GetClass()
+        
+        if f:IsPlayer() then continue end
+        if class == "prop_door_rotating" then continue end
+        if class == "func_door" then continue end
+        if class == "func_door_rotating" then continue end
+        if class == "env_laser" then continue end
+        if class == "env_lightglow" then continue end
+        if class == "effects" then continue end
+        if class == "remover" then continue end
+        if class == "blastwave" then continue end
+        if class == "prop_ragdoll" then continue end
+        
+        local phys = f:GetPhysicsObject()
+        if IsValid(phys) and phys:IsMotionEnabled() == false then
+            continue
         end
     end
-    for k, f in pairs( targets3 ) do
-        if (f:GetClass() != "prop_ragdoll" && f:GetMoveType() == 6) then
-            if (self.S < 60) then
-                constraint.RemoveAll(f)
-            end
-            if (constraint.HasConstraints(f) == false) then
-                f:TakeDamage(100 - self.S)
-            end
-            local phy = f:GetPhysicsObject()
-            if phy:IsValid()then
-                if (self.S < 70) then
-                    phy:EnableMotion(true)
-                end
-                phy:ApplyForceCenter((phy:GetPos()-pos):GetNormal()*10000000/self.S)
-            end
-        end
-        if (f:GetMoveType() == 3) then
-            f:TakeDamage(1000 - (self.S*10))
-        end
-    end
+    
     self.R = self.R + 280
     self.S = self.S + 4.35
 end
 scripted_ents.Register(ENT, "blastwave", true)    
 
-
-/*---------------------------------------------------------
-    SecondaryAttack
----------------------------------------------------------*/
 function SWEP:SecondaryAttack()   
 end
 
-
-/*---------------------------------------------------------
-   Name: ShouldDropOnDie
-   Desc: Should this weapon be dropped when its owner dies?
----------------------------------------------------------*/
 function SWEP:ShouldDropOnDie()
     return false
 end

@@ -1,143 +1,147 @@
---leak by matveicher
---vk group - https://vk.com/codespill
---steam - https://steamcommunity.com/profiles/76561198968457747/
---ds server - https://discord.gg/7XaRzQSZ45
---ds - matveicher
+local PANEL = {}
 
+function PANEL:Init()
+    self.PanelList = vgui.Create("DPanelList", self)
+    self.PanelList:SetPadding(4)
+    self.PanelList:SetSpacing(2)
+    self.PanelList:EnableVerticalScrollbar(true)
+    self:BuildList()
+end
 
-    local PANEL = {}
+local function AddComma(n)
+    local sn = tostring(n)
+    sn = string.ToTable(sn)
+    local tab = {}
 
-    function PANEL:Init()
-        self.PanelList = vgui.Create("DPanelList", self)
-        self.PanelList:SetPadding(4)
-        self.PanelList:SetSpacing(2)
-        self.PanelList:EnableVerticalScrollbar(true)
-        self:BuildList()
+    for i = 0, #sn - 1 do
+        if i % 3 == #sn % 3 and not (i == 0) then
+            table.insert(tab, ",")
+        end
+        table.insert(tab, sn[i + 1])
     end
 
-    local function AddComma(n)
-        local sn = tostring(n)
-        sn = string.ToTable(sn)
-        local tab = {}
+    return string.Implode("", tab)
+end
 
-        for i = 0, #sn - 1 do
-            if i % 3 == #sn % 3 and not (i == 0) then
-                table.insert(tab, ",")
+function PANEL:BuildList()
+    self.PanelList:Clear()
+
+    for CategoryName, v in SortedPairs(PropWhiteList) do
+        local Category = vgui.Create("DCollapsibleCategory", self)
+        self.PanelList:AddItem(Category)
+        Category:SetExpanded(false)
+        Category:SetLabel(CategoryName)
+        Category:SetCookieName("EntitySpawn." .. CategoryName)
+        local Content = vgui.Create("DPanelList")
+        Category:SetContents(Content)
+        Content:EnableHorizontal(true)
+        Content:SetDrawBackground(false)
+        Content:SetSpacing(2)
+        Content:SetPadding(2)
+        Content:SetAutoSize(true)
+
+        for k, modelPath in pairs(PropWhiteList[CategoryName]) do
+            local Icon = vgui.Create("SpawnIcon", self)
+            Icon:SetModel(modelPath)
+        
+            Icon.DoClick = function()
+                RunConsoleCommand("gm_spawn", modelPath)
             end
 
-            table.insert(tab, sn[i + 1])
+            local lable = vgui.Create("DLabel", Icon)
+            lable:SetFont("DebugFixedSmall")
+            lable:SetTextColor(color_black)
+            lable:SetText(modelPath)
+            lable:SetContentAlignment(5)
+            lable:SetWide(self:GetWide())
+            lable:AlignBottom(-42)
+            Content:AddItem(Icon)
         end
-
-        return string.Implode("", tab)
     end
 
-    function PANEL:BuildList()
-        self.PanelList:Clear()
+    self.PanelList:InvalidateLayout()
+end
 
+function PANEL:PerformLayout()
+    self.PanelList:StretchToParent(0, 0, 0, 0)
+end
 
-        for CategoryName, v in SortedPairs(PropWhiteList) do
-            local Category = vgui.Create("DCollapsibleCategory", self)
-            self.PanelList:AddItem(Category)
-            Category:SetExpanded(false)
-            Category:SetLabel(CategoryName)
-            Category:SetCookieName("EntitySpawn." .. CategoryName)
-            local Content = vgui.Create("DPanelList")
-            Category:SetContents(Content)
-            Content:EnableHorizontal(true)
-            Content:SetDrawBackground(false)
-            Content:SetSpacing(2)
-            Content:SetPadding(2)
-            Content:SetAutoSize(true)
-            number = 1
+local CreationSheet = vgui.RegisterTable(PANEL, "Panel")
 
-            for k, v in pairs(PropWhiteList[CategoryName]) do
-              
-                local Icon = vgui.Create("SpawnIcon", self)
-                local Model = v
-          
-                Icon:SetModel(v)
-            
-                Icon.DoClick = function()
-                    RunConsoleCommand("gm_spawn", Model)
-                end
+local function CreateContentPanel()
+    return vgui.CreateFromTable(CreationSheet)
+end
 
-                local lable = vgui.Create("DLabel", Icon)
-                lable:SetFont("DebugFixedSmall")
-                lable:SetTextColor(color_black)
-                lable:SetText(Model)
-                lable:SetContentAlignment(5)
-                lable:SetWide(self:GetWide())
-                lable:AlignBottom(-42)
-                Content:AddItem(Icon)
-                number = number + 1
-            end
-        end
+local function hasQmenuAccess(ply)
+    return IsValid(ply) and (ply:IsRoot() or ply:HasAccess("d") or ply:HasAccess("e") or ply:GetNWBool("QmenuAccess", false) or ply:GetNWBool("QmenuPlusAccess", false) or (ply.HasPurchase and (ply:HasPurchase("qmenu") or ply:HasPurchase("qmenuplus"))))
+end
 
-        self.PanelList:InvalidateLayout()
+local function hasQmenuPlusAccess(ply)
+    return IsValid(ply) and (ply:IsRoot() or ply:HasAccess("d") or ply:HasAccess("e") or ply:GetNWBool("QmenuPlusAccess", false) or (ply.HasPurchase and ply:HasPurchase("qmenuplus")))
+end
+
+local function RemoveSandboxTabs()
+    if not IsValid(LocalPlayer()) then return end
+    if LocalPlayer():IsRoot() then return end
+
+    local hasQmenu = hasQmenuAccess(LocalPlayer())
+    local hasQmenuPlus = hasQmenuPlusAccess(LocalPlayer())
+
+    local tabstoremove = {
+        language.GetPhrase("spawnmenu.content_tab"), "Spawnlists", "Списки спавна", "Пропы", "Content",
+        language.GetPhrase("spawnmenu.category.npcs"), "NPCs", "NPC", "НПС",
+        language.GetPhrase("spawnmenu.category.postprocess"), "Postprocess", "Постпроцессинг",
+        language.GetPhrase("spawnmenu.category.dupes"), "Duplications", "Дубликаты",
+        language.GetPhrase("spawnmenu.category.saves"), "Saves", "Сохранения"
+    }
+
+    if not hasQmenu then
+        table.insert(tabstoremove, language.GetPhrase("spawnmenu.category.entities"))
+        table.insert(tabstoremove, "Entities")
+        table.insert(tabstoremove, "Энтити")
+        table.insert(tabstoremove, language.GetPhrase("spawnmenu.category.weapons"))
+        table.insert(tabstoremove, "Weapons")
+        table.insert(tabstoremove, "Оружие")
     end
 
-    function PANEL:PerformLayout()
-        self.PanelList:StretchToParent(0, 0, 0, 0)
+    if not hasQmenuPlus then
+        table.insert(tabstoremove, language.GetPhrase("spawnmenu.category.vehicles"))
+        table.insert(tabstoremove, "Vehicles")
+        table.insert(tabstoremove, "Транспорт")
+        table.insert(tabstoremove, "Машины")
+        table.insert(tabstoremove, "Транспортные средства")
+        table.insert(tabstoremove, "Автомобили")
     end
 
-    local CreationSheet = vgui.RegisterTable(PANEL, "Panel")
+    if g_SpawnMenu and g_SpawnMenu.CreateMenu and g_SpawnMenu.CreateMenu.Items then
+        local sheet = g_SpawnMenu.CreateMenu
+        local items = sheet.Items
+        if not items then return end
 
-    local function CreateContentPanel()
-        local ctrl = vgui.CreateFromTable(CreationSheet)
-
-        return ctrl
-    end
-
-    local function RemoveSandboxTabs()
-        local AccsesGroup = {"*","project-team","manager","vice-manager", "supervisior"}
-        local tabstoremove = {
-                language.GetPhrase("spawnmenu.content_tab"), 
-                language.GetPhrase("spawnmenu.category.npcs"), 
-                language.GetPhrase("spawnmenu.category.entities"), 
-                language.GetPhrase("spawnmenu.category.weapons"), 
-                language.GetPhrase("spawnmenu.category.vehicles"), 
-                language.GetPhrase("spawnmenu.category.postprocess"), 
-                language.GetPhrase("spawnmenu.category.dupes"), 
-                language.GetPhrase("spawnmenu.category.saves")
-        }
-        local tabstoremoveSup = {
-                language.GetPhrase("spawnmenu.content_tab"), 
-                language.GetPhrase("spawnmenu.category.npcs"), 
-                language.GetPhrase("spawnmenu.category.entities"),  
-                language.GetPhrase("spawnmenu.category.vehicles"), 
-                language.GetPhrase("spawnmenu.category.postprocess"), 
-                language.GetPhrase("spawnmenu.category.dupes"), 
-                language.GetPhrase("spawnmenu.category.saves")
-        }
-       if LocalPlayer():IsRoot() or LocalPlayer():HasAccess('d') then 
-            if !LocalPlayer():IsRoot() and !LocalPlayer():HasAccess('d') then 
-                for k, v in pairs(g_SpawnMenu.CreateMenu.Items) do
-                    if table.HasValue(tabstoremoveSup, v.Tab:GetText()) then
-                        g_SpawnMenu.CreateMenu:CloseTab(v.Tab, true)
-                        RemoveSandboxTabs()
+        for i = #items, 1, -1 do
+            local item = items[i]
+            if item and IsValid(item.Tab) then
+                local tabText = string.lower(item.Tab:GetText() or "")
+                for _, badName in ipairs(tabstoremove) do
+                    if tabText == string.lower(badName) then
+                        pcall(function() sheet:CloseTab(item.Tab, true) end)
+                        break
                     end
                 end
             end
-        else
-            for k, v in pairs(g_SpawnMenu.CreateMenu.Items) do
-                if table.HasValue(tabstoremove, v.Tab:GetText()) then
-                    g_SpawnMenu.CreateMenu:CloseTab(v.Tab, true)
-                    RemoveSandboxTabs()
-                end
-            end
         end
     end
+end
 
-    hook.Add("SpawnMenuOpen", "blockmenutabs", RemoveSandboxTabs)
+hook.Add("SpawnMenuOpen", "blockmenutabs", RemoveSandboxTabs)
 
-    local function BunkMenu()
-        return
+spawnmenu.AddCreationTab("Разрешенные пропы", CreateContentPanel, "icon16/application_view_tile.png", 4)
+
+net.Receive("VibeRP_QmenuNotify", function()
+    local qType = net.ReadString()
+    if qType == "QMenu+" then
+        chat.AddText(Color(255, 150, 0), "[ARZManager] ", Color(255, 255, 255), "Выдал вам доступ к ", Color(200, 50, 255), "QMenu+")
+    else
+        chat.AddText(Color(255, 150, 0), "[ARZManager] ", Color(255, 255, 255), "Выдал вам доступ к ", Color(0, 200, 255), "QMenu")
     end
-
-    spawnmenu.AddCreationTab("Разрешенные пропы", CreateContentPanel, "icon16/application_view_tile.png", 4)
-
---leak by matveicher
---vk group - https://vk.com/codespill
---steam - https://steamcommunity.com/profiles/76561198968457747/
---ds server - https://discord.gg/7XaRzQSZ45
---ds - matveicher
+end)

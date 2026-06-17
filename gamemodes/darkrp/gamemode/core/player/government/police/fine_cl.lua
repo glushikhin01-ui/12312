@@ -18,33 +18,51 @@ local colors = {
 
 local selected_reasons
 local cost
+
 local function reasons(parent, tbl, id)
     local panel_reason = vgui.Create('DButton', parent)
     panel_reason:Dock(TOP)
-    panel_reason:DockMargin(0, 0, 0, enc.h(5))
-    panel_reason:SetTall(enc.h(60))
+    panel_reason:DockMargin(0, 0, 0, enc and enc.h and enc.h(5) or 5)
+    panel_reason:SetTall(enc and enc.h and enc.h(60) or 60)
     panel_reason:SetText(tbl['Name'] .. ' (' .. tbl['Price'] .. 'p)')
     panel_reason:SetFont('MSB_20')
+    panel_reason:SetTextColor(color_white)
     panel_reason.Selected = false
-    panel_reason.clr = colors['white_05']
-    panel_reason.Paint = function(s, w, h)
-        local tickInterval = engine.TickInterval()
 
+    panel_reason.Paint = function(s, w, h)
         if s.Selected then
-            s.clr = s.clr:Lerp(color_white, tickInterval)
+            draw_RoundedBox(10, 0, 0, w, h, color_white)
+            s:SetTextColor(color_black)
         else
-            s.clr = s.clr:Lerp(colors['white_05'], tickInterval)
+            draw_RoundedBox(10, 0, 0, w, h, colors['white_05'])
+            s:SetTextColor(color_white)
         end
-        draw_RoundedBox(10, 0, 0, w, h, s.clr)
     end
-    panel_reason.DoClick = function()
-        panel_reason.Selected = not panel_reason.Selected
-        if panel_reason.Selected then
-            selected_reasons[#selected_reasons + 1] = id
-            cost = cost + tbl['Price']
+
+    panel_reason.DoDoubleClick = function(s)
+        s:DoClick()
+    end
+
+    panel_reason.DoClick = function(s)
+        if s.NextClick and s.NextClick > CurTime() then return end
+        s.NextClick = CurTime() + 0.05
+
+        if not s.Selected and #selected_reasons >= 2 then
+            LocalPlayer():ChatPrint('Максимум можно выбрать 2 причины для штрафа!')
+            return
+        end
+
+        s.Selected = not s.Selected
+        if s.Selected then
+            if not table.HasValue(selected_reasons, id) then
+                table.insert(selected_reasons, id)
+                cost = cost + (tonumber(tbl['Price']) or 0)
+            end
         else
-            table.RemoveByValue(selected_reasons, id)
-            cost = cost - tbl['Price']
+            if table.HasValue(selected_reasons, id) then
+                table.RemoveByValue(selected_reasons, id)
+                cost = cost - (tonumber(tbl['Price']) or 0)
+            end
         end
     end
 end
@@ -52,73 +70,87 @@ end
 
 local fr
 local function OpenFineBook(type, target)
-    if type == false and LocalPlayer():Team() != TEAM_SWATS then LocalPlayer():ChatPrint('Вы не ДПС, чтобы выписывать штрафы на машины') return end
+    if not (rp and rp.CivilProtection and rp.CivilProtection[LocalPlayer():Team()]) then
+        LocalPlayer():ChatPrint('Вы не представитель закона, чтобы выписывать штрафы')
+        return
+    end
+
     if IsValid(fr) then fr:Remove() return end
+
     selected_reasons = {}
     cost = 0
 
     fr = vgui.Create('EditablePanel')
-    fr:SetSize(enc.w(600), enc.h(800))
+    fr:SetSize(enc and enc.w and enc.w(600) or 600, enc and enc.h and enc.h(800) or 800)
     fr:Center()
-    fr:DockPadding(enc.w(24), enc.h(82), enc.w(24), enc.h(24))
+    fr:DockPadding(enc and enc.w and enc.w(24) or 24, enc and enc.h and enc.h(82) or 82, enc and enc.w and enc.w(24) or 24, enc and enc.h and enc.h(24) or 24)
     fr:MakePopup()
+
     fr.Paint = function(s, w, h)
         draw_RoundedBox(10, 0, 0, w, h, colors['main_bg'])
-        draw_SimpleText('Штрафной Бланк', 'MSB_30', enc.w(24), enc.h(44), color_white, TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
-        draw_RoundedBox(10, enc.w(24), enc.h(88), w - enc.w(48), 1, colors['white_1'])
+        draw_SimpleText('Штрафной Бланк', 'MSB_30', enc and enc.w and enc.w(24) or 24, enc and enc.h and enc.h(44) or 44, color_white, TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
+        draw_RoundedBox(10, enc and enc.w and enc.w(24) or 24, enc and enc.h and enc.h(88) or 88, w - (enc and enc.w and enc.w(48) or 48), 1, colors['white_1'])
     end
+
     fr.Think = function()
         if input.IsKeyDown(KEY_ESCAPE) then
-            fr:AlphaTo(0, 0.2, 0,function()
-                fr:Remove()
-            end)
+            fr:Remove()
             gui.HideGameUI()
         end
     end
 
     local closebutton = vgui.Create('DButton', fr)
-    closebutton:SetSize(enc.w(60), enc.h(40))
-    closebutton:SetPos(fr:GetWide() - closebutton:GetWide() - enc.w(24), enc.h(24))
+    closebutton:SetSize(enc and enc.w and enc.w(60) or 60, enc and enc.h and enc.h(40) or 40)
+    closebutton:SetPos(fr:GetWide() - closebutton:GetWide() - (enc and enc.w and enc.w(24) or 24), enc and enc.h and enc.h(24) or 24)
     closebutton:SetText('')
     closebutton.Paint = function(s, w, h)
         draw_RoundedBox(8, 0, 0, w, h, color_white)
         draw_SimpleText('ESC', 'MSB_20', w * .5, h * .5, color_black, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
     end
-    closebutton.DoClick = function(s, w, h)
+    closebutton.DoClick = function()
         fr:Remove()
-    end
-
-    local scroll = vgui.Create('enc.scroll', fr)
-    scroll:Dock(FILL)
-    scroll:DockMargin(enc.w(0),enc.h(30),enc.w(0),enc.h(0))
-
-    for i, v in ipairs(just_police.FiningPolice) do
-        if v['Vehicle'] == type then continue end
-        reasons(scroll, v, i)
     end
 
     local send_fine = vgui.Create('DButton', fr)
     send_fine:Dock(BOTTOM)
-    send_fine:SetTall(enc.h(80))
+    send_fine:SetTall(enc and enc.h and enc.h(80) or 80)
     send_fine:SetText('')
-    send_fine.clr = colors['white_05']
     send_fine.Paint = function(s, w, h)
-        local tickInterval = engine.TickInterval()
-
-        if s:IsHovered() then
-            s.clr = s.clr:Lerp(colors['green'], tickInterval)
-        else
-            s.clr = s.clr:Lerp(colors['white_05'], tickInterval)
-        end
-        draw_RoundedBox(10, 0, 0, w, h, s.clr)
-        draw_SimpleText('Выписать штраф: ' .. target:Name() .. ' (' .. cost .. 'p)', 'MSB_20', w * .5, h * .5, color_black, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+        draw_RoundedBox(10, 0, 0, w, h, color_white)
+        local targetName = IsValid(target) and target:Name() or "Игрок"
+        draw_SimpleText('Выписать штраф: ' .. targetName .. ' (' .. cost .. 'p)', 'MSB_20', w * .5, h * .5, color_black, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
     end
     send_fine.DoClick = function()
+        if cost <= 0 then
+            LocalPlayer():ChatPrint('Выберите хотя бы одну причину для штрафа!')
+            return
+        end
+
         net.Start('just_police:DoFine')
             net.WriteEntity(target)
             net.WriteTable(selected_reasons)
         net.SendToServer()
         fr:Remove()
+    end
+
+    local scroll = vgui.Create('DScrollPanel', fr)
+    scroll:Dock(FILL)
+    scroll:DockMargin(0, enc and enc.h and enc.h(30) or 30, 0, enc and enc.h and enc.h(10) or 10)
+
+    local sbar = scroll:GetVBar()
+    if IsValid(sbar) then
+        sbar:SetWide(6)
+        function sbar:Paint(w, h) end
+        function sbar.btnUp:Paint(w, h) end
+        function sbar.btnDown:Paint(w, h) end
+        function sbar.btnGrip:Paint(w, h)
+            draw.RoundedBox(3, 0, 0, w, h, Color(255, 255, 255, 60))
+        end
+    end
+
+    for i, v in ipairs(just_police.FiningPolice or {}) do
+        if v['Vehicle'] == type then continue end
+        reasons(scroll, v, i)
     end
 end
 

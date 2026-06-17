@@ -273,6 +273,10 @@ ba.cmd.Create("qmenuprem", function(pl, args)
     pl:SendLua('OpenGiveWeaponPremium()')
 end):SetFlag('u'):SetHelp('Доступ к qMenuPremium')
 
+ba.cmd.Create("qmenuplus", function(pl, args)
+    pl:SendLua('OpenGiveWeaponPremium()')
+end):SetFlag('u'):SetHelp('Доступ к qMenuPlus')
+
 if CLIENT then
     local qmenuPlusWeapons = {
         ["swb_357_a"] = true, ["blink"] = true, ["m9k_m4a1_sopmod"] = true,
@@ -296,10 +300,37 @@ if CLIENT then
         ["weapon_vape_doshik"] = true, ["weapon_vape_grapery"] = true,
         ["weapon_cigarette_camel"] = true,
     }
-    local allowedQmenu = { ['*'] = true, ['uprav'] = true, ['team'] = true }
+    local function hasQmenuAccess(ply)
+        return ply:IsRoot() or ply:HasAccess('d') or ply:HasAccess('e') or ply:GetNWBool('QmenuAccess', false) or ply:GetNWBool('QmenuPlusAccess', false) or (ply.HasPurchase and (ply:HasPurchase('qmenu') or ply:HasPurchase('qmenuplus')))
+    end
+    local function hasQmenuPlusAccess(ply)
+        return ply:IsRoot() or ply:HasAccess('d') or ply:HasAccess('e') or ply:GetNWBool('QmenuPlusAccess', false) or (ply.HasPurchase and ply:HasPurchase('qmenuplus'))
+    end
     function OpenGiveWeaponPlus()
-        if not (allowedQmenu[LocalPlayer():GetUserGroup()] or LocalPlayer():GetNWBool('QmenuPlusAccess')) then
-            rp.Notify(NOTIFY_ERROR, 'Приобретите QMenu Plus в Спец.Донате чтобы получить доступ!')
+        if not hasQmenuAccess(LocalPlayer()) then
+            rp.Notify(NOTIFY_ERROR, 'Приобретите QMenu в Донате чтобы получить доступ!')
+            return
+        end
+        if IsValid(giveframe) then giveframe:Remove() end
+        giveframe = ui.Create("ui_frame")
+        giveframe:SetSize(350, 400); giveframe:Center()
+        giveframe:SetTitle("ARIZONA | QMenu"); giveframe:MakePopup()
+        local scroll = vgui.Create("DScrollPanel", giveframe); scroll:Dock(FILL)
+        for k, v in pairs(list.Get("Weapon")) do
+            if qmenuPlusWeapons[k] then
+                local wep = scroll:Add("ui_button"); wep:Dock(TOP); wep:DockMargin(0,3,0,0)
+                wep:SetText(v.PrintName or k)
+                wep.DoClick = function()
+                    net.Start("GiveWeaponsPlus_BA")
+                    net.WriteString(k); net.WriteString(v.PrintName or k)
+                    net.SendToServer()
+                end
+            end
+        end
+    end
+    function OpenGiveWeaponPremium()
+        if not hasQmenuPlusAccess(LocalPlayer()) then
+            rp.Notify(NOTIFY_ERROR, 'Приобретите QMenu Plus в Донате чтобы получить доступ!')
             return
         end
         if IsValid(giveframe) then giveframe:Remove() end
@@ -308,34 +339,12 @@ if CLIENT then
         giveframe:SetTitle("ARIZONA | QMenu Plus"); giveframe:MakePopup()
         local scroll = vgui.Create("DScrollPanel", giveframe); scroll:Dock(FILL)
         for k, v in pairs(list.Get("Weapon")) do
-            if qmenuPlusWeapons[k] then
-                local wep = scroll:Add("ui_button"); wep:Dock(TOP); wep:DockMargin(0,3,0,0)
-                wep:SetText(v.PrintName)
-                wep.DoClick = function()
-                    net.Start("GiveWeaponsPlus_BA")
-                    net.WriteString(k); net.WriteString(v.PrintName)
-                    net.SendToServer()
-                end
-            end
-        end
-    end
-    function OpenGiveWeaponPremium()
-        if not (allowedQmenu[LocalPlayer():GetUserGroup()] or LocalPlayer():GetNWBool('QmenuPremiumAccess')) then
-            rp.Notify(NOTIFY_ERROR, 'Приобретите QMenu Premium в Спец.Донате чтобы получить доступ!')
-            return
-        end
-        if IsValid(giveframe) then giveframe:Remove() end
-        giveframe = ui.Create("ui_frame")
-        giveframe:SetSize(350, 400); giveframe:Center()
-        giveframe:SetTitle("ARIZONA | QMenu Premium"); giveframe:MakePopup()
-        local scroll = vgui.Create("DScrollPanel", giveframe); scroll:Dock(FILL)
-        for k, v in pairs(list.Get("Weapon")) do
             if qmenuPremWeapons[k] then
                 local wep = scroll:Add("ui_button"); wep:Dock(TOP); wep:DockMargin(0,3,0,0)
-                wep:SetText(v.PrintName)
+                wep:SetText(v.PrintName or k)
                 wep.DoClick = function()
                     net.Start("GiveWeaponsPrem_BA")
-                    net.WriteString(k); net.WriteString(v.PrintName)
+                    net.WriteString(k); net.WriteString(v.PrintName or k)
                     net.SendToServer()
                 end
             end
@@ -346,7 +355,12 @@ end
 if SERVER then
     util.AddNetworkString("GiveWeaponsPlus_BA")
     util.AddNetworkString("GiveWeaponsPrem_BA")
-    local allowedQmenu = { ['*'] = true, ['uprav'] = true, ['team'] = true }
+    local function hasQmenuAccess(ply)
+        return ply:IsRoot() or ply:HasAccess('d') or ply:HasAccess('e') or ply:GetNWBool('QmenuAccess', false) or ply:GetNWBool('QmenuPlusAccess', false) or (ply.HasPurchase and (ply:HasPurchase('qmenu') or ply:HasPurchase('qmenuplus')))
+    end
+    local function hasQmenuPlusAccess(ply)
+        return ply:IsRoot() or ply:HasAccess('d') or ply:HasAccess('e') or ply:GetNWBool('QmenuPlusAccess', false) or (ply.HasPurchase and ply:HasPurchase('qmenuplus'))
+    end
     local svQmenuPlusWeapons = {
         ["swb_357_a"] = true, ["blink"] = true, ["m9k_m4a1_sopmod"] = true,
         ["super_pistol"] = true, ["weapon_pig"] = true, ["slappers"] = true,
@@ -371,7 +385,7 @@ if SERVER then
     }
     net.Receive("GiveWeaponsPlus_BA", function(len, pl)
         if not IsValid(pl) then return end
-        if not (allowedQmenu[pl:GetUserGroup()] or pl:GetNWBool('QmenuPlusAccess')) then return end
+        if not hasQmenuAccess(pl) then return end
         local wep = net.ReadString()
         net.ReadString()
         if not svQmenuPlusWeapons[wep] then return end
@@ -380,7 +394,7 @@ if SERVER then
     end)
     net.Receive("GiveWeaponsPrem_BA", function(len, pl)
         if not IsValid(pl) then return end
-        if not (allowedQmenu[pl:GetUserGroup()] or pl:GetNWBool('QmenuPremiumAccess')) then return end
+        if not hasQmenuPlusAccess(pl) then return end
         local wep = net.ReadString()
         net.ReadString()
         if not svQmenuPremWeapons[wep] then return end
@@ -388,3 +402,4 @@ if SERVER then
         pl:Give(wep, true)
     end)
 end
+

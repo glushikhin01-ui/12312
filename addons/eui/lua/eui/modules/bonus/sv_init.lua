@@ -3,7 +3,6 @@ util.AddNetworkString('eui.bonus:Claim')
 
 local playerTime = {}
 
--- SQLite init
 local function InitDB()
 	sql.Query([[
 		CREATE TABLE IF NOT EXISTS eui_bonus (
@@ -40,7 +39,7 @@ local function GiveBonus(pl)
 	if not IsValid(pl) then return end
 
 	if eui.bonus and eui.bonus.AddWin then
-		eui.bonus.AddWin(pl)
+		pcall(eui.bonus.AddWin, pl)
 	end
 
 	pl:SetNetVar('eui.bonus:Claimed', true)

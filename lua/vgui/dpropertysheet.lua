@@ -423,9 +423,13 @@ function PANEL:CloseTab( tab, bRemovePanelToo )
 	self.tabScroller:InvalidateLayout( true )
 
 	if ( tab == self:GetActiveTab() ) then
-		local targetTab = self.Items[ #self.Items ].Tab
-		self:OnActiveTabChanged( self.m_pActiveTab, targetTab )
-		self.m_pActiveTab = targetTab
+		if #self.Items > 0 then
+			local targetTab = self.Items[ #self.Items ].Tab
+			self:OnActiveTabChanged( self.m_pActiveTab, targetTab )
+			self.m_pActiveTab = targetTab
+		else
+			self.m_pActiveTab = nil
+		end
 	end
 
 	local pnl = tab:GetPanel()

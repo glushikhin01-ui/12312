@@ -29,91 +29,59 @@ enc.FontScale = 1.3
 do
     local F = enc.FontScale
 
-    font("enc.Title", {
-        font = "Golos Text",
-        size = enc.h(16 * F),
-        weight = 600,
-        antialias = true,
-        extended = true,
-    })
-
-    font("enc.Subtitle", {
-        font = "Golos Text",
-        size = enc.h(12 * F),
-        weight = 500,
-        antialias = true,
-        extended = true,
-    })
-
-    font("enc.Label", {
-        font = "Golos Text",
-        size = enc.h(12 * F),
-        weight = 600,
-        antialias = true,
-        extended = true,
-    })
-
-    font("enc.Value", {
-        font = "Golos Text",
-        size = enc.h(14 * F),
-        weight = 600,
-        antialias = true,
-        extended = true,
-    })
-
-    font("enc.BtnBold", {
-        font = "Golos Text",
-        size = enc.h(14 * F),
-        weight = 600,
-        antialias = true,
-        extended = true,
-    })
-
-    font("enc.BtnNormal", {
-        font = "Golos Text",
-        size = enc.h(14 * F),
-        weight = 500,
-        antialias = true,
-        extended = true,
-    })
-
-    font("enc.CloseX", {
-        font = "Golos Text",
-        size = enc.h(16 * F),
-        weight = 400,
-        antialias = true,
-        extended = true,
-    })
-
-    font("enc.Hint", {
-        font = "Golos Text",
-        size = enc.h(14 * F),
-        weight = 500,
-        antialias = true,
-        extended = true,
-    })
+    font("enc.Title", { font = "Golos Text", size = enc.h(16 * F), weight = 600, antialias = true, extended = true })
+    font("enc.Subtitle", { font = "Golos Text", size = enc.h(12 * F), weight = 500, antialias = true, extended = true })
+    font("enc.Label", { font = "Golos Text", size = enc.h(12 * F), weight = 600, antialias = true, extended = true })
+    font("enc.Value", { font = "Golos Text", size = enc.h(14 * F), weight = 600, antialias = true, extended = true })
+    font("enc.BtnBold", { font = "Golos Text", size = enc.h(14 * F), weight = 600, antialias = true, extended = true })
+    font("enc.BtnNormal", { font = "Golos Text", size = enc.h(14 * F), weight = 500, antialias = true, extended = true })
+    font("enc.CloseX", { font = "Golos Text", size = enc.h(16 * F), weight = 400, antialias = true, extended = true })
+    font("enc.Hint", { font = "Golos Text", size = enc.h(14 * F), weight = 500, antialias = true, extended = true })
 end
 
 local textovik = {
-    ["jail"] = {
-        ["title"] = "Посажен в Jail",
-        ["subtitle"] = "Уведомление",
-    },
-    ["ban"] = {
-        ["title"] = "Заблокирован",
-        ["subtitle"] = "Уведомление",
-    },
+    ["jail"] = { title = "Посажен в Jail", subtitle = "Уведомление" },
+    ["ban"] = { title = "Заблокирован", subtitle = "Уведомление" },
 }
 
 local mainFrame
 local notifBar
 local banData = {}
 
+local function getUnbanPrice()
+    if IGS and IGS.GetItem then
+        local item = IGS.GetItem("unban")
+        if item and item.Price then
+            return item:Price()
+        elseif item and item.price then
+            return item.price
+        end
+    end
+    return 449
+end
+
 function enc.unbans()
     if IsValid(mainFrame) then mainFrame:Remove() end
     if IsValid(notifBar) then notifBar:Remove() end
-    hook.Run("justrp_hud_init")
+    banData = {}
+    pcall(function() hook.Run("justrp_hud_init") end)
 end
+
+hook.Add("Think", "EncBans_AutoRemove", function()
+    if not IsValid(LocalPlayer()) then return end
+
+    if IsValid(mainFrame) or IsValid(notifBar) then
+        if banData and banData.jorb == "ban" then
+            if LocalPlayer().IsBanned and not LocalPlayer():IsBanned() then
+                enc.unbans()
+            end
+        elseif banData and banData.jorb == "jail" then
+            if LocalPlayer().IsJailed and not LocalPlayer():IsJailed() then
+                enc.unbans()
+            end
+        end
+    end
+end)
 
 local function showNotifBar(jorb)
     if IsValid(notifBar) then notifBar:Remove() end
@@ -233,15 +201,15 @@ function enc.bans(jorb, pl, banner, bannersid, timeBan, reason)
     if IsValid(mainFrame) then mainFrame:Remove() end
     if IsValid(notifBar) then notifBar:Remove() end
 
-    banData.jorb = jorb
-    banData.pl = pl
+    banData.jorb = jorb or "ban"
+    banData.pl = pl or LocalPlayer()
     banner = formatAdminName(banner)
     bannersid = formatAdminSteamID(bannersid)
 
     banData.banner = banner
     banData.bannersid = bannersid
-    banData.timeBan = timeBan
-    banData.reason = reason
+    banData.timeBan = tostring(timeBan or "Перманентно")
+    banData.reason = tostring(reason or "Не указана")
 
     local S = enc.Scale
     local frameW = enc.w(452 * S)
@@ -292,8 +260,8 @@ function enc.bans(jorb, pl, banner, bannersid, timeBan, reason)
     titlePanel:SetSize(enc.w(200 * S), iconS)
 
     function titlePanel:Paint(w, h)
-        text(textovik[jorb]["title"], 'enc.Title', 0, 0, enc.Colors.w, 0, 0)
-        text(textovik[jorb]["subtitle"], 'enc.Subtitle', 0, enc.h(19 * S), enc.Colors.w70, 0, 0)
+        text(textovik[banData.jorb]["title"], 'enc.Title', 0, 0, enc.Colors.w, 0, 0)
+        text(textovik[banData.jorb]["subtitle"], 'enc.Subtitle', 0, enc.h(19 * S), enc.Colors.w70, 0, 0)
     end
 
     local clS = enc.h(24 * S)
@@ -310,7 +278,7 @@ function enc.bans(jorb, pl, banner, bannersid, timeBan, reason)
 
     function closeBtn:DoClick()
         if IsValid(mainFrame) then mainFrame:Remove() end
-        showNotifBar(jorb)
+        showNotifBar(banData.jorb)
     end
 
     local cardY = pad + iconS + pad
@@ -327,8 +295,8 @@ function enc.bans(jorb, pl, banner, bannersid, timeBan, reason)
     function leftCard:Paint(w, h)
         draw.RoundedBox(cardR, 0, 0, w, h, enc.Colors.card)
         text('Администратор', 'enc.Label', innerPad, enc.h(10 * S), enc.Colors.w70, 0, 0)
-        text(banner, 'enc.Value', innerPad, enc.h(24 * S), enc.Colors.w, 0, 0)
-        text(bannersid, 'enc.Value', innerPad, enc.h(48 * S), enc.Colors.w, 0, 0)
+        text(banData.banner, 'enc.Value', innerPad, enc.h(24 * S), enc.Colors.w, 0, 0)
+        text(banData.bannersid, 'enc.Value', innerPad, enc.h(48 * S), enc.Colors.w, 0, 0)
     end
 
     local rtX = pad + leftW + gap
@@ -339,7 +307,7 @@ function enc.bans(jorb, pl, banner, bannersid, timeBan, reason)
     function rtCard:Paint(w, h)
         draw.RoundedBox(cardR, 0, 0, w, h, enc.Colors.card)
         text('Причина', 'enc.Label', innerPad, enc.h(8 * S), enc.Colors.w70, 0, 0)
-        text(reason, 'enc.Value', innerPad, enc.h(22 * S), enc.Colors.w, 0, 0)
+        text(banData.reason, 'enc.Value', innerPad, enc.h(22 * S), enc.Colors.w, 0, 0)
     end
 
     local rbCard = ui('Panel', mainFrame)
@@ -349,7 +317,7 @@ function enc.bans(jorb, pl, banner, bannersid, timeBan, reason)
     function rbCard:Paint(w, h)
         draw.RoundedBox(cardR, 0, 0, w, h, enc.Colors.card)
         text('Дата разблокировки', 'enc.Label', innerPad, enc.h(8 * S), enc.Colors.w70, 0, 0)
-        text(timeBan, 'enc.Value', innerPad, enc.h(22 * S), enc.Colors.w, 0, 0)
+        text(banData.timeBan, 'enc.Value', innerPad, enc.h(22 * S), enc.Colors.w, 0, 0)
     end
 
     local btnY = cardY + leftH + pad
@@ -364,7 +332,8 @@ function enc.bans(jorb, pl, banner, bannersid, timeBan, reason)
 
     function buyBtn:Paint(w, h)
         draw.RoundedBox(cardR, 0, 0, w, h, enc.Colors.btnRed)
-        drawCentered('Купить разбан (449 руб.)', 'enc.BtnBold', w / 2, h / 2, enc.Colors.btnText)
+        local priceStr = getUnbanPrice()
+        drawCentered('Купить разбан (' .. priceStr .. ' руб.)', 'enc.BtnBold', w / 2, h / 2, enc.Colors.btnText)
     end
 
     function buyBtn:DoClick()
@@ -384,14 +353,14 @@ function enc.bans(jorb, pl, banner, bannersid, timeBan, reason)
     end
 
     function appealBtn:DoClick()
-        gui.OpenURL('https://example.com/appeal')
+        gui.OpenURL('https://vk.com/arizona_gmod')
     end
 end
 
 net.Receive("EncBans_BuyUnbanResult", function()
     local success = net.ReadBool()
     if success then
-        chat.AddText(Color(100, 255, 100), "[Разбан] ", Color(255, 255, 255), "Разбан успешно куплен! Списано 500 руб. с доната.")
+        chat.AddText(Color(100, 255, 100), "[Разбан] ", Color(255, 255, 255), "Разбан успешно куплен! Списано " .. getUnbanPrice() .. " руб. с доната.")
     else
         local reason = net.ReadString()
         chat.AddText(Color(255, 100, 100), "[Разбан] ", Color(255, 255, 255), reason)

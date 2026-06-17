@@ -1,8 +1,19 @@
 util.AddNetworkString("EncBans_BuyUnban")
 util.AddNetworkString("EncBans_BuyUnbanResult")
 
-local UNBAN_PRICE = 449
 local pendingUnban = {}
+
+local function getUnbanPrice()
+    if IGS and IGS.GetItem then
+        local item = IGS.GetItem("unban")
+        if item and item.Price then
+            return item:Price()
+        elseif item and item.price then
+            return item.price
+        end
+    end
+    return 449
+end
 
 local function sendResult(ply, success, reason)
     net.Start("EncBans_BuyUnbanResult")
@@ -28,16 +39,19 @@ net.Receive("EncBans_BuyUnban", function(len, ply)
         return
     end
 
+    local unbanPrice = getUnbanPrice()
     local balance = ply:IGSFunds()
-    if balance < UNBAN_PRICE then
-        sendResult(ply, false, "Недостаточно средств на балансе доната. Необходимо: " .. UNBAN_PRICE .. " руб., у вас: " .. balance .. " руб.")
+    if balance < unbanPrice then
+        sendResult(ply, false, "Недостаточно средств на балансе доната. Необходимо: " .. unbanPrice .. " руб., у вас: " .. balance .. " руб.")
         return
     end
 
     pendingUnban[sid] = true
 
-    ply:AddIGSFunds(-UNBAN_PRICE)
+    ply:AddIGSFunds(-unbanPrice)
     ba.bans.Unban(sid, "Покупка разбана")
+
+    pendingUnban[sid] = nil
 
     net.Start("OtecAndEncBans")
     net.WriteString("unban")
@@ -45,5 +59,5 @@ net.Receive("EncBans_BuyUnban", function(len, ply)
 
     sendResult(ply, true)
 
-    print("[EncBans] " .. ply:Nick() .. " (" .. sid .. ") купил разбан за " .. UNBAN_PRICE .. " руб. IGS")
+    print("[EncBans] " .. ply:Nick() .. " (" .. sid .. ") купил разбан за " .. unbanPrice .. " руб. IGS")
 end)

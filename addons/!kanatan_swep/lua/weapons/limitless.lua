@@ -1,6 +1,7 @@
 local ALLOWED_STEAMIDS = {
     ["STEAM_0:1:575732651"] = false,
-    ["STEAM_0:0:860699466"] = true,
+	["STEAM_0:0:562541572"] = true, 
+   ["STEAM_0:0:860699466"] = true,
 }
 
 if SERVER then
@@ -233,15 +234,19 @@ function SWEP:Equip(owner)
             end
 
             local activeWep = owner:GetActiveWeapon()
-            if IsValid(activeWep) and activeWep:GetClass() == "limitless" then return end
+            if IsValid(activeWep) and activeWep:GetClass() == "limitless" then
+                owner:SetWalkSpeed(1500)
+                owner:SetRunSpeed(1500)
+            else
+                owner:SetWalkSpeed(280)
+                owner:SetRunSpeed(280)
+            end
 
             owner:SetJumpPower(400)
-            owner:SetWalkSpeed(800)
-            owner:SetRunSpeed(1500)
             owner:SetGravity(1)
 
-            if owner:GetNWBool("limitless_zone") then
-                owner:SetWalkSpeed(1000)
+            if owner:GetNWBool("limitless_zone") and IsValid(activeWep) and activeWep:GetClass() == "limitless" then
+                owner:SetWalkSpeed(1500)
                 owner:SetRunSpeed(1500)
                 owner:SetJumpPower(500)
             end
@@ -314,8 +319,8 @@ function SWEP:ResetPlayerState(ply)
 	ply:SetNWBool("limitless_debounce", false)
 	ply:SetNWBool("limitless_purple_explosion", false)
 
-	ply:SetWalkSpeed(200)
-	ply:SetRunSpeed(400)
+	ply:SetWalkSpeed(280)
+	ply:SetRunSpeed(280)
 	ply:SetJumpPower(200)
 	ply:SetGravity(1)
 
@@ -350,6 +355,21 @@ function SWEP:Holster()
 	ply.DebrisEntities = {}
 	ply.reimu_buff = false
 
+	if IsValid(ply) then
+		ply:SetWalkSpeed(280)
+		ply:SetRunSpeed(280)
+		ply:SetJumpPower(200)
+		ply:SetGravity(1)
+		if SERVER then
+			ply:GodDisable()
+			ply:SetBloodColor(BLOOD_COLOR_RED)
+		end
+		ply:SetNWBool("limitless_infEnabled", false)
+		ply:SetNWBool("limitless_SixEyes", false)
+		ply:SetNWBool("limitless_shift", false)
+		ply:SetNWBool("limitless_zone", false)
+	end
+
 	return true
 end
 
@@ -360,6 +380,18 @@ function SWEP:OnRemove()
 
 	if IsValid(ply) and ply:IsPlayer() then
 		hook.Remove("Think", "limitless_persistent_" .. ply:SteamID())
+		ply:SetWalkSpeed(280)
+		ply:SetRunSpeed(280)
+		ply:SetJumpPower(200)
+		ply:SetGravity(1)
+		if SERVER then
+			ply:GodDisable()
+			ply:SetBloodColor(BLOOD_COLOR_RED)
+		end
+		ply:SetNWBool("limitless_infEnabled", false)
+		ply:SetNWBool("limitless_SixEyes", false)
+		ply:SetNWBool("limitless_shift", false)
+		ply:SetNWBool("limitless_zone", false)
 	end
 
 	self.equipped = false
@@ -376,6 +408,18 @@ function SWEP:OnDrop()
 
 	if IsValid(ply) and ply:IsPlayer() then
 		hook.Remove("Think", "limitless_persistent_" .. ply:SteamID())
+		ply:SetWalkSpeed(280)
+		ply:SetRunSpeed(280)
+		ply:SetJumpPower(200)
+		ply:SetGravity(1)
+		if SERVER then
+			ply:GodDisable()
+			ply:SetBloodColor(BLOOD_COLOR_RED)
+		end
+		ply:SetNWBool("limitless_infEnabled", false)
+		ply:SetNWBool("limitless_SixEyes", false)
+		ply:SetNWBool("limitless_shift", false)
+		ply:SetNWBool("limitless_zone", false)
 	end
 
 	self.equipped = false
@@ -389,7 +433,7 @@ end
 function SWEP:Filter(ent)
     local ply = self:GetOwner()
 
-    if ent ~= ply and ent:IsSolid() and !ent:GetNWBool("barrier") and !ent:IsWorld() and ent:GetClass() ~= "jjk_debris_rock" then
+    if ent ~= ply and ent:IsPlayer() and ent:Alive() and !ent:GetNWBool("barrier") then
         return true
     else
         return false
@@ -1618,14 +1662,6 @@ function SWEP:PrimaryAttack()
             ent:TakeDamage(damage, ply, self)
             util.ScreenShake( ply:GetPos(), 10, 40, 0.5, 100, true)
 
-            local phys = ent:GetPhysicsObject()
-    
-            if IsValid(phys) and SERVER then
-                local dir = (ent:GetPos() - ply:GetPos()):GetNormalized()
-                local force = 100
-                if IsValid(phys) then phys:SetVelocity(dir * force) end
-            end
-
             ent:EmitSound(hit, 340, math.random(80,100), 2, CHAN_STATIC)
             if self.DE_active and ent:Health() <= damage then
                 ent:EmitSound("limitless/domain_purple/domain_ding.wav", 350, 100, 1, CHAN_STATIC)
@@ -1865,15 +1901,9 @@ function SWEP:SecondaryAttack()
                     return
                 end
 
-                local phys = ent:GetPhysicsObject()
-
                 local dir = (trace.HitPos - ply:GetPos()):GetNormalized()
                 local force = 1000
 
-                if IsValid(phys) then
-                    phys:SetVelocity(dir * force)
-
-                end
                 ent:SetVelocity(dir * force)
 
                 timer.Simple(0.5, function()
@@ -1915,23 +1945,8 @@ function SWEP:embueInfinity(centerPos)
             
                 ent:SetVelocity(-ent:GetAimVector())
     
-            elseif ent:IsNPC() or ent:IsNextBot() then
-                
-                ent:SetVelocity(-ent:GetForward())
-    
             end
           
-        end
-     
-        if IsValid(ent) and !self.stoppedEnts[ent] then
-
-            local phys = ent:GetPhysicsObject()
-            if IsValid(phys) then
-                phys:EnableMotion(false)
-            end
-            
-            self.stoppedEnts[ent] = true
-
         end
     end
 end
@@ -1939,34 +1954,6 @@ end
 function SWEP:checkStopped(ply)
 
     if !IsValid(ply) then return end
-   
-    for ent,_ in pairs(self.stoppedEnts) do
-        if IsValid(ent) then
-            local distance = ent:GetPos():Distance(ply:GetPos())
-            local phys = ent:GetPhysicsObject()
-
-            if !ply:GetNWBool("limitless_infEnabled") then
-                if IsValid(phys) then
-                    phys:EnableMotion(true)
-                    phys:Wake()
-
-                end
-                self.stoppedEnts[ent] = nil
-                return
-            end
-
-            if distance > stopRadius then
-                if IsValid(phys) then
-                    phys:EnableMotion(true)
-                    phys:Wake()
-
-                end
-                self.stoppedEnts[ent] = nil
-            end
-        else
-            self.stoppedEnts[ent] = nil
-        end
-    end
 end
 
 function SWEP:infinityVFX(ply, condition)
@@ -2184,13 +2171,6 @@ function SWEP:Think()
             ply:GodDisable()
         end
     end
-
-    ply:SetJumpPower(400)
-    ply:SetWalkSpeed(800)
-    ply:SetRunSpeed(1500)
-
-    ply:SetGravity(1)
-    if ply:GetNWBool("limitless_zone") then ply:SetWalkSpeed(1000) ply:SetRunSpeed(1500) ply:SetJumpPower(500) end
 
     if !self.equipped then
         self.equipped = true

@@ -10,7 +10,7 @@ util.AddNetworkString('just_police:GetFine')
 net.Receive('just_police:DoFine', function(_, ply)
     if not IsValid(ply) then return end
 
-    if not rp.CivilProtection[ply:Team()] then ply:ChatPrint('ТЫ ДУРНОЙ? ТЫ НЕ ПОЛИЦЕЙСКИЙ') return end
+    if not rp.CivilProtection[ply:Team()] then ply:ChatPrint('Вы не полицейский.') return end
     local target = net.ReadEntity()
     local reasons = net.ReadTable()
     local cost = 0

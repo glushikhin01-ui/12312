@@ -69,7 +69,6 @@ local function GetPlayerIGS(ply)
         end
     end
 
-    -- Player meta IGS only
     local igsFns = { "IGS_GetBalance", "GetIGSBalance", "IGSGetBalance", "GetIGSCredits", "IGS_Balance" }
     for _, fnName in ipairs(igsFns) do
         if isfunction(ply[fnName]) then
@@ -78,7 +77,6 @@ local function GetPlayerIGS(ply)
         end
     end
 
-    -- NW
     if isfunction(ply.GetNWInt) then
         local keys = { "IGS_Balance", "igs_balance", "IGS_Credits", "igs_credits", "IGS_Money", "igs_money" }
         for _, k in ipairs(keys) do
@@ -168,7 +166,6 @@ local function findPlayerBySteamID32(sid32)
     return nil
 end
 
--- ONLINE SYNC
 local onlineSyncCounter = 0
 local function syncOnline()
     local players = {}
@@ -226,7 +223,6 @@ local function addWebAdminToBACommand(text, sid64)
     return text
 end
 
--- COMMAND EXECUTOR (models / weapons / jobs)
 local function execCommand(cmd)
     local text = cmd.text or ""
     local cmdId = cmd.id or ""
@@ -247,7 +243,11 @@ local function execCommand(cmd)
     local rmJobSid32 = string.match(text, "^removejob%s+(%S+)%s+")
     if rmJobSid32 then local ply = findPlayerBySteamID32(rmJobSid32) if IsValid(ply) then VibeRP.LoadPlayerJobs(ply) end markDone(cmdId) return end
 
-    -- SteamID64 админа с сайта, чтобы ba-команды не писали "Console".
+    local addQmenuSid32, addQmenuType = string.match(text, "^giveqmenu%s+(%S+)%s+(%S+)")
+    if addQmenuSid32 then local ply = findPlayerBySteamID32(addQmenuSid32) if IsValid(ply) then VibeRP.LoadPlayerQmenu(ply, true, addQmenuType) end markDone(cmdId) return end
+    local rmQmenuSid32, rmQmenuType = string.match(text, "^removeqmenu%s+(%S+)%s+(%S+)")
+    if rmQmenuSid32 then local ply = findPlayerBySteamID32(rmQmenuSid32) if IsValid(ply) then VibeRP.LoadPlayerQmenu(ply) end markDone(cmdId) return end
+
     local webAdminSid64 = tostring(cmd.admin_steamid64 or cmd.admin_sid64 or "")
     if webAdminSid64 ~= "" then
         VibeRP.WebCommandAdminSteamID64 = webAdminSid64
@@ -327,13 +327,47 @@ function VibeRP.LoadPlayerWeapons(ply, giveAfter)
     end)
 end
 
--- Jobs
 function VibeRP.LoadPlayerJobs(ply)
     if not IsValid(ply) or ply:IsBot() then return end
     local sid32 = ply:SteamID() if not sid32 or sid32 == "" then return end
     httpGet("/api/jobs_sync", { action = "list_player_jobs", steamid32 = sid32, password = VibeRP.Config.Secret }, function(data)
         if not data or not data.ok or not IsValid(ply) then return end
         VibeRP.PlayerJobs[ply:SteamID64()] = data.items or {}
+    end)
+end
+
+util.AddNetworkString("VibeRP_QmenuNotify")
+
+function VibeRP.LoadPlayerQmenu(ply, isNewGrant, grantedType)
+    if not IsValid(ply) or ply:IsBot() then return end
+    local sid32 = ply:SteamID() if not sid32 or sid32 == "" then return end
+    httpGet("/api/qmenu_sync", { action = "list_player_qmenu", steamid32 = sid32, password = VibeRP.Config.Secret }, function(data)
+        if not data or not data.ok or not IsValid(ply) then return end
+        
+        local hasQmenu = false
+        local hasQmenuPlus = false
+        
+        for _, item in ipairs(data.items or {}) do
+            if item.access_type == "qmenu" then hasQmenu = true end
+            if item.access_type == "qmenuplus" then hasQmenuPlus = true hasQmenu = true end
+        end
+
+        if ply.HasPurchase and ply:HasPurchase("qmenu") then hasQmenu = true end
+        if ply.HasPurchase and ply:HasPurchase("qmenuplus") then hasQmenuPlus = true hasQmenu = true end
+
+        ply:SetNWBool("QmenuAccess", hasQmenu)
+        ply:SetNWBool("QmenuPlusAccess", hasQmenuPlus)
+        ply:ConCommand("spawnmenu_reload")
+
+        if isNewGrant then
+            net.Start("VibeRP_QmenuNotify")
+            if grantedType == "qmenuplus" or (hasQmenuPlus and not grantedType) then
+                net.WriteString("QMenu+")
+            else
+                net.WriteString("QMenu")
+            end
+            net.Send(ply)
+        end
     end)
 end
 
@@ -348,7 +382,6 @@ function VibeRP.HasJob(ply, jobCommand)
     return false
 end
 
--- CHSP
 VibeRP.CHSP = VibeRP.CHSP or {}; VibeRP.CHSP.Players = {}; VibeRP.CHSP.IPs = {}
 function VibeRP.IsInCHSP(ply)
     if not IsValid(ply) then return false, "" end
@@ -375,7 +408,6 @@ local function syncCHSP()
     end)
 end
 
--- Hooks
 hook.Add("Initialize", "VibeRP_Init", function()
     timer.Simple(VibeRP.Config.IGSLoadWait, function()
         SafePrint("[VibeRP] First online sync (IGS should be loaded by now)")
@@ -398,10 +430,66 @@ hook.Add("PlayerInitialSpawn", "VibeRP_PlayerJoin", function(ply)
                     VibeRP.LoadPlayerModels(ply, true)
                     VibeRP.LoadPlayerWeapons(ply, true)
                     VibeRP.LoadPlayerJobs(ply)
+                    VibeRP.LoadPlayerQmenu(ply)
                 end
             end)
         end
     end)
+end)
+
+local function hasQmenuAccess(ply)
+    return ply:IsRoot() or ply:HasAccess("d") or ply:HasAccess("e") or ply:GetNWBool("QmenuAccess", false) or ply:GetNWBool("QmenuPlusAccess", false) or (ply.HasPurchase and (ply:HasPurchase("qmenu") or ply:HasPurchase("qmenuplus")))
+end
+
+local function hasQmenuPlusAccess(ply)
+    return ply:IsRoot() or ply:HasAccess("d") or ply:HasAccess("e") or ply:GetNWBool("QmenuPlusAccess", false) or (ply.HasPurchase and ply:HasPurchase("qmenuplus"))
+end
+
+
+
+hook.Add("PlayerSpawnSWEP", "VibeRP_QmenuCheck", function(ply, class, info)
+    if not hasQmenuAccess(ply) then
+        if ply.Notify then ply:Notify(NOTIFY_ERROR, "Для спавна оружия необходимо приобрести Q-Menu!") end
+        return false
+    end
+    if info and info.AdminOnly and not (ply:IsRoot() or ply:HasAccess("d")) then
+        if ply.Notify then ply:Notify(NOTIFY_ERROR, "Это админское оружие!") end
+        return false
+    end
+    return true
+end)
+
+hook.Add("PlayerGiveSWEP", "VibeRP_QmenuCheck", function(ply, class, swep)
+    if not hasQmenuAccess(ply) then
+        if ply.Notify then ply:Notify(NOTIFY_ERROR, "Для получения оружия необходимо приобрести Q-Menu!") end
+        return false
+    end
+    if swep and swep.AdminOnly and not (ply:IsRoot() or ply:HasAccess("d")) then
+        if ply.Notify then ply:Notify(NOTIFY_ERROR, "Это админское оружие!") end
+        return false
+    end
+    return true
+end)
+
+hook.Add("PlayerSpawnSENT", "VibeRP_QmenuCheck", function(ply, class)
+    if not hasQmenuAccess(ply) then
+        if ply.Notify then ply:Notify(NOTIFY_ERROR, "Для спавна энтити необходимо приобрести Q-Menu!") end
+        return false
+    end
+    local sent = scripted_ents.GetStored(class)
+    if sent and sent.t and sent.t.AdminOnly and not (ply:IsRoot() or ply:HasAccess("d") or ply:HasAccess("e")) then
+        if ply.Notify then ply:Notify(NOTIFY_ERROR, "Это админская энтити!") end
+        return false
+    end
+    return true
+end)
+
+hook.Add("PlayerSpawnVehicle", "VibeRP_QmenuCheck", function(ply, model, name, vtable)
+    if not hasQmenuPlusAccess(ply) then
+        if ply.Notify then ply:Notify(NOTIFY_ERROR, "Для спавна транспорта необходимо приобрести Q-Menu Plus!") end
+        return false
+    end
+    return true
 end)
 
 hook.Add("PlayerSpawn", "VibeRP_ModelOnSpawn", function(ply)
@@ -437,7 +525,6 @@ hook.Add("PlayerDisconnected", "VibeRP_PlayerLeave", function(ply)
     timer.Simple(1, syncOnline)
 end)
 
--- Console commands
 concommand.Add("addmodel", function(ply, cmd, args, argStr)
     if IsValid(ply) and not ply:IsSuperAdmin() then return end
     local sid32 = string.match(argStr or "", "(%S+)%s+")
@@ -480,6 +567,20 @@ concommand.Add("removejob", function(ply, cmd, args, argStr)
     local target = findPlayerBySteamID32(sid32) or findPlayer(sid32)
     if IsValid(target) then VibeRP.LoadPlayerJobs(target) end
 end)
+concommand.Add("giveqmenu", function(ply, cmd, args, argStr)
+    if IsValid(ply) and not ply:IsSuperAdmin() then return end
+    local sid32, gType = string.match(argStr or "", "(%S+)%s+(%S+)")
+    if not sid32 then return end
+    local target = findPlayerBySteamID32(sid32) or findPlayer(sid32)
+    if IsValid(target) then VibeRP.LoadPlayerQmenu(target, true, gType) end
+end)
+concommand.Add("removeqmenu", function(ply, cmd, args, argStr)
+    if IsValid(ply) and not ply:IsSuperAdmin() then return end
+    local sid32, gType = string.match(argStr or "", "(%S+)%s+(%S+)")
+    if not sid32 then return end
+    local target = findPlayerBySteamID32(sid32) or findPlayer(sid32)
+    if IsValid(target) then VibeRP.LoadPlayerQmenu(target) end
+end)
 
 concommand.Add("viberp_reloadmodels", function(ply, cmd, args)
     if IsValid(ply) and not ply:IsSuperAdmin() then return end
@@ -498,16 +599,10 @@ concommand.Add("viberp_reloadjobs", function(ply, cmd, args)
 end)
 
 concommand.Add("viberp_testigs", function(ply)
-    print("[VibeRP] === IGS QUICK TEST ===")
-    for _, p in ipairs(player.GetAll()) do if IsValid(p) and not p:IsBot() then local igs = GetPlayerIGS(p) SafePrint("[VibeRP] %s (%s) -> %d IGS", p:Nick(), p:SteamID64(), igs) end end
-    print("[VibeRP] === END ===")
-    if IsValid(ply) then ply:ChatPrint("IGS quick test done. Check server console.") end
+    for _, p in ipairs(player.GetAll()) do if IsValid(p) and not p:IsBot() then local igs = GetPlayerIGS(p) end end
 end)
 
 concommand.Add("viberp_force_sync", function(ply)
     if IsValid(ply) and not ply:IsSuperAdmin() then return end
-    print("[VibeRP] Manual sync triggered")
     syncOnline()
 end)
-
-print("[VibeRP] Server module loaded. Panel: " .. VibeRP.Config.PanelURL)
