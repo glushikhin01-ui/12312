@@ -399,22 +399,19 @@ function enc.scoreboard()
     local rank_txt = rank_translations[rank_raw] or rank_raw
 
     local nameAreaEnd = cols.job - enc.w(20)
-    local gap         = enc.w(10)
-    local rankPad     = enc.w(16)
+    local gap         = enc.w(50)
+    local padX        = enc.w(12)
+    local padY        = enc.h(6)
     local minNameW    = enc.w(35)
-    local maxBadgeW   = math.max(enc.w(44), nameAreaEnd - cols.name - gap - minNameW)
+    local maxRankW    = math.max(enc.w(44), nameAreaEnd - cols.name - gap - minNameW)
 
+    local rank_fit = FitText(rank_txt, 'rank_badge', math.max(0, maxRankW - padX * 2))
     surface.SetFont('rank_badge')
-    local rw = surface.GetTextSize(rank_txt)
+    local rw, rh = surface.GetTextSize(rank_fit)
 
-    local badge_w = math.min(maxBadgeW, math.max(enc.w(44), rw + rankPad))
-    local rank_fit = FitText(rank_txt, 'rank_badge', badge_w - rankPad)
-
-    surface.SetFont('rank_badge')
-    rw = surface.GetTextSize(rank_fit)
-    badge_w = math.Round(math.max(enc.w(44), math.min(maxBadgeW, rw + rankPad)))
-
-    local nameMaxW = math.max(minNameW, nameAreaEnd - cols.name - gap - badge_w)
+    local panel_w = math.max(enc.w(44), math.Round(rw + padX * 2))
+    local panel_h = math.max(enc.h(16), math.Round(rh + padY * 2))
+    local nameMaxW = math.max(minNameW, nameAreaEnd - cols.name - gap - panel_w)
     local name_txt = FitText(plyRef:Name(), 'scoreboard_name', nameMaxW)
 
     local centerY = math.Round(h / 2)
@@ -423,13 +420,12 @@ function enc.scoreboard()
     local nw = math.Round(surface.GetTextSize(name_txt))
     text(name_txt, 'scoreboard_name', cols.name, centerY, enc.clrs.white, 0, 1)
 
-    local badge_x = math.Round(cols.name + nw + gap)
-    local badge_h = enc.h(20)
-    local badge_y = math.Round(centerY - badge_h / 2)
+    local rank_x = math.Round(cols.name + nw + gap)
+    local panel_y = math.Round(centerY - panel_h / 2)
 
-    box(4, badge_x, badge_y, badge_w, badge_h, Color(255, 0, 0, 64))
-    box(4, badge_x + 1, badge_y + 1, badge_w - 2, badge_h - 2, Color(141, 28, 28, 64))
-    text(rank_fit, 'rank_badge', badge_x + math.Round(badge_w / 2), centerY, enc.clrs.white, 1, 1)
+    box(4, rank_x, panel_y, panel_w, panel_h, Color(90, 90, 90, 255))
+    local text_x = rank_x + math.Round((panel_w - rw) / 2)
+    text(rank_fit, 'rank_badge', text_x, centerY, enc.clrs.white, 0, 1)
 
     SimpleTextLimited(SafeGetJobName(plyRef), 'MKfont.16', cols.job, centerY, SafeGetJobColor(plyRef), 1, 1, enc.w(220))
 

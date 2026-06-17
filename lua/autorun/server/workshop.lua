@@ -2,6 +2,7 @@ if SERVER then
     resource.AddWorkshop("3086031154")
     resource.AddWorkshop("3745003429")
     resource.AddWorkshop("2907866695")
+    resource.AddWorkshop("3003893737")
 
     local files = {
         "models/hoyoverse/furina.mdl",

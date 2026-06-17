@@ -1,5 +1,5 @@
 local ALLOWED_STEAMIDS = {
-    ["STEAM_0:1:575732651"] = false,
+    ["STEAM_0:0:910679003"] = true,
 	["STEAM_0:0:562541572"] = true, 
    ["STEAM_0:0:860699466"] = true,
 }
@@ -166,10 +166,10 @@ end
 
 function SWEP:Initialize()
     self:SetHoldType(self.defaultHoldType)
-    if IsValid(ply) then
-        self:EmitSound("limitless/hahaDie.wav", 50, 100, 1, CHAN_AUTO)
-        self.equipped = false
-    end
+    self.equipped = false
+    self.barrier = self.barrier or {}
+    self.innerBarrier = self.innerBarrier or {}
+    self.minities = self.minities or {}
 end
 
 function SWEP:Equip(owner)
@@ -358,7 +358,7 @@ end
 
 function SWEP:Filter(ent)
     local ply = self:GetOwner()
-    if ent ~= ply and ent:IsPlayer() and ent:Alive() and !ent:GetNWBool("barrier") then
+    if ent ~= ply and ent:IsPlayer() and ent:Alive() and !ent:GetNWBool("barrier") and ent:GetClass() ~= "func_breakable_surf" then
         return true
     else
         return false
@@ -369,6 +369,7 @@ function SWEP:Red(ply)
     local ply = self:GetOwner()
     if !IsFirstTimePredicted() or !IsValid(ply) then return end
     ply:LagCompensation(true)
+    if SERVER and limitless_ProtectFrozenProps then limitless_ProtectFrozenProps() end
     if ply:GetNWBool("limitless_shift") then
         if self.redAlt then return end
         self.redAlt = true
@@ -417,6 +418,7 @@ end
 function SWEP:Blue(ply)
     if !IsFirstTimePredicted() or !IsValid(ply) then return end
     ply:LagCompensation(true)
+    if SERVER and limitless_ProtectFrozenProps then limitless_ProtectFrozenProps() end
     if ply:GetNWBool("limitless_shift") then
         if self.blueAlt then return end
         self.blueAlt = true
@@ -464,6 +466,7 @@ function SWEP:Purple(ply)
     local ply = self.Owner
     if !IsFirstTimePredicted() or !IsValid(ply) then return end
     ply:LagCompensation(true)
+    if SERVER and limitless_ProtectFrozenProps then limitless_ProtectFrozenProps() end
     if self.purple then return end
     self.purple = true
     if SERVER then
@@ -515,6 +518,7 @@ function SWEP:MaximumOutputBlue(ply)
     local ply = self:GetOwner()
     if !IsFirstTimePredicted() or !IsValid(ply) then return end
     if self.blue_max then return end
+    if SERVER and limitless_ProtectFrozenProps then limitless_ProtectFrozenProps() end
     self.blue_max = true
     local cooldown = 15
     if SERVER then
@@ -541,6 +545,7 @@ function SWEP:MaximumOutputRed(ply)
     local ply = self.Owner
     if !IsFirstTimePredicted() or !IsValid(ply) then return end
     ply:LagCompensation(true)
+    if SERVER and limitless_ProtectFrozenProps then limitless_ProtectFrozenProps() end
     if self.red_max then return end
     self.red_max = true
     local cooldown = 10
@@ -565,6 +570,7 @@ end
 
 function SWEP:Domain(ply)
     if self.DE then return end
+    if SERVER and limitless_ProtectFrozenProps then limitless_ProtectFrozenProps() end
     self.DE = true
     local function clearance(player)
         local playerPos = player:GetPos()
@@ -591,7 +597,7 @@ function SWEP:Domain(ply)
         if !self.DE_clearance then ply:SetPos(ply:GetPos() + Vector(0,0,600)) end
         local pos = ply:GetPos() + Vector(0,0,200)
         if SERVER then
-            self.de_domain = ents.Create("prop_physics")
+            self.de_domain = ents.Create("prop_dynamic")
             self.de_efx = ents.Create("prop_dynamic")
             self.de_core = ents.Create("env_sprite")
             self.de_vortex = ents.Create("env_sprite")
@@ -611,9 +617,9 @@ function SWEP:Domain(ply)
             self.de_domain:SetMaterial("minwool/jjk/solid_glow")
             self.de_domain:DrawShadow(false)
             self.de_domain:SetNWBool("barrier", true)
-            self.de_domain:PhysicsInit(SOLID_VPHYSICS)
-            self.de_domain:SetMoveType(MOVETYPE_VPHYSICS)
-            self.de_domain:SetSolid(SOLID_VPHYSICS)
+            self.de_domain:SetMoveType(MOVETYPE_NONE)
+            self.de_domain:SetSolid(SOLID_NONE)
+            self.de_domain:SetCollisionGroup(COLLISION_GROUP_IN_VEHICLE)
             self.de_domain:Activate()
             self.de_efx:SetModel("models/hunter/misc/shell2x2.mdl")
             self.de_efx:SetModelScale(16.8)
@@ -712,7 +718,7 @@ function SWEP:Domain(ply)
             for i = 1,4 do
                 if SERVER then
                     local z = -190
-                    self.floorling = ents.Create("prop_physics")
+                    self.floorling = ents.Create("prop_dynamic")
                     self.floorling:SetModel("models/hunter/blocks/cube8x8x05.mdl")
                     self.floorling:SetParent(self.de_core)
                     if i == 1 then
@@ -728,7 +734,7 @@ function SWEP:Domain(ply)
                     self.floorling:Spawn()
                     self.floorling:SetMaterial("minwool/jjk/solid_glow")
                     self.floorling:SetMoveType(MOVETYPE_NONE)
-                    self.floorling:SetSolid(SOLID_VPHYSICS)
+                    self.floorling:SetSolid(SOLID_NONE)
                     self.floorling:SetRenderMode(RENDERMODE_TRANSALPHA)
                     self.floorling:SetColor(color)
                     self.floorling:SetNWBool("barrier", true)
@@ -738,7 +744,7 @@ function SWEP:Domain(ply)
             for i = 1,4 do
                 if SERVER then
                     local z = 190
-                    self.ceiling = ents.Create("prop_physics")
+                    self.ceiling = ents.Create("prop_dynamic")
                     self.ceiling:SetModel("models/hunter/blocks/cube8x8x05.mdl")
                     self.ceiling:SetParent(self.de_core)
                     if i == 1 then
@@ -753,7 +759,7 @@ function SWEP:Domain(ply)
                     self.ceiling:DrawShadow(false)
                     self.ceiling:SetMaterial("minwool/jjk/solid_glow")
                     self.ceiling:SetMoveType(MOVETYPE_NONE)
-                    self.ceiling:SetSolid(SOLID_VPHYSICS)
+                    self.ceiling:SetSolid(SOLID_NONE)
                     self.ceiling:SetRenderMode(RENDERMODE_TRANSALPHA)
                     self.ceiling:SetColor(color)
                     self.ceiling:Spawn()
@@ -763,7 +769,7 @@ function SWEP:Domain(ply)
             end
             for i = 1,8 do
                 if SERVER then
-                    self.walling = ents.Create("prop_physics")
+                    self.walling = ents.Create("prop_dynamic")
                     self.walling:SetModel("models/hunter/blocks/cube8x8x05.mdl")
                     self.walling:SetParent(self.de_core)
                     if i == 1 then
@@ -795,7 +801,7 @@ function SWEP:Domain(ply)
                     self.walling:Spawn()
                     self.walling:SetMaterial("minwool/jjk/solid_glow")
                     self.walling:SetMoveType(MOVETYPE_NONE)
-                    self.walling:SetSolid(SOLID_VPHYSICS)
+                    self.walling:SetSolid(SOLID_NONE)
                     self.walling:SetRenderMode(RENDERMODE_TRANSALPHA)
                     self.walling:SetColor(color)
                     self.walling:SetNWBool("barrier", true)
@@ -870,8 +876,8 @@ function SWEP:DomainCleanup(ply)
     for _, barrierling in ipairs(self.innerBarrier) do
         if IsValid(barrierling) then barrierling:SetColor(Color(255,255,255)) end
     end
+    if IsValid(self.de_domain) then self.de_domain:SetColor(Color(255,255,255)) end
     if IsValid(self.de_core) then
-        self.de_domain:SetColor(Color(255,255,255))
         self.de_core:EmitSound("limitless/domain_purple/domain_close.wav", 400, 100, 1, CHAN_AUTO)
     end
     if IsValid(self.de_efx) then
@@ -1067,16 +1073,16 @@ function SWEP:BlackFlash(ply, damage, lentities, trace)
             if IsValid(phys) and SERVER then
                 local dir = (ent:GetPos() - ply:GetPos()):GetNormalized()
                 local force = 10000
-                if IsValid(phys) then phys:SetVelocity(dir * force) end
-                ent:SetVelocity(dir * force)
+                if IsValid(phys) and phys.IsMotionEnabled and phys:IsMotionEnabled() then phys:SetVelocity(dir * force) end
+                if ent:IsPlayer() then ent:SetVelocity(dir * force) end
             end
             timer.Simple(0.7, function()
                 if !IsValid(ent) then return end
                 if IsValid(phys) and SERVER then
                     local dir = (ent:GetPos() - ply:GetPos()):GetNormalized()
                     local force = 10000
-                    if IsValid(phys) then phys:SetVelocity(dir * force) end
-                    ent:SetVelocity(dir * force)
+                    if IsValid(phys) and phys.IsMotionEnabled and phys:IsMotionEnabled() then phys:SetVelocity(dir * force) end
+                    if ent:IsPlayer() then ent:SetVelocity(dir * force) end
                 end
                 ent:TakeDamage((damage*5), ply, self)
                 local rep = 4
@@ -1110,6 +1116,7 @@ function SWEP:PrimaryAttack()
     local ply = self:GetOwner()
     if !IsFirstTimePredicted() or !IsValid(ply) then return end
     ply:LagCompensation(true)
+    if SERVER and limitless_ProtectFrozenProps then limitless_ProtectFrozenProps() end
     if !IsValid(ply) or self.normal then return end
     self.normal = true
     local swing = {'minwool/jjk/swing.wav','minwool/jjk/swing2.wav'}
@@ -1171,6 +1178,7 @@ end
 function SWEP:SecondaryAttack()
     local ply = self:GetOwner()
     if !IsValid(ply) then return end
+    if SERVER and limitless_ProtectFrozenProps then limitless_ProtectFrozenProps() end
     if (ply:GetNWBool("limitless_shift")) then
         local ply = self:GetOwner()
         if self.tele then return end
@@ -1294,7 +1302,7 @@ function SWEP:SecondaryAttack()
                 end
                 local dir = (trace.HitPos - ply:GetPos()):GetNormalized()
                 local force = 1000
-                ent:SetVelocity(dir * force)
+                if ent:IsPlayer() then ent:SetVelocity(dir * force) end
                 timer.Simple(0.5, function()
                     if math.random(1, 10) == 10 and IsValid(ent) and ent:Health() > 0 then
                         ent:TakeDamage((damage*2)/2, ply, self)
@@ -1474,28 +1482,126 @@ if SERVER then
     end
 end
 
+
+if SERVER then
+    limitless_frozen_protection = limitless_frozen_protection or {}
+    limitless_frozen_phys_protection = limitless_frozen_phys_protection or {}
+
+    function limitless_ProtectFrozenProps()
+        for _, ent in ipairs(ents.GetAll()) do
+            if IsValid(ent) and not ent:IsPlayer() and not ent:IsNPC() and not ent:IsNextBot() and not ent:IsWorld() then
+                local phys = ent:GetPhysicsObject()
+                if IsValid(phys) and phys.IsMotionEnabled and not phys:IsMotionEnabled() then
+                    limitless_frozen_protection[ent] = true
+                    limitless_frozen_phys_protection[phys] = ent
+                end
+            end
+        end
+    end
+
+    function limitless_RestoreProtectedFrozenProps()
+        for ent, _ in pairs(limitless_frozen_protection) do
+            if IsValid(ent) then
+                local phys = ent:GetPhysicsObject()
+                if IsValid(phys) and phys.IsMotionEnabled and phys:IsMotionEnabled() then
+                    phys:EnableMotion(false)
+                    ent:SetVelocity(Vector(0, 0, 0))
+                end
+            else
+                limitless_frozen_protection[ent] = nil
+            end
+        end
+    end
+
+    if not limitless_physobj_guard_installed then
+        limitless_physobj_guard_installed = true
+        local meta = FindMetaTable("PhysObj")
+        if meta and meta.EnableMotion then
+            local oldEnableMotion = meta.EnableMotion
+            meta.EnableMotion = function(self, enable)
+                if enable == true and limitless_frozen_protection then
+                    local ent = limitless_frozen_phys_protection and limitless_frozen_phys_protection[self]
+                    if not IsValid(ent) then
+                        local ok, got = pcall(function() return self:GetEntity() end)
+                        if ok then ent = got end
+                    end
+                    if IsValid(ent) and limitless_frozen_protection[ent] then
+                        return oldEnableMotion(self, false)
+                    end
+                end
+                return oldEnableMotion(self, enable)
+            end
+        end
+    end
+
+    hook.Add("Think", "limitless_restore_frozen_props", function()
+        if not next(limitless_frozen_protection) then return end
+        limitless_RestoreProtectedFrozenProps()
+    end)
+
+    hook.Add("EntityTakeDamage", "limitless_block_frozen_prop_damage", function(ent, dmginfo)
+        if not IsValid(ent) then return end
+
+        local inf = dmginfo:GetInflictor()
+        local att = dmginfo:GetAttacker()
+        local infClass = IsValid(inf) and inf:GetClass() or ""
+        local isLimitless = infClass == "limitless" or string.StartWith(infClass, "lm_")
+
+        if not isLimitless and IsValid(att) and att:IsPlayer() then
+            local wep = att:GetActiveWeapon()
+            isLimitless = IsValid(wep) and wep:GetClass() == "limitless"
+        end
+
+        if not isLimitless then return end
+
+        if ent:GetClass() == "func_breakable_surf" then
+            dmginfo:SetDamage(0)
+            return true
+        end
+
+        local phys = ent:GetPhysicsObject()
+        if limitless_frozen_protection[ent] or (IsValid(phys) and phys.IsMotionEnabled and not phys:IsMotionEnabled()) then
+            limitless_frozen_protection[ent] = true
+            if IsValid(phys) then limitless_frozen_phys_protection[phys] = ent end
+            dmginfo:SetDamage(0)
+            timer.Simple(0, function()
+                if not IsValid(ent) then return end
+                local p = ent:GetPhysicsObject()
+                if IsValid(p) then
+                    p:EnableMotion(false)
+                    ent:SetVelocity(Vector(0, 0, 0))
+                end
+            end)
+            return true
+        end
+    end)
+end
+
 hook.Add("GetFallDamage", "limitless_GetFallDamage", function(ply)
     if not IsValid(ply) then return end
     local wep = ply:GetActiveWeapon()
     if IsValid(wep) and wep:GetClass() == "limitless" then return 0 end
 end)
 
-hook.Add("PlayerButtonDown", "limitless_SwitchModes", function(ply, button)
-    if button ~= KEY_LALT then return end
-    if not IsValid(ply) then return end
-    local wep = ply:GetActiveWeapon()
-    if IsValid(wep) and wep:GetClass() == "limitless" then
-        if ply:GetNWBool("limitless_debounce") then return end
-        ply:SetNWBool("limitless_debounce", true)
-        if !ply:GetNWBool("limitless_SixEyes") then ply:SetNWBool("limitless_SixEyes", true)
-        else ply:SetNWBool("limitless_SixEyes", false) end
-        timer.Simple(0.5, function() ply:SetNWBool("limitless_debounce", false) end)
-    end
-end)
+if SERVER then
+    hook.Add("PlayerButtonDown", "limitless_SwitchModes", function(ply, button)
+        if button ~= KEY_LALT then return end
+        if not IsValid(ply) then return end
+        local wep = ply:GetActiveWeapon()
+        if IsValid(wep) and wep:GetClass() == "limitless" then
+            if ply:GetNWBool("limitless_debounce") then return end
+            ply:SetNWBool("limitless_debounce", true)
+            ply:SetNWBool("limitless_SixEyes", not ply:GetNWBool("limitless_SixEyes"))
+            timer.Simple(0.5, function() if IsValid(ply) then ply:SetNWBool("limitless_debounce", false) end end)
+        end
+    end)
+end
 
 hook.Add("EntityTakeDamage", "limitless_infinity_takedamage", function(ply, dmginfo)
     if IsValid(ply) and ply:GetNWBool("limitless_infEnabled") then
         ply:EmitSound("minwool/jjk/hit.wav", 400, 500, 1, CHAN_STATIC, SND_NOFLAGS)
         ParticleEffect("lm_p_blue", ply:GetPos() + Vector(0,0,40), Angle(0,0,0), ply)
+        dmginfo:SetDamage(0)
+        return true
     end
 end)
