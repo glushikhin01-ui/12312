@@ -33,7 +33,7 @@ if CLIENT then
     end
 
     surface.CreateFont('MKfont.24', {
-        font      = 'Montserrat',
+        font      = 'Tahoma',
         size      = n(24),
         weight    = 500,
         extended  = true,
@@ -41,7 +41,7 @@ if CLIENT then
     })
 
     surface.CreateFont('MKfont.16', {
-        font      = 'Montserrat',
+        font      = 'Tahoma',
         size      = n(16),
         weight    = 500,
         extended  = true,
@@ -49,7 +49,7 @@ if CLIENT then
     })
 
     surface.CreateFont('MKfont.14', {
-        font      = 'Montserrat',
+        font      = 'Tahoma',
         size      = n(14),
         weight    = 500,
         extended  = true,
@@ -73,7 +73,9 @@ local function IncludeDir(path)
                 include(a)
             end
         else
-            AddCSLuaFile(a)
+            if SERVER then
+                AddCSLuaFile(a)
+            end
             include(a)
         end
     end

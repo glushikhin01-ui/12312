@@ -11,7 +11,6 @@ local tcopy     = table.Copy
 local tsort     = table.sort
 
 local lol  = Color(1, 89, 224)
-
 local mat2 = Material("hud/players_just.png", "smooth mips")
 local mat3 = Material("scoreboard/greenping.png", "smooth mips")
 local mat4 = Material("scoreboard/rec3.png", "smooth mips")
@@ -26,6 +25,62 @@ local b = math.min
 local function n(o)
     local p, q = ScrW(), ScrH()
     return a(o * b(p, q) / 1080)
+end
+
+local function SafeTextValue(value, fallback)
+    if value == nil then return fallback or "" end
+    value = tostring(value)
+    if value == "" then return fallback or "" end
+    return value
+end
+
+local function UTF8SubSafe(str, chars)
+    str = SafeTextValue(str)
+    chars = tonumber(chars) or 0
+    if chars <= 0 then return "" end
+    if utf8 and utf8.sub then
+        local ok, res = pcall(utf8.sub, str, 1, chars)
+        if ok and res then return res end
+    end
+    if utf8 and utf8.offset then
+        local ok, bytePos = pcall(utf8.offset, str, chars + 1)
+        if ok and bytePos then return string.sub(str, 1, bytePos - 1) end
+    end
+    return string.sub(str, 1, chars)
+end
+
+local function UTF8LenSafe(str)
+    str = SafeTextValue(str)
+    if utf8 and utf8.len then
+        local ok, len = pcall(utf8.len, str)
+        if ok and len then return len end
+    end
+    return #str
+end
+
+local function FitText(str, font, maxWidth)
+    str = SafeTextValue(str)
+    maxWidth = math.max(0, tonumber(maxWidth) or 0)
+    surface.SetFont(font)
+    if surface.GetTextSize(str) <= maxWidth then return str end
+    if maxWidth <= surface.GetTextSize("...") then return "" end
+    local low, high = 0, UTF8LenSafe(str)
+    local best = ""
+    while low <= high do
+        local mid = math.floor((low + high) / 2)
+        local candidate = UTF8SubSafe(str, mid) .. "..."
+        if surface.GetTextSize(candidate) <= maxWidth then
+            best = candidate
+            low = mid + 1
+        else
+            high = mid - 1
+        end
+    end
+    return best
+end
+
+local function SimpleTextLimited(str, font, x, y, clr, xalign, yalign, maxWidth)
+    text(FitText(str, font, maxWidth), font, x, y, clr, xalign, yalign)
 end
 
 local rank_translations = {
@@ -57,15 +112,23 @@ surface.CreateFont('tabok', {
     weight    = 600,
     antialias = true,
     extended  = true,
-    font      = 'Exo 2',
+    font      = 'Tahoma',
 })
 
 surface.CreateFont('rank_badge', {
-    size      = n(11),
-    weight    = 600,
+    size      = n(13),
+    weight    = 700,
     antialias = true,
     extended  = true,
-    font      = 'Exo 2',
+    font      = 'Tahoma',
+})
+
+surface.CreateFont('scoreboard_name', {
+    size      = n(18),
+    weight    = 700,
+    antialias = true,
+    extended  = true,
+    font      = 'Tahoma',
 })
 
 local logomat = Material('scoreboard/azlogo.png', 'smooth mips')
@@ -143,7 +206,7 @@ local buts = {
 
 local start      = SysTime()
 local anim       = 0.5
-local scselected = nil -- SteamID64 выбранного игрока, а не номер строки
+local scselected = nil
 local fr
 
 local function SafeGetJobName(ply)
@@ -173,6 +236,7 @@ local function SafeGetPlayTime(ply)
         return nil
     end)
     if ok_pt and pt then
+        pt = tonumber(pt) or 0
         if ba and ba.str and ba.str.FormatTime then
             local ok_fmt, str = pcall(ba.str.FormatTime, pt)
             if ok_fmt and str then return str end
@@ -186,9 +250,8 @@ end
 
 function enc.scoreboard()
     if IsValid(fr) then fr:Remove() end
-
     fr = vgui.Create('EditablePanel')
-    fr:SetSize(enc.w(976), enc.h(639))
+    fr:SetSize(enc.w(1120), enc.h(639))
     fr:Center()
     fr:MakePopup()
     fr:SetAlpha(0)
@@ -241,9 +304,9 @@ function enc.scoreboard()
 
     local cols = {
         name = enc.w(84),
-        job  = enc.w(290),
-        clan = enc.w(460),
-        time = enc.w(630),
+        job  = enc.w(420),
+        clan = enc.w(650),
+        time = enc.w(905),
     }
 
     do
@@ -265,6 +328,7 @@ function enc.scoreboard()
 
     do
         local joblist = {}
+
         if RPExtraTeams then
             for k, v in pairs(RPExtraTeams) do
                 local cache = {}
@@ -320,75 +384,80 @@ function enc.scoreboard()
                 local plySid = IsValid(v2) and v2:SteamID64() or ""
 
                 row.Paint = function(self, w, h)
-                    if not IsValid(plyRef) then return end
+    if not IsValid(plyRef) then return end
 
-                    local hover = self:IsHovered()
-                    self.Hover = Lerp(FrameTime() * 8, self.Hover, 0)
+    local hover = self:IsHovered()
+    self.Hover = Lerp(FrameTime() * 8, self.Hover, 0)
 
-                    local final_alpha = bg_alpha
-                    if hover then final_alpha = 127 end
-                    if scselected ~= nil and scselected == plySid then final_alpha = 127 end
+    local final_alpha = bg_alpha
+    if hover then final_alpha = 127 end
+    if scselected ~= nil and scselected == plySid then final_alpha = 127 end
 
-                    box(5, 0, 0, w, h, Color(159, 159, 159, final_alpha))
+    box(5, 0, 0, w, h, Color(159, 159, 159, final_alpha))
 
-                    local name_txt = plyRef:Name()
-                    surface.SetFont('MKfont.16')
-                    local nw = surface.GetTextSize(name_txt)
-                    local max_nw = enc.w(95)
-                    if nw > max_nw then
-                        local usub = (utf8 and utf8.sub) or string.sub
-                        local ulen = (utf8 and utf8.len and utf8.len(name_txt)) or string.len(name_txt)
-                        for i = ulen - 1, 1, -1 do
-                            local temp = usub(name_txt, 1, i) .. "..."
-                            if surface.GetTextSize(temp) <= max_nw then
-                                name_txt = temp
-                                nw = surface.GetTextSize(name_txt)
-                                break
-                            end
-                        end
-                    end
+    local rank_raw = SafeTextValue(plyRef:GetUserGroup(), "user")
+    local rank_txt = rank_translations[rank_raw] or rank_raw
 
-                    text(name_txt, 'MKfont.16', cols.name, h / 2, enc.clrs.white, 0, 1)
+    local nameAreaEnd = cols.job - enc.w(20)
+    local gap         = enc.w(10)
+    local rankPad     = enc.w(16)
+    local minNameW    = enc.w(35)
+    local maxBadgeW   = math.max(enc.w(44), nameAreaEnd - cols.name - gap - minNameW)
 
-                    local rank_raw = plyRef:GetUserGroup()
-                    local rank_txt = rank_translations[rank_raw] or rank_raw
+    surface.SetFont('rank_badge')
+    local rw = surface.GetTextSize(rank_txt)
 
-                    surface.SetFont('rank_badge')
-                    local rw = surface.GetTextSize(rank_txt)
-                    local badge_x = cols.name + nw + enc.w(10)
-                    local badge_w = math.max(enc.w(30), rw + enc.w(12))
-                    local badge_h = enc.h(16)
-                    local badge_y = h / 2 - badge_h / 2
+    local badge_w = math.min(maxBadgeW, math.max(enc.w(44), rw + rankPad))
+    local rank_fit = FitText(rank_txt, 'rank_badge', badge_w - rankPad)
 
-                    box(4, badge_x, badge_y, badge_w, badge_h, Color(255, 0, 0, 64))
-                    box(4, badge_x + 1, badge_y + 1, badge_w - 2, badge_h - 2, Color(141, 28, 28, 64))
-                    text(rank_txt, 'rank_badge', badge_x + badge_w / 2, h / 2, enc.clrs.white, 1, 1)
+    surface.SetFont('rank_badge')
+    rw = surface.GetTextSize(rank_fit)
+    badge_w = math.Round(math.max(enc.w(44), math.min(maxBadgeW, rw + rankPad)))
 
-                    text(SafeGetJobName(plyRef), 'MKfont.16', cols.job, h / 2, SafeGetJobColor(plyRef), 1, 1)
+    local nameMaxW = math.max(minNameW, nameAreaEnd - cols.name - gap - badge_w)
+    local name_txt = FitText(plyRef:Name(), 'scoreboard_name', nameMaxW)
 
-                    local clan_name = "-"
-                    if plyRef.GetClan and type(plyRef.GetClan) == "function" then
-                        clan_name = plyRef:GetClan() or "-"
-                    elseif plyRef:GetNWString("clan", "") ~= "" then
-                        clan_name = plyRef:GetNWString("clan")
-                    end
-                    text(clan_name, 'MKfont.16', cols.clan, h / 2, enc.clrs.white, 1, 1)
+    local centerY = math.Round(h / 2)
 
-                    text(SafeGetPlayTime(plyRef), 'MKfont.16', cols.time, h / 2, enc.clrs.white, 1, 1)
+    surface.SetFont('scoreboard_name')
+    local nw = math.Round(surface.GetTextSize(name_txt))
+    text(name_txt, 'scoreboard_name', cols.name, centerY, enc.clrs.white, 0, 1)
 
-                    local ping_str = plyRef:Ping() .. "ms"
-                    text(ping_str, 'MKfont.16', w - enc.w(50), h / 2, enc.clrs.white, 2, 1)
+    local badge_x = math.Round(cols.name + nw + gap)
+    local badge_h = enc.h(20)
+    local badge_y = math.Round(centerY - badge_h / 2)
 
-                    if mat3 and not mat3:IsError() then
-                        setmat(mat3)
-                        if plyRef.GetPingColor then
-                            setcolor(plyRef:GetPingColor():Unpack())
-                        else
-                            setcolor(255, 255, 255)
-                        end
-                        setsize(w - enc.w(42), h / 2 - enc.h(6), enc.w(10), enc.h(12))
-                    end
-                end
+    box(4, badge_x, badge_y, badge_w, badge_h, Color(255, 0, 0, 64))
+    box(4, badge_x + 1, badge_y + 1, badge_w - 2, badge_h - 2, Color(141, 28, 28, 64))
+    text(rank_fit, 'rank_badge', badge_x + math.Round(badge_w / 2), centerY, enc.clrs.white, 1, 1)
+
+    SimpleTextLimited(SafeGetJobName(plyRef), 'MKfont.16', cols.job, centerY, SafeGetJobColor(plyRef), 1, 1, enc.w(220))
+
+    local clan_name = "-"
+    if plyRef.GetClan and type(plyRef.GetClan) == "function" then
+        local okClan, valClan = pcall(plyRef.GetClan, plyRef)
+        if okClan and valClan and valClan ~= "" then clan_name = valClan end
+    else
+        local nwClan = plyRef:GetNWString("clan", "")
+        if nwClan ~= "" then clan_name = nwClan end
+    end
+
+    SimpleTextLimited(clan_name, 'MKfont.16', cols.clan + enc.w(20), centerY, enc.clrs.white, 1, 1, enc.w(210))
+    SimpleTextLimited(SafeGetPlayTime(plyRef), 'MKfont.16', cols.time, centerY, enc.clrs.white, 1, 1, enc.w(115))
+
+    local ping_str = plyRef:Ping() .. "ms"
+    text(ping_str, 'MKfont.16', w - enc.w(50), centerY, enc.clrs.white, 2, 1)
+
+    if mat3 and not mat3:IsError() then
+        setmat(mat3)
+        if plyRef.GetPingColor then
+            setcolor(plyRef:GetPingColor():Unpack())
+        else
+            setcolor(255, 255, 255)
+        end
+        setsize(w - enc.w(42), centerY - enc.h(6), enc.w(10), enc.h(12))
+    end
+end
 
                 function row:DoClick()
                     self.Hover = 255
@@ -409,6 +478,7 @@ function enc.scoreboard()
                 local avatar_bg = vgui.Create('Panel', row)
                 avatar_bg:SetSize(enc.w(35), enc.h(35))
                 avatar_bg:SetPos(enc.w(12), enc.h(10))
+
                 function avatar_bg:Paint(w, h)
                     draw.RoundedBox(math.floor(w / 2), 0, 0, w, h, Color(217, 217, 217))
                 end
@@ -466,6 +536,7 @@ function enc.scoreboardright(pl)
     if doAnim then
         rightfr:MoveTo(fr:GetWide() + fr:GetX() - enc.w(82 - 21), rightfr:GetY(), 0.2)
     end
+
     rightfr:AlphaTo(255, 0.2)
 
     function rightfr:Paint(w, h)
@@ -494,6 +565,7 @@ function enc.scoreboardright(pl)
         local avatar_bg = vgui.Create('Panel', rightfr)
         avatar_bg:SetSize(enc.w(42), enc.h(42))
         avatar_bg:SetPos(enc.w(38), enc.h(45))
+
         function avatar_bg:Paint(w, h)
             draw.RoundedBox(math.floor(w / 2), 0, 0, w, h, Color(217, 217, 217))
         end
@@ -508,7 +580,7 @@ function enc.scoreboardright(pl)
         local info = vgui.Create('Panel', rightfr)
         info:Dock(TOP)
         info:DockMargin(enc.w(17), enc.h(31), enc.w(17), 0)
-        info:SetTall(enc.h(64))  
+        info:SetTall(enc.h(64))
 
         local name = vgui.Create('DLabel', info)
         name:Dock(TOP)

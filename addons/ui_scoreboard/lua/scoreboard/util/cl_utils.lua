@@ -8,7 +8,7 @@ end
 
 do
     newfont('Exo2Font15', {
-        font      = 'Exo 2',
+        font      = 'Tahoma',
         weight    = 600,
         size      = n(15),
         extended  = true,
@@ -18,7 +18,7 @@ end
 
 do
     newfont('IB_24', {
-        font      = 'Inter Bold',
+        font      = 'Tahoma',
         weight    = 500,
         size      = enc.h(26),
         extended  = true,
@@ -26,7 +26,7 @@ do
     })
 
     newfont('IB_20', {
-        font      = 'Inter Bold',
+        font      = 'Tahoma',
         weight    = 500,
         size      = enc.h(20),
         extended  = true,
@@ -34,7 +34,7 @@ do
     })
 
     newfont('MB_12', {
-        font      = 'Montserrat Bold',
+        font      = 'Tahoma',
         weight    = 500,
         size      = enc.h(14),
         extended  = true,
@@ -42,7 +42,7 @@ do
     })
 
     newfont('M_12', {
-        font      = 'Montserrat',
+        font      = 'Tahoma',
         weight    = 500,
         size      = enc.h(14),
         extended  = true,
