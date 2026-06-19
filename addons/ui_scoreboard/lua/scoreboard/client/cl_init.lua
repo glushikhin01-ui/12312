@@ -304,6 +304,7 @@ function enc.scoreboard()
 
     local cols = {
         name = enc.w(84),
+        rank = enc.w(230),
         job  = enc.w(420),
         clan = enc.w(650),
         time = enc.w(905),
@@ -317,6 +318,7 @@ function enc.scoreboard()
 
         function texts:Paint(w, h)
             text('Имя',        'MKfont.16', cols.name, h / 2, enc.clrs.whitea, 0, 1)
+            text('Ранг',       'MKfont.16', cols.rank, h / 2, enc.clrs.whitea, 0, 1)
             text('Профессия',  'MKfont.16', cols.job,  h / 2, enc.clrs.whitea, 1, 1)
             text('Клан',       'MKfont.16', cols.clan, h / 2, enc.clrs.whitea, 1, 1)
             text('Часы',       'MKfont.16', cols.time, h / 2, enc.clrs.whitea, 1, 1)
@@ -398,29 +400,24 @@ function enc.scoreboard()
     local rank_raw = SafeTextValue(plyRef:GetUserGroup(), "user")
     local rank_txt = rank_translations[rank_raw] or rank_raw
 
-    local nameAreaEnd = cols.job - enc.w(20)
-    local gap         = enc.w(50)
     local padX        = enc.w(12)
     local padY        = enc.h(6)
-    local minNameW    = enc.w(35)
-    local maxRankW    = math.max(enc.w(44), nameAreaEnd - cols.name - gap - minNameW)
+    local rankAreaW   = enc.w(170)
+    local nameMaxW    = math.max(enc.w(35), cols.rank - cols.name - enc.w(10))
 
-    local rank_fit = FitText(rank_txt, 'rank_badge', math.max(0, maxRankW - padX * 2))
+    local rank_fit = FitText(rank_txt, 'rank_badge', math.max(0, rankAreaW - padX * 2))
     surface.SetFont('rank_badge')
     local rw, rh = surface.GetTextSize(rank_fit)
 
     local panel_w = math.max(enc.w(44), math.Round(rw + padX * 2))
     local panel_h = math.max(enc.h(16), math.Round(rh + padY * 2))
-    local nameMaxW = math.max(minNameW, nameAreaEnd - cols.name - gap - panel_w)
     local name_txt = FitText(plyRef:Name(), 'scoreboard_name', nameMaxW)
 
     local centerY = math.Round(h / 2)
 
-    surface.SetFont('scoreboard_name')
-    local nw = math.Round(surface.GetTextSize(name_txt))
     text(name_txt, 'scoreboard_name', cols.name, centerY, enc.clrs.white, 0, 1)
 
-    local rank_x = math.Round(cols.name + nw + gap)
+    local rank_x = math.Round(cols.rank)
     local panel_y = math.Round(centerY - panel_h / 2)
 
     box(4, rank_x, panel_y, panel_w, panel_h, Color(90, 90, 90, 255))
