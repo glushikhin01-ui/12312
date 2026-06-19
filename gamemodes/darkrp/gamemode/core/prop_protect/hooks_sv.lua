@@ -19,9 +19,9 @@ local function IsAdvDupe2Paste(pl)
 end
 
 local usergr = {
-    ["User"] = 70,
+    ["user"] = 70,
     ["vip"] = 80,
-    ["Premium"] = 100,
+    ["premium"] = 100,
 
     ["d-moderator"] = 120,
     ["d-admin"] = 150,
@@ -52,7 +52,7 @@ hook.Add('PlayerSpawnProp', 'PropLimit', function(pl)
 
     if IsAdvDupe2Paste(pl) then return true end
 
-    local new = usergr[string.lower(pl:GetUserGroup())] or 70
+    local new = usergr[string.lower(pl:GetUserGroup() or "user")] or 70
 
     local donateLimit = 0
 
@@ -66,7 +66,9 @@ hook.Add('PlayerSpawnProp', 'PropLimit', function(pl)
         kylLimit = KylDonate.GetProps(pl:SteamID64()) or 0
     end
 
-    local totalLimit = new + donateLimit + kylLimit
+    local panelLimit = math.max(0, tonumber(pl.PanelExtraProps) or 0)
+
+    local totalLimit = new + donateLimit + kylLimit + panelLimit
 
     if pl:GetCount('props') >= totalLimit then
         rp.Notify(pl, NOTIFY_ERROR, 'Вы достигли лимита пропов!')
