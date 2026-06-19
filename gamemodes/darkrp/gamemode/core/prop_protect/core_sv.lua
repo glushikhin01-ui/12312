@@ -232,11 +232,9 @@ end
 
 duplicator.BoneModifiers = {}
 duplicator.EntityModifiers['VehicleMemDupe'] = nil
-for k, v in pairs(duplicator.ConstraintType) do
-	if (k ~= 'Weld') and (k ~= 'NoCollide') then
-		duplicator.ConstraintType[k] = nil
-	end
-end
+-- Do not delete duplicator.ConstraintType entries here. Advanced Duplicator 2
+-- uses the standard constraint factories while pasting dupes; wiping everything
+-- except Weld/NoCollide breaks large/complex saves (ropes, axis, sliders, etc.).
 
 --
 -- Commands

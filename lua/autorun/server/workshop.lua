@@ -7,6 +7,7 @@ if SERVER then
     resource.AddWorkshop("3743221782")
 
     local files = {
+        -- Furina
         "models/hoyoverse/furina.mdl",
         "models/hoyoverse/furina.dx80.vtx",
         "models/hoyoverse/furina.dx90.vtx",
@@ -31,10 +32,39 @@ if SERVER then
         "materials/ruka/ys/ff/ti.vmt",
         "materials/ruka/ys/ff/ti.vtf",
         "materials/ruka/ys/ff/ti_n.vtf",
+
+        -- Felix / Re:Zero
+        "models/sheepylord/rezero_felix/new_mmd_model.mdl",
+        "models/sheepylord/rezero_felix/new_mmd_model.dx80.vtx",
+        "models/sheepylord/rezero_felix/new_mmd_model.dx90.vtx",
+        "models/sheepylord/rezero_felix/new_mmd_model.vvd",
+        "models/sheepylord/rezero_felix/new_mmd_model.phy",
+
+        "models/sheepylord/rezero_felix/new_mmd_model_pm.mdl",
+        "models/sheepylord/rezero_felix/new_mmd_model_pm.dx80.vtx",
+        "models/sheepylord/rezero_felix/new_mmd_model_pm.dx90.vtx",
+        "models/sheepylord/rezero_felix/new_mmd_model_pm.vvd",
+        "models/sheepylord/rezero_felix/new_mmd_model_pm.phy",
+
+        "models/sheepylord/rezero_felix/new_mmd_model_arms.mdl",
+        "models/sheepylord/rezero_felix/new_mmd_model_arms.dx80.vtx",
+        "models/sheepylord/rezero_felix/new_mmd_model_arms.dx90.vtx",
+        "models/sheepylord/rezero_felix/new_mmd_model_arms.vvd",
+
+        "materials/models/sheepylord/new_mmd_model/felix.vmt",
+        "materials/models/sheepylord/new_mmd_model/felix.vtf",
+        "materials/models/sheepylord/shared/lightwarptexture.vtf",
+        "materials/models/sheepylord/shared/normal.vtf",
+        "materials/models/sheepylord/shared/phong_exp.vtf",
+
+        "materials/vgui/entities/new_mmd_model_sheepylord_e.vmt",
+        "materials/vgui/entities/new_mmd_model_sheepylord_e.vtf",
+        "materials/vgui/entities/new_mmd_model_sheepylord_f.vmt",
+        "materials/vgui/entities/new_mmd_model_sheepylord_f.vtf",
     }
 
     for _, path in ipairs(files) do
         resource.AddFile(path)
-        print("[FURINA FASTDL] AddFile: " .. path)
+        print("[FASTDL] AddFile: " .. path)
     end
 end

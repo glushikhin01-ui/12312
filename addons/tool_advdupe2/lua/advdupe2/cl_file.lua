@@ -76,7 +76,7 @@ function AdvDupe2.UploadFile(ReadPath, ReadArea)
 	if(ReadArea==0)then
 		ReadPath = AdvDupe2.DataFolder.."/"..ReadPath..".txt"
 	elseif(ReadArea==1)then
-		ReadPath = AdvDupe2.DataFolder.."/-Public-/"..ReadPath..".txt"
+		ReadPath = AdvDupe2.DataFolder.."/=Public=/"..ReadPath..".txt"
 	else
 		ReadPath = "just_duplicator/"..ReadPath..".txt"
 	end

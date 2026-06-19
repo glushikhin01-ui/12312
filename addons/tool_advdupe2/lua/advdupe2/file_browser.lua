@@ -410,7 +410,7 @@ function BROWSER:DoNodeRightClick(node)
 				if (ReadArea == 0) then
 					ReadPath = AdvDupe2.DataFolder .. "/" .. ReadPath .. ".txt"
 				elseif (ReadArea == 1) then
-					ReadPath = AdvDupe2.DataFolder .. "/-Public-/" .. ReadPath .. ".txt"
+					ReadPath = AdvDupe2.DataFolder .. "/=Public=/" .. ReadPath .. ".txt"
 				else
 					ReadPath = "just_duplicator/" .. ReadPath .. ".txt"
 				end
@@ -437,7 +437,7 @@ function BROWSER:DoNodeRightClick(node)
 				if (ReadArea == 0) then
 					ReadPath = AdvDupe2.DataFolder .. "/" .. ReadPath .. ".txt"
 				elseif (ReadArea == 1) then
-					ReadPath = AdvDupe2.DataFolder .. "/-Public-/" .. ReadPath .. ".txt"
+					ReadPath = AdvDupe2.DataFolder .. "/=Public=/" .. ReadPath .. ".txt"
 				else
 					ReadPath = "just_duplicator/" .. ReadPath .. ".txt"
 				end
@@ -521,7 +521,7 @@ function BROWSER:DoNodeRightClick(node)
 				parent.Submit.DoClick = function()
 					local path, area = GetNodePath(node)
 					if (area == 1) then
-						path = "-Public-/" .. path
+						path = "=Public=/" .. path
 					end
 					if (area == 2) then
 						path = "just_duplicator/" .. path .. ".txt"
@@ -665,7 +665,7 @@ function BROWSER:DoNodeRightClick(node)
 				parent.Submit.DoClick = function()
 					local path, area = GetNodePath(node)
 					if (area == 1) then
-						path = "-Public-/" .. path
+						path = "=Public=/" .. path
 					end
 					if (area == 2) then
 						path = "just_duplicator/" .. path .. "/"
@@ -1120,7 +1120,7 @@ local function UpdateClientFiles()
 		end
 	end
 
-	PurgeFiles("justdupe/", pnlCanvas:AddFolder("-Advanced Duplicator 2-"))
+	PurgeFiles(AdvDupe2.DataFolder .. "/", pnlCanvas:AddFolder("-Advanced Duplicator 2-"))
 
 	PurgeFiles("just_duplicator/", pnlCanvas:AddFolder("-Advanced Duplicator 1-"))
 

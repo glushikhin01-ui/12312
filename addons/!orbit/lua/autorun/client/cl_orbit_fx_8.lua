@@ -1,25 +1,16 @@
-local matGlow = Material("sprites/light_glow02_add")
-
--- Регистрируем для меню, чтобы кнопка была
-Orbit_Register(8, "Blood", function(ply) end) 
-
--- Запускаем отрисовку напрямую через хук, забив на базу
-hook.Add("PostPlayerDraw", "Direct_Blood_Render_Test", function(ply)
-    if not IsValid(ply) or not ply:Alive() then return end
-    
-    -- Проверяем, выбран ли эффект Blood (ID 8)
-    if ply:GetNWInt("OrbitFX", 0) ~= 8 then return end
-
+Orbit_Register(8, "Blood", function(ply)
     local t = CurTime()
-    local c = ply:GetPos()
 
-    render.SetMaterial(matGlow)
     for i = 1, 3 do
-        local a = (t * 1.5) + (i * 2.09)
-        local pos = c + Vector(math.cos(a) * 60, math.sin(a) * 60, 50)
+        local pos, a = Orbit_Pos(ply, i, 1.35, 64, 50, 9)
+        Orbit_Comet(pos, a, 38, Color(210, 22, 42), Color(255, 210, 210), 34)
 
-        -- Рисуем огромные красные хреновины
-        render.DrawSprite(pos, 100, 100, Color(255, 0, 0, 255))
-        render.DrawSprite(pos, 40, 40, Color(255, 255, 255, 255))
+        if Orbit_GetQuality() then
+            Orbit_SetGlow()
+            for k = 1, 7 do
+                local p = pos + Vector(math.sin(t * 3 + k + i) * 9, math.cos(t * 2 + k) * 9, -k * 6)
+                render.DrawSprite(p, 8 - k * 0.45, 8 - k * 0.45, Color(190, 15, 35, 155 - k * 13))
+            end
+        end
     end
 end)

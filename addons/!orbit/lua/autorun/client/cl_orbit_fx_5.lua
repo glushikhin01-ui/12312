@@ -1,38 +1,21 @@
-local matGlow = Material("sprites/light_glow02_add")
-
 Orbit_Register(5, "Electro", function(ply)
+    local points = {}
     local t = CurTime()
-    local c = ply:GetPos()
 
     for i = 1, 3 do
-        local a = (t * 2.5) + (i * 2.09)
-        local pos = c + Vector(math.cos(a)*60, math.sin(a)*60, 55)
-        
-        render.SetMaterial(matGlow)
-        render.DrawSprite(pos, 50, 50, Color(0, 100, 255, 80))
-        
-        local jitter = Vector(math.random(-2,2), math.random(-2,2), math.random(-2,2))
-        render.DrawSprite(pos + jitter, 25, 25, Color(200, 255, 255, 255))
+        local pos, a = Orbit_Pos(ply, i, 2.25, 66, 55, 10)
+        points[i] = pos
+        Orbit_Comet(pos, a, 33, Color(65, 145, 255), Color(235, 255, 255), 30)
+        Orbit_Sparks(pos, 5, 22, Color(120, 220, 255, 125), 6, -2.3, i)
+    end
 
-        if math.random() > 0.1 then 
-            for k = 1, 2 do
-                local speed = t * 2 
-                local offset = k * 3.14
-                
-                local elPos = pos + Vector(
-                    math.sin(speed + offset) * 25,
-                    math.cos(speed * 0.5) * 25, 
-                    math.cos(speed + offset) * 25
-                )
-                
-                local midPoint = LerpVector(0.5, pos, elPos)
-                midPoint = midPoint + Vector(math.random(-8,8), math.random(-8,8), math.random(-8,8))
-
-                render.DrawBeam(pos, midPoint, 5, 0, 1, Color(100, 200, 255, 255))
-                render.DrawBeam(midPoint, elPos, 5, 0, 1, Color(100, 200, 255, 255))
-                
-                render.DrawSprite(elPos, 15, 15, Color(150, 255, 255, 255))
-            end
+    if Orbit_GetQuality() then
+        for i = 1, 3 do
+            local a = points[i]
+            local b = points[(i % 3) + 1]
+            local mid = (a + b) * 0.5 + Vector(math.sin(t * 9 + i) * 12, math.cos(t * 7 + i) * 12, math.sin(t * 8 + i) * 9)
+            Orbit_Beam(a, mid, 3, Color(95, 200, 255, 165))
+            Orbit_Beam(mid, b, 3, Color(190, 245, 255, 135))
         end
     end
 end)

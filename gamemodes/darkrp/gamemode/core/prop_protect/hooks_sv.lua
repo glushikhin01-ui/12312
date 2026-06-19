@@ -11,6 +11,13 @@ local oktools = {
     ["#Tool.stacker.name"] = true
 }
 
+local function IsAdvDupe2Paste(pl)
+    return AdvDupe2 and (
+        AdvDupe2.SpawningEntity or
+        (IsValid(pl) and pl.AdvDupe2 and (pl.AdvDupe2.Pasting or pl.AdvDupe2.Queued))
+    )
+end
+
 local usergr = {
     ["User"] = 70,
     ["vip"] = 80,
@@ -42,6 +49,8 @@ local usergr = {
 }
 
 hook.Add('PlayerSpawnProp', 'PropLimit', function(pl)
+
+    if IsAdvDupe2Paste(pl) then return true end
 
     local new = usergr[string.lower(pl:GetUserGroup())] or 70
 
@@ -80,6 +89,8 @@ hook.Add('PlayerSpawnProp', 'PropLimit', function(pl)
 end)
 
 hook('PlayerSpawnProp', 'pp.PlayerSpawnProp', function(pl, mdl)
+
+    if IsAdvDupe2Paste(pl) then return true end
 
     if pl:IsRoot() then
         return true
@@ -152,6 +163,8 @@ hook('PlayerSpawnedProp', 'pp.PlayerSpawnedProp', function(pl, mdl, ent)
     ent:CPPISetOwner(pl)
     ent:SetNWEntity("PP_Owner", pl)
     ent:SetNWString("PP_Owner_Uid", pl:UniqueID())
+
+    if IsAdvDupe2Paste(pl) then return end
 
     local gay_abuser = 0
 

@@ -2,7 +2,7 @@ AdvDupe2 = {
 	Version = "1.1.0",
 	Revision = 51,
 	InfoText = {},
-	DataFolder = "justdupe",
+	DataFolder = "advdupe2",
 	FileRenameTryLimit = 256,
 	ProgressBar = {}
 }

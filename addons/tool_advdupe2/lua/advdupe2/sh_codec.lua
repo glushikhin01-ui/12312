@@ -491,8 +491,8 @@ if CLIENT then
 
 	concommand.Add("advdupe2_to_json", function(_,_,arg)
 		if not arg[1] then print("Need AdvDupe2 file name argument!") return end
-		local readFileName = "justdupe/"..arg[1]
-		local writeFileName = "justdupe/"..string.StripExtension(arg[1])..".json"
+		local readFileName = (AdvDupe2.DataFolder or "advdupe2") .. "/" .. arg[1]
+		local writeFileName = (AdvDupe2.DataFolder or "advdupe2") .. "/" .. string.StripExtension(arg[1]) .. ".json"
 
 		local readFile = file.Open(readFileName, "rb", "DATA")
 		if not readFile then print("File could not be read or found! ("..readFileName..")") return end
@@ -508,8 +508,8 @@ if CLIENT then
 
 	concommand.Add("advdupe2_from_json", function(_,_,arg)
 		if not arg[1] then print("Need json file name argument!") return end
-		local readFileName = "justdupe/"..arg[1]
-		local writeFileName = "justdupe/"..string.StripExtension(arg[1])..".txt"
+		local readFileName = (AdvDupe2.DataFolder or "advdupe2") .. "/" .. arg[1]
+		local writeFileName = (AdvDupe2.DataFolder or "advdupe2") .. "/" .. string.StripExtension(arg[1]) .. ".txt"
 
 		local readFile = file.Open(readFileName, "rb", "DATA")
 		if not readFile then print("File could not be read or found! ("..readFileName..")") return end

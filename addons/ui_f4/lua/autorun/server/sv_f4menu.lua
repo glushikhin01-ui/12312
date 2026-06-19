@@ -121,7 +121,7 @@ CreateConVar('f4_gang_flag_reward_interval', '300', FCVAR_ARCHIVE, 'Captured fla
 CreateConVar('f4_gang_flag_capture_time', '300', FCVAR_ARCHIVE, 'Flag capture time in seconds')
 CreateConVar('f4_gang_flag_limit', '2', FCVAR_ARCHIVE, 'Max captured flags per gang')
 CreateConVar('f4_gang_flag_radius', '320', FCVAR_ARCHIVE, 'Flag capture radius')
-CreateConVar('f4_gang_flag_min_players', '1', FCVAR_ARCHIVE, 'Min alive gang members in radius to capture')
+CreateConVar('f4_gang_flag_min_players', '3', FCVAR_ARCHIVE, 'Min alive gang members in radius to capture')
 CreateConVar('f4_gang_flag_capture_cooldown', '1200', FCVAR_ARCHIVE, 'Flag capture cooldown after successful capture')
 
 F4Gangs = F4Gangs or {}
@@ -140,7 +140,7 @@ local function F4GangFlagRadius()
 end
 
 local function F4GangFlagMinPlayers()
-    return 1
+    return F4GangCVarInt('f4_gang_flag_min_players', 3, 3, 64)
 end
 
 local function F4GangFlagCaptureTime()
@@ -382,8 +382,10 @@ local function GetContext(pl, cb)
     GQuery('SELECT m.gang_id,m.rank_id,g.name AS gang_name,g.owner,g.bank,g.reputation,g.description,g.created,r.name AS rank_name,r.weight,r.perms FROM f4_gang_members m JOIN f4_gangs g ON g.id=m.gang_id LEFT JOIN f4_gang_ranks r ON r.id=m.rank_id WHERE m.steamid="' .. GEscape(sid) .. '" LIMIT 1', function(rows)
         local row = rows[1]
         if not row then cb(nil) return end
+        local gid = tonumber(row.gang_id) or 0
+        pl.F4GangID = gid
         cb({
-            gang = { id = tonumber(row.gang_id), name = row.gang_name or '', owner = tostring(row.owner or ''), bank = tonumber(row.bank) or 0, reputation = tonumber(row.reputation) or 0, description = tostring(row.description or ''), created = tonumber(row.created) or 0 },
+            gang = { id = gid, name = row.gang_name or '', owner = tostring(row.owner or ''), bank = tonumber(row.bank) or 0, reputation = tonumber(row.reputation) or 0, description = tostring(row.description or ''), created = tonumber(row.created) or 0 },
             member = { steamid = sid, rank_id = tonumber(row.rank_id) or 0 },
             rank = { id = tonumber(row.rank_id) or 0, name = row.rank_name or 'Участник', weight = tonumber(row.weight) or 1, perms = row.perms or '{}' }
         })
@@ -810,17 +812,20 @@ local function StopFlagCapture(ent, reason)
     if not IsValid(ent) then return end
     local tid = 'F4Gangs.Capture.' .. ent:EntIndex()
     timer.Remove(tid)
+    local starter = ent.F4CaptureStarter
     ent.F4Capturing = false
     ent.F4CaptureGangID = nil
+    ent.F4CaptureStarter = nil
     ent:SetNWBool('F4FlagCapturing', false)
     ent:SetNWFloat('F4FlagCaptureStart', 0)
     ent:SetNWFloat('F4FlagCaptureEnd', 0)
+    ent:SetNWInt('F4FlagCaptureGangID', 0)
+    ent:SetNWString('F4FlagCaptureGangName', '')
+    ent:SetNWInt('F4FlagCaptureCount', 0)
     ent:SetNWString('F4FlagStatus', '')
-    if reason and reason ~= '' then
-        local starter = ent.F4CaptureStarter
-        if IsValid(starter) then GNotify(starter, false, reason) end
+    if reason and reason ~= '' and IsValid(starter) then
+        GNotify(starter, false, reason)
     end
-    ent.F4CaptureStarter = nil
 end
 
 function F4Gangs.TryCaptureFlag(ent, pl)
@@ -895,9 +900,14 @@ function F4Gangs.TryCaptureFlag(ent, pl)
                         if CurTime() >= endTime then
                             timer.Remove(tid)
                             ent.F4Capturing = false
+                            ent.F4CaptureGangID = nil
+                            ent.F4CaptureStarter = nil
                             ent:SetNWBool('F4FlagCapturing', false)
                             ent:SetNWFloat('F4FlagCaptureStart', 0)
                             ent:SetNWFloat('F4FlagCaptureEnd', 0)
+                            ent:SetNWInt('F4FlagCaptureGangID', 0)
+                            ent:SetNWString('F4FlagCaptureGangName', '')
+                            ent:SetNWInt('F4FlagCaptureCount', 0)
                             ent:SetNWString('F4FlagStatus', '')
 
                             GetGangCapturedFlagCount(ctx.gang.id, function(cnt2)
