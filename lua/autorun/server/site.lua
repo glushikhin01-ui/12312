@@ -248,6 +248,11 @@ local function execCommand(cmd)
     local rmQmenuSid32, rmQmenuType = string.match(text, "^removeqmenu%s+(%S+)%s+(%S+)")
     if rmQmenuSid32 then local ply = findPlayerBySteamID32(rmQmenuSid32) if IsValid(ply) then VibeRP.LoadPlayerQmenu(ply) end markDone(cmdId) return end
 
+    local panelPropsSid32 = string.match(text, "^panel_setprops%s+(%S+)%s+")
+    if panelPropsSid32 then local ply = findPlayerBySteamID32(panelPropsSid32) if IsValid(ply) then VibeRP.LoadPlayerAccess(ply) end markDone(cmdId) return end
+    local panelSmSid32 = string.match(text, "^panel_setmodelaccess%s+(%S+)%s+")
+    if panelSmSid32 then local ply = findPlayerBySteamID32(panelSmSid32) if IsValid(ply) then VibeRP.LoadPlayerAccess(ply) end markDone(cmdId) return end
+
     local webAdminSid64 = tostring(cmd.admin_steamid64 or cmd.admin_sid64 or "")
     if webAdminSid64 ~= "" then
         VibeRP.WebCommandAdminSteamID64 = webAdminSid64
@@ -338,6 +343,17 @@ end
 
 util.AddNetworkString("VibeRP_QmenuNotify")
 
+function VibeRP.LoadPlayerAccess(ply)
+    if not IsValid(ply) or ply:IsBot() then return end
+    local sid32 = ply:SteamID() if not sid32 or sid32 == "" then return end
+    httpGet("/api/player_access_sync", { action = "get", steamid32 = sid32, password = VibeRP.Config.Secret }, function(data)
+        if not data or not data.ok or not IsValid(ply) then return end
+        local item = data.item or {}
+        ply.PanelExtraProps = math.max(0, tonumber(item.props_extra) or 0)
+        ply.PanelSetModelAccess = (tonumber(item.setmodel) or 0) == 1
+    end)
+end
+
 function VibeRP.LoadPlayerQmenu(ply, isNewGrant, grantedType)
     if not IsValid(ply) or ply:IsBot() then return end
     local sid32 = ply:SteamID() if not sid32 or sid32 == "" then return end
@@ -418,6 +434,13 @@ hook.Add("Initialize", "VibeRP_Init", function()
     timer.Simple(5, syncCHSP)
     timer.Create("VibeRP_CommandPoll", VibeRP.Config.CommandPollInterval, 0, pollCommands)
     timer.Create("VibeRP_CHSPSync", VibeRP.Config.CHSPSyncInterval, 0, syncCHSP)
+    timer.Create("VibeRP_AccessSync", 60, 0, function()
+        for _, ply in ipairs(player.GetAll()) do
+            if IsValid(ply) and not ply:IsBot() then
+                VibeRP.LoadPlayerAccess(ply)
+            end
+        end
+    end)
 end)
 
 hook.Add("PlayerInitialSpawn", "VibeRP_PlayerJoin", function(ply)
@@ -431,6 +454,7 @@ hook.Add("PlayerInitialSpawn", "VibeRP_PlayerJoin", function(ply)
                     VibeRP.LoadPlayerWeapons(ply, true)
                     VibeRP.LoadPlayerJobs(ply)
                     VibeRP.LoadPlayerQmenu(ply)
+                    VibeRP.LoadPlayerAccess(ply)
                 end
             end)
         end
