@@ -7,6 +7,7 @@ VibeRP.Config = {
     CommandPollInterval = 1,
     ModelCheckOnJoin    = true,
     CHSPSyncInterval    = 60,
+    PromoSyncInterval   = 120,
     HttpRetries         = 3,
     HttpRetryDelay      = 2,
     IGSLoadWait         = 15,
