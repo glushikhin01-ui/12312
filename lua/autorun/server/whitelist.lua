@@ -10,39 +10,42 @@ local Whitelist = {
     "76561199674713380", -- paradox
     "76561199681664660", -- kanatan
 	"76561198864271913", -- Sansey
-
+    "76561199690259938", -- Владиславик
+    "76561199833558743", -- spicsamen
 }
 
 local function GetSteamID64(ply)
     return ply:SteamID64()
 end
 
-hook.Add("CheckPassword", "WhitelistCheck", function(steamID64, ipAddress, svPassword, clPassword, playerName)
-    if not WhitelistEnabled then return end 
-    
+local function IsBotSteamID64(steamID64)
+    steamID64 = tostring(steamID64 or "")
+    return steamID64 == "0" or steamID64 == "BOT"
+end
+
+local function IsWhitelisted(steamID64)
+    if IsBotSteamID64(steamID64) then return true end
+
     for _, allowedID in ipairs(Whitelist) do
         if steamID64 == allowedID then
-            return
+            return true
         end
     end
+
+    return false
+end
+
+hook.Add("CheckPassword", "WhitelistCheck", function(steamID64, ipAddress, svPassword, clPassword, playerName)
+    if not WhitelistEnabled then return end
+    if IsWhitelisted(steamID64) then return end
 
     return false, "Сервер на тех.работах!\nВсе новости тут в дискорд сервере ."
 end)
 
 hook.Add("PlayerInitialSpawn", "WhitelistSpawnCheck", function(ply)
-    if not WhitelistEnabled then return end 
-    
-    local steamID64 = GetSteamID64(ply)
-    local isAllowed = false
-    
-    for _, allowedID in ipairs(Whitelist) do
-        if steamID64 == allowedID then
-            isAllowed = true
-            break
-        end
-    end
-    
-    if not isAllowed then
-        ply:Kick("Вы не в белом списке!")
-    end
+    if not WhitelistEnabled then return end
+    if ply:IsBot() then return end
+    if IsWhitelisted(GetSteamID64(ply)) then return end
+
+    ply:Kick("Вы не в белом списке!")
 end)

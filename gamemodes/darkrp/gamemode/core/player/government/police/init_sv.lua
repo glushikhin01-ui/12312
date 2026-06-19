@@ -43,15 +43,23 @@ function PLAYER:UnWanted(actor)
 end
 
 local jails = rp.cfg.JailPos[game.GetMap()]
-function PLAYER:Arrest(actor, reason)
-	local time = rp.cfg.ArrestTime
+function PLAYER:Arrest(actor, reason, arrestTime)
+	local time = math.max(1, math.floor(tonumber(arrestTime) or rp.cfg.ArrestTime))
+	reason = string.Trim(tostring(reason or ''))
+	if reason == '' then reason = nil end
+
 	timer.Create('Arrested' .. self:SteamID64(), time, 1, function()
 		if IsValid(self) then
 			self:UnArrest()
 		end
 	end)
 
-	self:SetNetVar('ArrestedInfo', {Release = CurTime() + time})
+	self:SetNetVar('ArrestedInfo', {
+		Release = CurTime() + time,
+		Reason = reason,
+		Actor = IsValid(actor) and actor:Name() or nil
+	})
+
 	if self:IsWanted() then self:UnWanted() end
 		
 	rp.ArrestedPlayers[self:SteamID64()] = true
@@ -62,7 +70,7 @@ function PLAYER:Arrest(actor, reason)
 	self:SetArmor(0)
 
 	rp.FlashNotifyAll('Арестован', term.Get('Arrested'), self)
-	hook.Call('PlayerArrested', GAMEMODE, self, actor)
+	hook.Call('PlayerArrested', GAMEMODE, self, actor, reason, time)
 
 	self:Spawn(util.FindEmptyPos(jails[math.random(#jails)]))
 	self.CanEscape = true
@@ -79,7 +87,7 @@ function PLAYER:UnArrest(actor)
 		self:SetNWBool('isHandcuffed', false)
 		hook.Call('PlayerLoadout', GAMEMODE, self)
 		rp.FlashNotifyAll('Выпущен', term.Get('UnArrested'), self)
-		rp.Notify(pl, NOTIFY_ERROR, 'Вы отсидели свой срок.')
+		rp.Notify(self, NOTIFY_ERROR, 'Вы отсидели свой срок.')
 		hook.Call('PlayerUnArrested', GAMEMODE, self, actor)
 	end)
 end

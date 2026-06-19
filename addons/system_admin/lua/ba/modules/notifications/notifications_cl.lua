@@ -19,6 +19,109 @@ end
 
 local active = {}
 
+local function DrawRoundedBoxEx(r, x, y, w, h, col, tl, tr, bl, br)
+	r = math.Clamp(r, 0, math.min(w / 2, h / 2))
+	if r == 0 then
+		surface.SetDrawColor(col)
+		surface.DrawRect(x, y, w, h)
+		return
+	end
+
+	if w < 16 or h < 16 or r < 4 then
+		draw.RoundedBoxEx(r, x, y, w, h, col, tl, tr, bl, br)
+		return
+	end
+
+	local poly = {}
+	local steps = 16
+
+	if tl then
+		local cx, cy = x + r, y + r
+		for i = 0, steps do
+			local a = math.rad(180 + (i / steps) * 90)
+			table.insert(poly, { x = cx + math.cos(a) * r, y = cy + math.sin(a) * r })
+		end
+	else
+		table.insert(poly, { x = x, y = y })
+	end
+
+	if tr then
+		local cx, cy = x + w - r, y + r
+		for i = 0, steps do
+			local a = math.rad(270 + (i / steps) * 90)
+			table.insert(poly, { x = cx + math.cos(a) * r, y = cy + math.sin(a) * r })
+		end
+	else
+		table.insert(poly, { x = x + w, y = y })
+	end
+
+	if br then
+		local cx, cy = x + w - r, y + h - r
+		for i = 0, steps do
+			local a = math.rad(0 + (i / steps) * 90)
+			table.insert(poly, { x = cx + math.cos(a) * r, y = cy + math.sin(a) * r })
+		end
+	else
+		table.insert(poly, { x = x + w, y = y + h })
+	end
+
+	if bl then
+		local cx, cy = x + r, y + h - r
+		for i = 0, steps do
+			local a = math.rad(90 + (i / steps) * 90)
+			table.insert(poly, { x = cx + math.cos(a) * r, y = cy + math.sin(a) * r })
+		end
+	else
+		table.insert(poly, { x = x, y = y + h })
+	end
+
+	surface.SetDrawColor(col)
+	draw.NoTexture()
+	surface.DrawPoly(poly)
+end
+
+local function DrawRoundedBox(r, x, y, w, h, col)
+	DrawRoundedBoxEx(r, x, y, w, h, col, true, true, true, true)
+end
+
+local function DrawRoundedBoxForStencil(r, x, y, w, h)
+	r = math.Clamp(r, 0, math.min(w / 2, h / 2))
+	if r == 0 then
+		surface.DrawRect(x, y, w, h)
+		return
+	end
+
+	local poly = {}
+	local steps = 16
+
+	local cx, cy = x + r, y + r
+	for i = 0, steps do
+		local a = math.rad(180 + (i / steps) * 90)
+		table.insert(poly, { x = cx + math.cos(a) * r, y = cy + math.sin(a) * r })
+	end
+
+	cx, cy = x + w - r, y + r
+	for i = 0, steps do
+		local a = math.rad(270 + (i / steps) * 90)
+		table.insert(poly, { x = cx + math.cos(a) * r, y = cy + math.sin(a) * r })
+	end
+
+	cx, cy = x + w - r, y + h - r
+	for i = 0, steps do
+		local a = math.rad(0 + (i / steps) * 90)
+		table.insert(poly, { x = cx + math.cos(a) * r, y = cy + math.sin(a) * r })
+	end
+
+	cx, cy = x + r, y + h - r
+	for i = 0, steps do
+		local a = math.rad(90 + (i / steps) * 90)
+		table.insert(poly, { x = cx + math.cos(a) * r, y = cy + math.sin(a) * r })
+	end
+
+	draw.NoTexture()
+	surface.DrawPoly(poly)
+end
+
 function notification.AddProgress(id, text) end
 
 function notification.Kill(id)
@@ -137,9 +240,25 @@ local gradMat = Material("gui/gradient_up")
 function PANEL:Paint(w, h)
     DrawRoundedBox(15, 0, 0, w, h, bgColor)
 
+    render.ClearStencil()
+    render.SetStencilEnable(true)
+    render.SetStencilWriteMask(255)
+    render.SetStencilTestMask(255)
+    render.SetStencilReferenceValue(1)
+    render.SetStencilFailOperation(STENCIL_KEEP)
+    render.SetStencilZFailOperation(STENCIL_KEEP)
+    render.SetStencilPassOperation(STENCIL_REPLACE)
+    render.SetStencilCompareFunction(STENCIL_ALWAYS)
+    render.OverrideColorWriteEnable(true, false)
+    DrawRoundedBoxForStencil(15, 0, 0, w, h)
+    render.OverrideColorWriteEnable(false, false)
+    render.SetStencilCompareFunction(STENCIL_EQUAL)
+
     surface.SetMaterial(gradMat)
     surface.SetDrawColor(accent.r, accent.g, accent.b, 26)
     surface.DrawTexturedRect(0, 0, w, h)
+
+    render.SetStencilEnable(false)
 
     DrawRoundedBox(5, w - 12, (h - 17) * 0.5, 5, 17, accent)
 end

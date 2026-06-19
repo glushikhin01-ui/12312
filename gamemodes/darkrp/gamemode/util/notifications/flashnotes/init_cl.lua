@@ -1,5 +1,108 @@
 local flashnotes = {}
 
+local function DrawRoundedBoxEx(r, x, y, w, h, col, tl, tr, bl, br)
+	r = math.Clamp(r, 0, math.min(w / 2, h / 2))
+	if r == 0 then
+		surface.SetDrawColor(col)
+		surface.DrawRect(x, y, w, h)
+		return
+	end
+
+	if w < 16 or h < 16 or r < 4 then
+		draw.RoundedBoxEx(r, x, y, w, h, col, tl, tr, bl, br)
+		return
+	end
+
+	local poly = {}
+	local steps = 16
+
+	if tl then
+		local cx, cy = x + r, y + r
+		for i = 0, steps do
+			local a = math.rad(180 + (i / steps) * 90)
+			table.insert(poly, { x = cx + math.cos(a) * r, y = cy + math.sin(a) * r })
+		end
+	else
+		table.insert(poly, { x = x, y = y })
+	end
+
+	if tr then
+		local cx, cy = x + w - r, y + r
+		for i = 0, steps do
+			local a = math.rad(270 + (i / steps) * 90)
+			table.insert(poly, { x = cx + math.cos(a) * r, y = cy + math.sin(a) * r })
+		end
+	else
+		table.insert(poly, { x = x + w, y = y })
+	end
+
+	if br then
+		local cx, cy = x + w - r, y + h - r
+		for i = 0, steps do
+			local a = math.rad(0 + (i / steps) * 90)
+			table.insert(poly, { x = cx + math.cos(a) * r, y = cy + math.sin(a) * r })
+		end
+	else
+		table.insert(poly, { x = x + w, y = y + h })
+	end
+
+	if bl then
+		local cx, cy = x + r, y + h - r
+		for i = 0, steps do
+			local a = math.rad(90 + (i / steps) * 90)
+			table.insert(poly, { x = cx + math.cos(a) * r, y = cy + math.sin(a) * r })
+		end
+	else
+		table.insert(poly, { x = x, y = y + h })
+	end
+
+	surface.SetDrawColor(col)
+	draw.NoTexture()
+	surface.DrawPoly(poly)
+end
+
+local function DrawRoundedBox(r, x, y, w, h, col)
+	DrawRoundedBoxEx(r, x, y, w, h, col, true, true, true, true)
+end
+
+local function DrawRoundedBoxForStencil(r, x, y, w, h)
+	r = math.Clamp(r, 0, math.min(w / 2, h / 2))
+	if r == 0 then
+		surface.DrawRect(x, y, w, h)
+		return
+	end
+
+	local poly = {}
+	local steps = 16
+
+	local cx, cy = x + r, y + r
+	for i = 0, steps do
+		local a = math.rad(180 + (i / steps) * 90)
+		table.insert(poly, { x = cx + math.cos(a) * r, y = cy + math.sin(a) * r })
+	end
+
+	cx, cy = x + w - r, y + r
+	for i = 0, steps do
+		local a = math.rad(270 + (i / steps) * 90)
+		table.insert(poly, { x = cx + math.cos(a) * r, y = cy + math.sin(a) * r })
+	end
+
+	cx, cy = x + w - r, y + h - r
+	for i = 0, steps do
+		local a = math.rad(0 + (i / steps) * 90)
+		table.insert(poly, { x = cx + math.cos(a) * r, y = cy + math.sin(a) * r })
+	end
+
+	cx, cy = x + r, y + h - r
+	for i = 0, steps do
+		local a = math.rad(90 + (i / steps) * 90)
+		table.insert(poly, { x = cx + math.cos(a) * r, y = cy + math.sin(a) * r })
+	end
+
+	draw.NoTexture()
+	surface.DrawPoly(poly)
+end
+
 surface.CreateFont("FlashNote_Title", {font = "Inter", extended = true, antialias = true, size = 16, weight = 600})
 surface.CreateFont("FlashNote_Sub", {font = "Inter", extended = true, antialias = true, size = 14, weight = 500})
 surface.CreateFont("FlashNote_Desc", {font = "Inter", extended = true, antialias = true, size = 14, weight = 600})
@@ -21,9 +124,9 @@ local BAR_H = 5
 local BAR_RADIUS = 5
 local DESC_START_Y = 50
 local LINE_HEIGHT = 16
-local DISPLAY_TIME = 10
+local DISPLAY_TIME = 5
 
-local gradient_mat = Material("vgui/gradient_up")
+local gradient_mat = Material("vgui/gradient-d")
 
 local function WrapText(text, maxW, fontName)
 	surface.SetFont(fontName)
@@ -86,18 +189,31 @@ function PANEL:SetInfo(title, text)
 	self:SetSize(CARD_W, self.cardH)
 	self:SetAlpha(0)
 	self:FadeIn(0.3)
-	self:SetPos(ScrW() * 0.5 - CARD_W * 0.5, ScrH() * 0.205)
+	
+	self.TargetX = ScrW() * 0.5 - CARD_W * 0.5
+	self.TargetY = 15
+	self:SetPos(self.TargetX, -self.cardH)
 
 	hook('Think', self, function()
 		if (self.animation) then
 			self.animation:Run()
 		end
+
+		local cx, cy = self:GetPos()
+		if math.abs(cy - self.TargetY) < 1 then
+			self:SetPos(self.TargetX, self.TargetY)
+		else
+			local speed = FrameTime() * 10
+			local newY = Lerp(speed, cy, self.TargetY)
+			self:SetPos(self.TargetX, newY)
+		end
 	end)
 
 	timer.Simple(math.max(0, self.noteDuration - 1), function()
 		if IsValid(self) then
+			self.TargetY = -self.cardH - 50
 			self:FadeOut(1, function()
-				flashnotes[self.ID] = nil
+				table.RemoveByValue(flashnotes, self)
 				self:Remove()
 			end)
 		end
@@ -108,7 +224,7 @@ function PANEL:Paint(w, h)
 	if (hook.Call('HUDShouldDraw', GAMEMODE, 'FashNotes') == false) then return end
 	if not self.noteEnd or not self.noteDuration then return end
 
-	draw.RoundedBox(CARD_RADIUS, 0, 0, w, h, color_bg)
+	DrawRoundedBox(CARD_RADIUS, 0, 0, w, h, color_bg)
 
 	render.ClearStencil()
 	render.SetStencilEnable(true)
@@ -120,7 +236,7 @@ function PANEL:Paint(w, h)
 	render.SetStencilPassOperation(STENCIL_REPLACE)
 	render.SetStencilCompareFunction(STENCIL_ALWAYS)
 	render.OverrideColorWriteEnable(true, false)
-	draw.RoundedBox(CARD_RADIUS, 0, 0, w, h, color_white)
+	DrawRoundedBoxForStencil(CARD_RADIUS, 0, 0, w, h)
 	render.OverrideColorWriteEnable(false, false)
 	render.SetStencilCompareFunction(STENCIL_EQUAL)
 	surface.SetDrawColor(13, 183, 129, 25)
@@ -129,7 +245,7 @@ function PANEL:Paint(w, h)
 	render.SetStencilEnable(false)
 
 	local iconX, iconY = 10, 10
-	draw.RoundedBox(ICON_RADIUS, iconX, iconY, ICON_SIZE, ICON_SIZE, color_green)
+	DrawRoundedBox(ICON_RADIUS, iconX, iconY, ICON_SIZE, ICON_SIZE, color_green)
 	draw.SimpleText("!", "FlashNote_Title", iconX + ICON_SIZE / 2, iconY + ICON_SIZE / 2, color_white, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 
 	draw.SimpleText(self.noteTitle, "FlashNote_Title", 52, 10, color_white, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
@@ -141,12 +257,12 @@ function PANEL:Paint(w, h)
 
 	local barX = w - BAR_W - 10
 	local barY = 27
-	draw.RoundedBox(BAR_RADIUS, barX, barY, BAR_W, BAR_H, color_bar_bg)
+	DrawRoundedBox(BAR_RADIUS, barX, barY, BAR_W, BAR_H, color_bar_bg)
 
 	local progress = math.Clamp((self.noteEnd - CurTime()) / self.noteDuration, 0, 1)
 	local fillW = math.floor(BAR_W * progress)
 	if fillW > 0 then
-		draw.RoundedBox(BAR_RADIUS, barX, barY, fillW, BAR_H, color_bar_fill)
+		DrawRoundedBox(BAR_RADIUS, barX, barY, fillW, BAR_H, color_bar_fill)
 	end
 
 	for i, line in ipairs(self.noteLines) do
@@ -188,12 +304,9 @@ vgui.Register('rp_flashnotification', PANEL, 'Panel')
 function rp.FlashNotify(title, text)
 	local note = ui.Create('rp_flashnotification')
 	note:SetInfo(title, text)
-	note.ID = 1
 
 	for k, v in ipairs(flashnotes) do
-		v.ID = v.ID + 1
-		local x, y = v:GetPos()
-		v:MoveTo(x, y + v.cardH + 5, 0.3, 0, -1)
+		v.TargetY = v.TargetY + note.cardH + 5
 	end
 
 	table.insert(flashnotes, 1, note)

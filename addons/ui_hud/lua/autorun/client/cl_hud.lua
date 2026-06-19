@@ -1,9 +1,3 @@
---leak by matveicher
---vk group - https://vk.com/codespill
---steam - https://steamcommunity.com/profiles/76561198968457747/
---ds server - https://discord.gg/7XaRzQSZ45
---ds - matveicher
-
 local ScrW = ScrW
 local ScrH = ScrH
 local mathRound = math.Round
@@ -35,6 +29,78 @@ local playerGetAll = player.GetAll
 local ipairs = ipairs
 local IsValid = IsValid
 
+local function DrawRoundedBoxEx(r, x, y, w, h, col, tl, tr, bl, br)
+	r = math.Clamp(r, 0, math.min(w / 2, h / 2))
+	if r == 0 then
+		surfaceSetDrawColor(col)
+		surfaceDrawRect(x, y, w, h)
+		return
+	end
+
+	local poly = {}
+	local steps = 16
+
+	if tl then
+		local cx, cy = x + r, y + r
+		for i = 0, steps do
+			local a = math.rad(180 + (i / steps) * 90)
+			table.insert(poly, { x = cx + math.cos(a) * r, y = cy + math.sin(a) * r })
+		end
+	else
+		table.insert(poly, { x = x, y = y })
+	end
+
+	if tr then
+		local cx, cy = x + w - r, y + r
+		for i = 0, steps do
+			local a = math.rad(270 + (i / steps) * 90)
+			table.insert(poly, { x = cx + math.cos(a) * r, y = cy + math.sin(a) * r })
+		end
+	else
+		table.insert(poly, { x = x + w, y = y })
+	end
+
+	if br then
+		local cx, cy = x + w - r, y + h - r
+		for i = 0, steps do
+			local a = math.rad(0 + (i / steps) * 90)
+			table.insert(poly, { x = cx + math.cos(a) * r, y = cy + math.sin(a) * r })
+		end
+	else
+		table.insert(poly, { x = x + w, y = y + h })
+	end
+
+	if bl then
+		local cx, cy = x + r, y + h - r
+		for i = 0, steps do
+			local a = math.rad(90 + (i / steps) * 90)
+			table.insert(poly, { x = cx + math.cos(a) * r, y = cy + math.sin(a) * r })
+		end
+	else
+		table.insert(poly, { x = x, y = y + h })
+	end
+
+	surfaceSetDrawColor(col)
+	draw.NoTexture()
+	surface.DrawPoly(poly)
+end
+
+local function DrawRoundedBox(r, x, y, w, h, col)
+	DrawRoundedBoxEx(r, x, y, w, h, col, true, true, true, true)
+end
+
+local function DrawSmoothCircle(x, y, r, col)
+	local steps = 12
+	local poly = {}
+	for i = 0, steps do
+		local a = math.rad((i / steps) * 360)
+		table.insert(poly, { x = x + math.cos(a) * r, y = y + math.sin(a) * r })
+	end
+	surfaceSetDrawColor(col)
+	draw.NoTexture()
+	surface.DrawPoly(poly)
+end
+
 local function s(val)
 	local w, h = ScrW(), ScrH()
 	return mathRound(val * mathMin(w, h) / 1080)
@@ -45,6 +111,8 @@ local function drawMat(x, y, w, h, material, color)
 	surfaceSetMaterial(material)
 	surfaceDrawTexturedRect(x, y, w, h)
 end
+
+local gradMat = Material("vgui/gradient-d")
 
 local function drawGradientOverlay(radius, x, y, w, h, accent)
 	render.ClearStencil()
@@ -61,11 +129,9 @@ local function drawGradientOverlay(radius, x, y, w, h, accent)
 	render.OverrideColorWriteEnable(false, false)
 	render.SetStencilCompareFunction(STENCIL_EQUAL)
 	render.SetStencilPassOperation(STENCIL_KEEP)
-	for i = 0, h - 1 do
-		local a = (i / h) * 26
-		surfaceSetDrawColor(accent.r, accent.g, accent.b, a)
-		surfaceDrawRect(x, y + i, w, 1)
-	end
+	surfaceSetDrawColor(accent.r, accent.g, accent.b, 26)
+	surfaceSetMaterial(gradMat)
+	surfaceDrawTexturedRect(x, y, w, h)
 	render.SetStencilEnable(false)
 end
 
@@ -192,7 +258,7 @@ local function drawStars(x, y, level, maxStars)
 	for i = 1, maxStars do
 		local col = i <= level and clr.yellow or clr.yellowDim
 		local sx = x + (i - 1) * (sz + gap)
-		DrawRoundedBox(mathFloor(sz / 2), sx, y, sz, sz, col)
+		DrawSmoothCircle(sx + sz / 2, y + sz / 2, sz / 2, col)
 	end
 end
 
@@ -414,6 +480,10 @@ local hideElements = {
 	["CHudBattery"] = true,
 	["CHudSuitPower"] = true,
 	["CHudSecondaryAmmo"] = true,
+	["DarkRP_LocalPlayerHUD"] = true,
+	["DarkRP_Hungermod"] = true,
+	["DarkRP_Agenda"] = true,
+	["DarkRP_Lockdown"] = true,
 }
 
 hook.Add("HUDShouldDraw", "JustRP.HUD-Hide", function(name)

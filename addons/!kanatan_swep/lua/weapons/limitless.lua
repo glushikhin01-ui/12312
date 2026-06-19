@@ -1,7 +1,8 @@
 local ALLOWED_STEAMIDS = {
-    ["STEAM_0:0:910679003"] = true,
+    ["STEAM_0:0:910679003"] = true, -- Ангел
+    ["STEAM_0:1:575732651"] = true, -- Angel
 	["STEAM_0:0:562541572"] = true, 
-   ["STEAM_0:0:860699466"] = true,
+    ["STEAM_0:0:860699466"] = true,
 }
 
 if SERVER then
