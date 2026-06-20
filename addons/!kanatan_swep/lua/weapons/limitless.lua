@@ -202,9 +202,9 @@ function SWEP:Equip(owner)
                 owner:SetRunSpeed(1500)
                 owner:SetJumpPower(400)
             else
-                owner:SetWalkSpeed(280)
+                owner:SetWalkSpeed(180)
                 owner:SetRunSpeed(280)
-                owner:SetJumpPower(120)
+                owner:SetJumpPower(200)
             end
             owner:SetGravity(1)
             if owner:GetNWBool("limitless_zone") and IsValid(activeWep) and activeWep:GetClass() == "limitless" then
@@ -271,9 +271,9 @@ function SWEP:ResetPlayerState(ply)
     ply:SetNWBool("limitless_zone", false)
     ply:SetNWBool("limitless_debounce", false)
     ply:SetNWBool("limitless_purple_explosion", false)
-    ply:SetWalkSpeed(280)
+    ply:SetWalkSpeed(180)
     ply:SetRunSpeed(280)
-    ply:SetJumpPower(120)
+    ply:SetJumpPower(200)
     ply:SetGravity(1)
 end
 
@@ -289,9 +289,9 @@ function SWEP:Holster()
     ply.DebrisEntities = {}
     ply.reimu_buff = false
     if IsValid(ply) then
-        ply:SetWalkSpeed(280)
+        ply:SetWalkSpeed(180)
         ply:SetRunSpeed(280)
-        ply:SetJumpPower(120)
+        ply:SetJumpPower(200)
         ply:SetGravity(1)
         if SERVER then
             ply:GodDisable()
@@ -311,9 +311,9 @@ function SWEP:OnRemove()
     self:ResetPlayerState(ply)
     if IsValid(ply) and ply:IsPlayer() then
         hook.Remove("Think", "limitless_persistent_" .. ply:SteamID())
-        ply:SetWalkSpeed(280)
+        ply:SetWalkSpeed(180)
         ply:SetRunSpeed(280)
-        ply:SetJumpPower(120)
+        ply:SetJumpPower(200)
         ply:SetGravity(1)
         if SERVER then
             ply:GodDisable()
@@ -337,9 +337,9 @@ function SWEP:OnDrop()
     self:ResetPlayerState(ply)
     if IsValid(ply) and ply:IsPlayer() then
         hook.Remove("Think", "limitless_persistent_" .. ply:SteamID())
-        ply:SetWalkSpeed(280)
+        ply:SetWalkSpeed(180)
         ply:SetRunSpeed(280)
-        ply:SetJumpPower(120)
+        ply:SetJumpPower(200)
         ply:SetGravity(1)
         if SERVER then
             ply:GodDisable()

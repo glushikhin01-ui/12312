@@ -1,5 +1,6 @@
 
 term.Add('ClockOn', '# стал невидимым')
+term.Add('ClockOff', '# вышел из невидимости')
 
 term.Add('AdminIsSpectating', '# находится в режиме наблюдения!')
 term.Add('SpectateTargInvalid', 'Выберите доступного игрока!')
@@ -70,10 +71,11 @@ end)
 -------------------
 
 ba.cmd.Create('Vanish', function(pl)
-    if pl:GetNoDraw() then
-        pl:SetNWBool('InvisibleBA', false)
-        pl:SetNoDraw(false)
-    else
+ if pl:GetNoDraw() then
+ pl:SetNWBool('InvisibleBA', false)
+ pl:SetNoDraw(false)
+ ba.notify_all(term.Get('ClockOff'), pl)
+ else
         pl:SetNWBool('InvisibleBA', true)
         ba.notify_all(term.Get('ClockOn'), pl)
         pl:SetNoDraw(true)

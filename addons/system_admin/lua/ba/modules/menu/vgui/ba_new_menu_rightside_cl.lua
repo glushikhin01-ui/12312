@@ -126,13 +126,13 @@ function PANEL:CreateCommands(scroll)
 end
 
 do
-	local rSideColor = Color(20,20,20)
+	local rSideColor = Color(42,43,46, 0)
 	local drawRoundedBox = draw.RoundedBox
 
 	local setDrawColor = surface.SetDrawColor
 	local drawRect = surface.DrawRect
 	function PANEL:Paint(x, y)
-		drawRoundedBox(16, 0, 0, x, y, rSideColor)
+		drawRoundedBox(15, 0, 0, x, y, rSideColor)
 
 		setDrawColor(29, 29, 29)
 		local xPos, yPos = ba.ui.NewMenuScreenScale(42, 118)

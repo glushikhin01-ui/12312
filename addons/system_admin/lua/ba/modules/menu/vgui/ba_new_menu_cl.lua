@@ -95,10 +95,14 @@ end
 
 
 do
-	local color = Color(22,22,22)
+	local color = Color(42,43,46)
 	local drawRoundedBox = draw.RoundedBox
+	local gradMat = Material("vgui/gradient-u")
 	function PANEL:Paint(x, y)
-		drawRoundedBox(16, 0, 0, x, y, color)
+		drawRoundedBox(15, 0, 0, x, y, color)
+		surface.SetMaterial(gradMat)
+		surface.SetDrawColor(218, 62, 68, 25)
+		surface.DrawTexturedRect(0, 0, x, y)
 	end
 end
 
