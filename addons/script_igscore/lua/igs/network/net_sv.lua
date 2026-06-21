@@ -77,13 +77,17 @@ local function IGS_Purchase(pl, uid, cb)
 	if not IGS.C.Inv_Enabled then
 		local can,e = ITEM:CanActivate(pl)
 		if not can then
-			err = e or "Ошибка 1"
+			if e == true then e = "Активация невозможна" end
+			if type(e) ~= "string" then e = "Ошибка 1" end
+			err = e
 		end
 	end
 
 	local can,e = ITEM:CanBuy(pl)
 	if not can then
-		err = e or "Ошибка 2"
+		if e == true then e = "Покупка невозможна" end
+		if type(e) ~= "string" then e = "Ошибка 2" end
+		err = e
 	end
 
 	if err then
@@ -113,6 +117,8 @@ net_ReceiveProtected("IGS.Purchase", function(pl)
 	local sItemUID = net.ReadString()
 
 	IGS_Purchase(pl, sItemUID, function(invDbID_, errMsg_)
+		if errMsg_ == true then errMsg_ = "Ошибка покупки" end
+		if errMsg_ and type(errMsg_) ~= "string" then errMsg_ = tostring(errMsg_) end
 		net.Start("IGS.Purchase")
 			net.WriteIGSError(errMsg_)
 

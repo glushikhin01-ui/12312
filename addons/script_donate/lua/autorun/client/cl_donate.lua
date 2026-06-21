@@ -1333,6 +1333,46 @@ function OpenDonateUI()
         CreateBanner(dashboardPanel, 8, 314, 849, 318, "f6donate/sansq.png", "Особый префикс", Color(45,39,124))
         CreateBanner(dashboardPanel, 886, 0, 494, 328, "f6donate/x3ak.png", "X3", Color(116, 239, 117))
         CreateBanner(dashboardPanel, 886, 348, 494, 404, "f6donate/1000az.png", "+1000 AZ", Color(248, 193, 100))
+
+        -- Arizona+ Buy Button
+        local buyBtn = vgui.Create("DButton", dashboardPanel)
+        buyBtn:SetSize(weight(280), height(60))
+        buyBtn:SetPos(weight(1400-280-20), height(950-60-20))
+        buyBtn:SetText("")
+        buyBtn.Paint = function(self, w, h)
+            local col = self:IsHovered() and Color(255, 220, 50) or Color(255, 200, 0)
+            draw.RoundedBox(12, 0, 0, w, h, col)
+            draw.SimpleText("КУПИТЬ 2599RUB", "DermaLarge", w/2, h/2, Color(0,0,0), 1, 1)
+        end
+        buyBtn.DoClick = function()
+            if LocalPlayer().HasPurchase and LocalPlayer():HasPurchase("arizona_plus") then
+                IGS.ShowNotify("У вас уже есть активная подписка ARIZONA+!", "Ошибка")
+                surface.PlaySound("ambient/voices/citizen_beaten1.wav")
+                return
+            end
+            local ITEM = IGS.GetItemByUID("arizona_plus")
+            if not ITEM then
+                for _,it in pairs(IGS.GetItems()) do if it:Name()=="ARIZONA +" then ITEM=it break end end
+            end
+            if not ITEM then IGS.ShowNotify("Товар не найден!", "Ошибка") return end
+            buyBtn:SetEnabled(false)
+            IGS.Purchase(ITEM:UID(), function(err, invId)
+                buyBtn:SetEnabled(true)
+                if err then IGS.ShowNotify(err, "Ошибка покупки") surface.PlaySound("ambient/voices/citizen_beaten1.wav") return end
+                surface.PlaySound("ambient/office/coinslot1.wav")
+                if invId and IGS.C.Inv_Enabled then
+                    timer.Simple(0.8, function()
+                        IGS.ProcessActivate(invId, function(ok,msg)
+                            if ok then IGS.ShowNotify("ARIZONA+ активирована!", "Успешно")
+                            else IGS.ShowNotify(msg or "Активируйте в инвентаре /donate", "Успешно") end
+                        end)
+                    end)
+                else
+                    IGS.ShowNotify("Спасибо за покупку ARIZONA +!", "Успешно")
+                end
+            end)
+        end
+
     end
 
         local selected = 1

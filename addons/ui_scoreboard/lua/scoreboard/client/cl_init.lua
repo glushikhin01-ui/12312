@@ -83,6 +83,52 @@ local function SimpleTextLimited(str, font, x, y, clr, xalign, yalign, maxWidth)
     text(FitText(str, font, maxWidth), font, x, y, clr, xalign, yalign)
 end
 
+
+-- ARIZONA+ Rainbow Nick
+local function ArizonaPlus_HasPurchase(pl)
+    if not IsValid(pl) then return false end
+    if not pl.HasPurchase then return false end
+    local ok, res = pcall(pl.HasPurchase, pl, "arizona_plus")
+    return ok and res and true or false
+end
+local function ap_utf8_chars(s)
+    s = tostring(s or "")
+    local chars = {}
+    local i = 1
+    local len = #s
+    while i <= len do
+        local c = string.byte(s, i)
+        local bytes = 1
+        if c >= 240 then bytes = 4
+        elseif c >= 224 then bytes = 3
+        elseif c >= 192 then bytes = 2
+        else bytes = 1 end
+        table.insert(chars, string.sub(s, i, i + bytes - 1))
+        i = i + bytes
+    end
+    return chars
+end
+local function ArizonaPlus_DrawRainbowText(txt, font, x, y, xalign, yalign)
+    surface.SetFont(font)
+    local totalW, totalH = surface.GetTextSize(txt)
+    if xalign == TEXT_ALIGN_CENTER then x = x - totalW/2
+    elseif xalign == TEXT_ALIGN_RIGHT then x = x - totalW end
+    if yalign == TEXT_ALIGN_CENTER then y = y - totalH/2
+    elseif yalign == TEXT_ALIGN_BOTTOM then y = y - totalH end
+    local cx = x
+    local time = CurTime()
+    local chars = ap_utf8_chars(txt)
+    for i, char in ipairs(chars) do
+        local charW = surface.GetTextSize(char)
+        local h = ((time*45 + i * 18) % 360)
+        local col = HSVToColor(h, 1, 1)
+        draw.SimpleText(char, font, cx, y, col, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
+        cx = cx + charW
+    end
+    return totalW, totalH
+end
+
+
 local rank_translations = {
     ["*"]              = "Владелец",
     ["co*"]            = "Со-Владелец",
@@ -415,7 +461,11 @@ function enc.scoreboard()
 
     local centerY = math.Round(h / 2)
 
-    text(name_txt, 'scoreboard_name', cols.name, centerY, enc.clrs.white, 0, 1)
+    if ArizonaPlus_HasPurchase(plyRef) then
+        ArizonaPlus_DrawRainbowText(name_txt, 'scoreboard_name', cols.name, centerY, TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
+    else
+        text(name_txt, 'scoreboard_name', cols.name, centerY, enc.clrs.white, 0, 1)
+    end
 
     local rank_x = math.Round(cols.rank)
     local panel_y = math.Round(centerY - panel_h / 2)
@@ -653,3 +703,43 @@ hookadd('ScoreboardHide', 'enc.scoreboard.remove', function()
     end
     return true
 end)
+
+
+-- ARIZONA+ Rainbow overhead nick
+hook.Add("PostPlayerDraw", "ArizonaPlus_Overhead3D", function(pl)
+    if pl == LocalPlayer() then return end
+    if not pl:Alive() then return end
+    if not ArizonaPlus_HasPurchase(pl) then return end
+    if LocalPlayer():GetPos():DistToSqr(pl:GetPos()) > 600*600 then return end
+    local bone = pl:LookupBone("ValveBiped.Bip01_Head1")
+    local pos
+    if bone then pos = select(1, pl:GetBonePosition(bone)) else pos = pl:GetPos() + Vector(0,0,80) end
+    if not pos then return end
+    pos = pos + Vector(0,0,14)
+    local ang = LocalPlayer():EyeAngles()
+    ang:RotateAroundAxis(ang.Forward(), 90)
+    ang:RotateAroundAxis(ang.Right(), 90)
+    cam.Start3D2D(pos, ang, 0.1)
+        local name = pl:Nick()
+        surface.SetFont("DermaLarge")
+        local w, h = surface.GetTextSize(name)
+        local x = -w/2
+        local tm = CurTime()
+        local chars = ap_utf8_chars(name)
+        for i, char in ipairs(chars) do
+            local cw = surface.GetTextSize(char)
+            local col = HSVToColor((tm*45 + i*18) % 360, 1, 1)
+            draw.SimpleText(char, "DermaLarge", x, 0, col, TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
+            x = x + cw
+        end
+        local tag = "[ Arizona+ ]"
+        surface.SetFont("Trebuchet18")
+        local tw, th = surface.GetTextSize(tag)
+        local bw, bh = tw + 16, th + 6
+        local by = 22
+        draw.RoundedBox(6, -bw/2, by, bw, bh, Color(14,14,14,210))
+        draw.RoundedBox(6, -bw/2, by, bw, bh, Color(255,200,0,35))
+        draw.SimpleText(tag, "Trebuchet18", 0, by + bh/2, Color(255,210,40), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+    cam.End3D2D()
+end)
+

@@ -231,12 +231,18 @@ if SERVER then
 
 		local canActivate,err = hook.Run("IGS.CanPlayerActivateItem", pl, self, iInvId)
 		if canActivate ~= nil then
+			if canActivate == false then
+				if err == true then err = "Активация невозможна" end
+				if type(err) ~= "string" then err = "Активация невозможна" end
+			end
 			return canActivate,err
 		end
 
 		if self.canactivate then
 			local er = self.canactivate(pl, iInvId)
 			if er then
+				if er == true then er = "Активация невозможна" end
+				if type(er) ~= "string" then er = tostring(er) end
 				return false,er
 			end
 		end
@@ -248,12 +254,18 @@ if SERVER then
 	function STORE_ITEM:CanBuy(pl)
 		local canBuy,err = hook.Run("IGS.CanPlayerBuyItem", pl, self)
 		if canBuy ~= nil then
+			if canBuy == false then
+				if err == true then err = "Покупка невозможна" end
+				if type(err) ~= "string" then err = "Покупка невозможна" end
+			end
 			return canBuy,err
 		end
 
 		if self.canbuy then
 			local er = self.canbuy(pl)
-			if er then -- Обратная совместимость с SetCanBuy
+			if er then
+				if er == true then er = "Покупка невозможна" end
+				if type(er) ~= "string" then er = tostring(er) end
 				return false,er
 			end
 		end
