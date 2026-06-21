@@ -3268,6 +3268,7 @@ IGS("Tommy Gun 7д", "m9k_bp_thompson")
 :SetTerm(7)
 :SetCategory("BattlePass")
 :SetWeapon("m9k_thompson")
+:SetHidden()
 :SetDescription("No description")
 :SetIcon("models/weapons/w_tommy_gun.mdl", true)
 
@@ -3276,6 +3277,7 @@ IGS("Гранаты 7д", "granaty7d_bp"):SetWeapon("weapon_frag")
     :SetDiscountedFrom(3499)
     :SetWColor(Color(255,215,0))
     :SetTerm(7)
+    :SetHidden()
     :SetCategory("BattlePass")
     :SetDescription([[
         Ощути взрывную энергию с гранатами из HL2!
@@ -3336,3 +3338,21 @@ IGS("+50 пропов", "props")
 --steam - https://steamcommunity.com/profiles/76561198968457747/
 --ds server - https://discord.gg/V329W7Ce8g
 --ds - matveicher
+IGS("ARIZONA +", "arizona_plus")
+    :SetPrice(2599)
+    :SetTerm(7)
+    :SetStackable(true)
+    :SetCategory("Подписки")
+    :SetNetworked()
+    :SetIcon("f6donate/azplus.png")
+    :SetDescription([[
+Подписка ARIZONA+
+
+• x3 зарплата
+• Тюрьма x2 меньше
+• Радужный ник в TAB и над головой
+• Особый префикс [ Arizona+ ]
+
+Срок: 7 дней
+Можно продлевать
+]])

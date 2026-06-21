@@ -27,7 +27,7 @@ function SWEP:SecretPrimaryAttack()
 
 	if (not tr.Entity:IsPlayer()) then return end
 	if tr.Entity:InVehicle() then tr.Entity:ExitVehicle() end
-	if tr.Entity:InSpawn() then return rp.Notify(self.Owner, NOTIFY_ERROR, 'На спавне запрещено использовать наручники.') end
+	if (SafeZones and SafeZones.IsInZone and (SafeZones.IsInZone(self.Owner:GetPos()) or SafeZones.IsInZone(tr.Entity:GetPos()))) then return rp.Notify(self.Owner, NOTIFY_ERROR, 'В зеленой зоне запрещено использовать наручники.') end
 	if tr.Entity:IsCP() and not allowedteams[self.Owner:Team()] then return rp.Notify(self:GetOwner(), NOTIFY_ERROR, 'Вы не можете надевать наручники на других копов.') end
 	if tr.Entity:Team() == TEAM_ADMIN then return rp.Notify(self.Owner, NOTIFY_ERROR, 'На администратора нельзя надеть наручники.') end
 	if tr.Entity:Team() == TEAM_MAYOR then return rp.Notify(self.Owner, NOTIFY_ERROR, 'На мэра нельзя надеть наручники.') end

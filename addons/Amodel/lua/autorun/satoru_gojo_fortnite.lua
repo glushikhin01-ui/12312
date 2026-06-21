@@ -1,0 +1,2 @@
+player_manager.AddValidModel( "Satoru Gojo Fortnite", "models/jjk_falko/satoru_gojo_fortnite.mdl" );
+list.Set( "PlayerOptionsModel", "Satoru Gojo Fortnite", "models/jjk_falko/satoru_gojo_fortnite.mdl" );

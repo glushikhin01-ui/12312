@@ -19,7 +19,7 @@ function ENT:Draw()
 
 	if (not inView) then return end
 
-	local ang = self:GetAngles()
+	local ang = IsAngle(self:GetAngles()) and self:GetAngles() or Angle(0,0,0)
 	ang:RotateAroundAxis(ang:Up(), 180)
 
 	cam.Start3D2D(self:GetPos() + ang:Up() * 14.01, ang, 0.023)
@@ -55,8 +55,8 @@ function ENT:RenderTexture()
 
 	local rf = rp.cfg.RenderInfo[tab.model] or {}
 
-	clmodel:SetAngles(rf and rf.Angle or Angle(30,90,0))
-	clmodel:SetModel(tab.model)
+	local a = rf and rf.Angle or Angle(30,90,0) if !isangle(a) then a = Angle(30,90,0) end clmodel:SetAngles(a)
+	clmodel:SetModel(tab.model or "models/props_junk/cardboard_box004a.mdl")
 	clmodel:SetModelScale(rf.Scale or 1, 0)
 
 	local id = self:GetTextureID()
@@ -87,7 +87,7 @@ function ENT:RenderTexture()
 		render.SetStencilPassOperation(STENCILOPERATION_REPLACE)
 		render.SetStencilCompareFunction(STENCILCOMPARISONFUNCTION_ALWAYS)
 
-			local x, y, w, h = (rf.X and (rf.X > 0)) and rf.X or 10, (rf.Y and (rf.Y > 0)) and rf.Y or 10, 1004, 492
+			local x, y, w, h = (rf.X and isnumber(rf.X) and rf.X > 0) and rf.X or 10, (rf.Y and isnumber(rf.Y) and rf.Y > 0) and rf.Y or 10, 1004, 492
 			cam.Start3D(Angle(-96,0,0), Vector(0, 0, -15), 30, x, y, w, h)
 					clmodel:DrawModel()
 			cam.End3D()
@@ -173,3 +173,4 @@ end
 --steam - https://steamcommunity.com/profiles/76561198968457747/
 --ds server - https://discord.gg/7XaRzQSZ45
 --ds - matveicher
+

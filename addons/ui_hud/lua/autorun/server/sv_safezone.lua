@@ -82,3 +82,87 @@ hook.Add("PlayerSpawn", "SafeZone_Spawn", function(ply)
         end
     end)
 end)
+
+local function IsSuperAdmin(ply)
+    return IsValid(ply) and ply:IsSuperAdmin()
+end
+
+hook.Add("PlayerSpawnProp", "SafeZone_BlockProp", function(ply, model)
+    if IsSuperAdmin(ply) then return end
+    
+    local tr = ply:GetEyeTrace()
+    if SafeZones.IsInZone(tr.HitPos) then
+        if DarkRP and DarkRP.notify then
+            DarkRP.notify(ply, 1, 4, "Нельзя спавнить пропы в зелёной зоне!")
+        else
+            ply:ChatPrint("Нельзя спавнить пропы в зелёной зоне!")
+        end
+        return false
+    end
+end)
+
+hook.Add("PlayerSpawnedProp", "SafeZone_RemoveSpawnedProp", function(ply, model, ent)
+    if IsSuperAdmin(ply) then return end
+    if SafeZones.IsInZone(ent:GetPos()) then
+        ent:Remove()
+    end
+end)
+
+hook.Add("PlayerSpawnedSENT", "SafeZone_BlockSENT", function(ply, ent)
+    if IsSuperAdmin(ply) then return end
+    if SafeZones.IsInZone(ent:GetPos()) then
+        ent:Remove()
+    end
+end)
+
+hook.Add("PlayerSpawnedSWEP", "SafeZone_BlockSWEP", function(ply, ent)
+    if IsSuperAdmin(ply) then return end
+    if SafeZones.IsInZone(ent:GetPos()) then ent:Remove() end
+end)
+
+hook.Add("PlayerSpawnedVehicle", "SafeZone_BlockVehicle", function(ply, ent)
+    if IsSuperAdmin(ply) then return end
+    if SafeZones.IsInZone(ent:GetPos()) then ent:Remove() end
+end)
+
+hook.Add("PlayerSpawnedNPC", "SafeZone_BlockNPC", function(ply, ent)
+    if IsSuperAdmin(ply) then return end
+    if SafeZones.IsInZone(ent:GetPos()) then ent:Remove() end
+end)
+
+hook.Add("PlayerSpawnedSENT", "SafeZone_BlockTextScreen", function(ply, ent)
+    if IsSuperAdmin(ply) then return end
+    local class = ent:GetClass()
+    if class == "gmod_textscreen" or class == "textscreen" or class == "3dtextscreen" then
+        if SafeZones.IsInZone(ent:GetPos()) then
+            ent:Remove()
+            if DarkRP and DarkRP.notify then
+                DarkRP.notify(ply, 1, 4, "Нельзя ставить Text Screen в зелёной зоне!")
+            else
+                ply:ChatPrint("Нельзя ставить Text Screen в зелёной зоне!")
+            end
+        end
+    end
+end)
+
+hook.Add("CanTool", "SafeZone_BlockTools", function(ply, tr, tool)
+    if SafeZones.IsInZone(ply:GetPos()) and not IsSuperAdmin(ply) then
+        if tool == "creator" or tool == "duplicator" or tool == "advdupe2" or tool == "textscreen" then
+            if DarkRP and DarkRP.notify then
+                DarkRP.notify(ply, 1, 4, "Нельзя использовать инструменты в зелёной зоне!")
+            else
+                ply:ChatPrint("Нельзя использовать инструменты в зелёной зоне!")
+            end
+            return false
+        end
+    end
+end)
+
+hook.Add("PhysgunDrop", "SafeZone_BlockPhysgunDrop", function(ply, ent)
+    if not IsValid(ply) or not IsValid(ent) then return end
+    if IsSuperAdmin(ply) then return end
+    
+    if SafeZones.IsInZone(ent:GetPos()) then
+        ent:Remove()
+    end
+end)

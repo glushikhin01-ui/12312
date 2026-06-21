@@ -5,6 +5,7 @@ if SERVER then
     resource.AddWorkshop("3003893737")
     resource.AddWorkshop("3337860652")
     resource.AddWorkshop("3743221782")
+    resource.AddWorkshop("3036509178")
 
     local files = {
         -- Furina

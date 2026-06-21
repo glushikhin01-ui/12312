@@ -14,7 +14,7 @@ SWEP.Category = 'RP'
 SWEP.Color = Color(255, 0, 0, 255)
 
 local NET_ARREST = 'rp.ArrestBaton.CustomArrest'
-local MAX_ARREST_TIME = 120
+local MAX_ARREST_TIME = 240
 
 if SERVER then
 	util.AddNetworkString(NET_ARREST)
@@ -32,7 +32,7 @@ local function CanArrestWithBaton(actor, ent)
 	if not actor:IsCP() then return false, 'Вы не можете арестовывать людей.' end
 	if actor:GetPos():DistToSqr(ent:GetPos()) > 22500 then return false, 'Вы слишком далеко от игрока.' end
 	if not ent:GetNWBool('isHandcuffed', false) then return false, 'Игрок должен быть в наручниках, чтобы арестовать его.' end
-	if ent:InSpawn() then return false, 'На спавне запрещено арестовывать людей.' end
+	if (SafeZones and SafeZones.IsInZone and (SafeZones.IsInZone(actor:GetPos()) or SafeZones.IsInZone(ent:GetPos()))) then return false, 'В зеленой зоне запрещено арестовывать людей.' end
 	if ent:IsCP() or ent:IsMayor() then return false, 'Вы не можете арестовывать других копов.' end
 	if ent.IsAdmjob and ent:IsAdmjob() then return false, 'Администратора запрещено арестовывать.' end
 	return true
@@ -47,7 +47,7 @@ local function DoArrest(actor, ent, arrestTime, reason)
 
 	if ent:InVehicle() then ent:ExitVehicle() end
 
-	arrestTime = math.Clamp(math.floor(tonumber(arrestTime) or 60), 1, MAX_ARREST_TIME)
+	arrestTime = math.Clamp(math.floor(tonumber(arrestTime) or 60), 60, MAX_ARREST_TIME)
 	reason = string.Trim(tostring(reason or ''))
 	if reason == '' then
 		rp.Notify(actor, NOTIFY_ERROR, 'Укажите причину ареста.')
@@ -136,7 +136,7 @@ if CLIENT then
 		timeSlider:SetPos(10, 31)
 		timeSlider:SetSize(374, 42)
 		timeSlider:SetText('')
-		timeSlider:SetMin(1)
+		timeSlider:SetMin(60)
 		timeSlider:SetMax(MAX_ARREST_TIME)
 		timeSlider:SetDecimals(0)
 		timeSlider:SetValue(60)
@@ -187,7 +187,7 @@ if CLIENT then
 			clampLock = true
 
 			local rawValue = IsValid(timeSlider.TextArea) and timeSlider.TextArea:GetValue() or timeSlider:GetValue()
-			local value = math.Clamp(math.floor(tonumber(rawValue) or tonumber(timeSlider:GetValue()) or 60), 1, MAX_ARREST_TIME)
+			local value = math.Clamp(math.floor(tonumber(rawValue) or tonumber(timeSlider:GetValue()) or 60), 60, MAX_ARREST_TIME)
 			timeSlider:SetValue(value)
 
 			if IsValid(timeSlider.TextArea) then
@@ -199,23 +199,12 @@ if CLIENT then
 		end
 
 		timeSlider.OnValueChanged = function(self, value)
-			if clampLock then return end
-			value = tonumber(value) or 60
-
-			if value > MAX_ARREST_TIME or value < 1 then
-				timer.Simple(0, ClampSliderValue)
-			end
+			-- Clamping is handled on OnEnter and OnLoseFocus to allow manual input
 		end
 
 		if IsValid(timeSlider.TextArea) then
 			timeSlider.TextArea.OnEnter = ClampSliderValue
 			timeSlider.TextArea.OnLoseFocus = ClampSliderValue
-			timeSlider.TextArea.OnChange = function()
-				local value = tonumber(timeSlider.TextArea:GetValue())
-				if value and (value > MAX_ARREST_TIME or value < 1) then
-					timer.Simple(0, ClampSliderValue)
-				end
-			end
 		end
 
 		local reasonLabel = vgui.Create('DLabel', frame)

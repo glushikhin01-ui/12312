@@ -1,6 +1,6 @@
 UnlitGeneric
 {
-	$basetexture "vgui/entities/New_MMD_Model_sheepylord_F"
+	$basetexture "vgui/entities/new_mmd_model_sheepylord_f"
 	$vertexalpha 1
 	$vertexcolor 1
 }
