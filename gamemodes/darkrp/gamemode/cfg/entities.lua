@@ -126,7 +126,7 @@ rp.AddEntity("Денежный Принтер", {
 	max = 3,
 	cmd = "/buyprintergromila",
 	category = "Принтеры",
-	allowed = {TEAM_GROMILA},
+	allowed = {TEAM_GANG1, TEAM_GANG2, TEAM_GUN1, TEAM_GANGSTER, TEAM_MECHANIC, TEAM_CINEMA, TEAM_TRAMVAY, TEAM_BUSDRIVER, TEAM_CAZINO, TEAM_TAXI, TEAM_WORKER, TEAM_DVORNIK, TEAM_COOK, TEAM_ZAVOD, TEAM_GUN, TEAM_DELIVERY, TEAM_MOBBOSS, TEAM_GANGSTER, TEAM_GROMILA, TEAM_METHVARSHIK, TEAM_GUN, TEAM_HITMAN, TEAM_VIPHITMAN, TEAM_DRUGMAKER, TEAM_BISNES, TEAM_BARTENDER, TEAM_GANG1, TEAM_GANG2},
 	pocket = false,
 	Callback = function(pl)
 		eui.battlepass.AddProgress(pl, 14)
@@ -387,8 +387,8 @@ rp.AddShipment("Нож", "models/weapons/w_knife_t.mdl", "csgo_bayonet", 10000, 
 rp.AddShipment("Щиты", "models/bshields/hshield.mdl", "heavy_shield", 100000, 5, false, 2000, false, {TEAM_GUN1})
 rp.AddShipment("Фальшивое Разрешение на оружие", "models/props_lab/clipboard.mdl", "ent_licence", 1000, 10, false, 1250, false, {TEAM_GUN1})
 rp.AddShipment("Маскировка", "models/props_c17/SuitCase_Passenger_Physics.mdl", "ent_disguise", 5000, 10, false, 1250, false, {TEAM_GUN1})
-rp.AddEntity("Раздатчик Брони", "armor_lab", "models/props_combine/suit_charger001.mdl", 5000, 4, "/buyarmorlab", TEAM_DOCTOR, false)
-rp.AddEntity("Раздатчик ХП", "med_lab", "models/props_combine/health_charger001.mdl", 5000, 4, "/buymedlab", TEAM_DOCTOR, false)
+rp.AddEntity("Раздатчик Брони", "armor_lab", "models/props_combine/suit_charger001.mdl", 5000, 4, "/buyarmorlab", {TEAM_DOCTOR, TEAM_glDOCTOR}, false)
+rp.AddEntity("Раздатчик ХП", "med_lab", "models/props_combine/health_charger001.mdl", 5000, 4, "/buymedlab", {TEAM_DOCTOR, TEAM_glDOCTOR}, false)
 
 -- Bartender
 rp.AddShipment("Грушовый сок", "models/drug_mod/alcohol_can.mdl", "durgz_alcohol", 1500, 5, false, 50, false, {TEAM_BARTENDER})

@@ -13,18 +13,18 @@ for i = 1, #fontSizes do
     local sizee = fontSizes[i]
     local size = math.Round(fontSizes[i] * FONT_MULT / 1920 * ScrW())
     surface.CreateFont( string.format("MKfont.%s", sizee), {
-        font = 'Montserrat Bold',
+        font = 'Tahoma',
         antialias = true,
         extended = true;
         size = size,
-        weight = 350,
+        weight = 700,
     } )
     surface.CreateFont( string.format("BKfont.%s", sizee), {
-        font = 'Montserrat Regular',
+        font = 'Tahoma',
         antialias = true,
         extended = true;
         size = size,
-        weight = 350,
+        weight = 500,
     } )
 end
 

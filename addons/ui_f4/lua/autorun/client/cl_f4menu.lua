@@ -1307,16 +1307,6 @@ local function GangRenderGang(parent, p)
             editInfo:SetSize(s(210), s(36))
         end
 
-
-        local flagInfo = Card(scroll)
-        flagInfo:Dock(TOP)
-        flagInfo:DockMargin(0,s(12),0,0)
-        flagInfo:SetTall(s(92))
-        flagInfo.Paint = function(_,w,h)
-            draw.RoundedBox(s(12),0,0,w,h,C.card)
-            draw.SimpleText('Флаги приносят банде деньги и репутацию.','MKfont.18',s(16),s(32),C.white,TEXT_ALIGN_LEFT,TEXT_ALIGN_CENTER)
-            draw.SimpleText('Каждый захваченный флаг: +2.500₽ и +25 репутации за тик. Максимум 2 флага на банду.','MKfont.15',s(16),s(64),C.gray_l,TEXT_ALIGN_LEFT,TEXT_ALIGN_CENTER)
-        end
     end
 
     local function showPlayers()
@@ -1415,12 +1405,15 @@ local function GangRenderGang(parent, p)
         makeScroll(scroll)
         local info = Card(scroll)
         info:Dock(TOP)
-        info:SetTall(s(86))
+        info:SetTall(s(158))
         info:DockMargin(0,0,0,s(12))
         info.Paint = function(_,w,h)
             draw.RoundedBox(s(12),0,0,w,h,C.card)
-            draw.SimpleText('Флаги на карте','MKfont.23',s(16),s(28),C.white,TEXT_ALIGN_LEFT,TEXT_ALIGN_CENTER)
-            draw.SimpleText('Подойдите к флагу и нажмите E, чтобы начать захват. Одна банда может держать максимум 2 флага.','MKfont.15',s(16),s(58),C.gray_l,TEXT_ALIGN_LEFT,TEXT_ALIGN_CENTER)
+            draw.SimpleText('Флаги на карте','MKfont.23',s(16),s(26),C.white,TEXT_ALIGN_LEFT,TEXT_ALIGN_CENTER)
+            draw.SimpleText('Подойдите к флагу и нажмите E, чтобы начать захват. Одна банда может держать максимум 2 флага.','MKfont.15',s(16),s(54),C.gray_l,TEXT_ALIGN_LEFT,TEXT_ALIGN_CENTER)
+            draw.SimpleText('Захват длится 5 минут. Для захвата нужны 3 живых участника банды в радиусе флага.','MKfont.15',s(16),s(80),C.gray_l,TEXT_ALIGN_LEFT,TEXT_ALIGN_CENTER)
+            draw.SimpleText('Награда: +2.500₽ в банк банды и +25 репутации за каждый флаг каждые 5 минут.','MKfont.15',s(16),s(106),C.green,TEXT_ALIGN_LEFT,TEXT_ALIGN_CENTER)
+            draw.SimpleText('КД после успешного захвата или срыва захвата — 20 минут.','MKfont.15',s(16),s(132),C.gray_l,TEXT_ALIGN_LEFT,TEXT_ALIGN_CENTER)
         end
         local flags = GangSection(scroll, 'Все флаги')
         GangRenderFlags(flags)

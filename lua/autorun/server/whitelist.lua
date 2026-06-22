@@ -12,6 +12,7 @@ local Whitelist = {
 	"76561198864271913", -- Sansey
     "76561199690259938", -- Владиславик
     "76561199833558743", -- spicsamen
+	"76561199482229924", -- HECKBUK
 }
 
 local function GetSteamID64(ply)

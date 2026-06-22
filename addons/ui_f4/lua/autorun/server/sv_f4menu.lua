@@ -144,7 +144,9 @@ local function F4GangFlagMinPlayers()
 end
 
 local function F4GangFlagCaptureTime()
-    return F4GangCVarInt('f4_gang_flag_capture_time', 300, 1, 86400)
+    -- Захват флага должен длиться минимум 5 минут.
+    -- Важно: FCVAR_ARCHIVE может хранить старое маленькое значение, поэтому ограничиваем снизу.
+    return F4GangCVarInt('f4_gang_flag_capture_time', 300, 300, 86400)
 end
 
 local function F4GangFlagLimit()
@@ -808,11 +810,23 @@ local function CacheGangIDsForOnline(cb)
     end)
 end
 
-local function StopFlagCapture(ent, reason)
+local function StopFlagCapture(ent, reason, noCooldown)
     if not IsValid(ent) then return end
     local tid = 'F4Gangs.Capture.' .. ent:EntIndex()
     timer.Remove(tid)
     local starter = ent.F4CaptureStarter
+    local wasCapturing = ent.F4Capturing
+
+    -- Если захват уже был начат и его сорвали, накладываем КД.
+    -- Раньше игроки могли выйти из радиуса флага и сразу начать захват заново.
+    if wasCapturing and not noCooldown then
+        local cd = F4GangFlagCooldown()
+        if cd > 0 then
+            ent.F4NextCapture = CurTime() + cd
+            ent:SetNWFloat('F4FlagNextCapture', ent.F4NextCapture)
+        end
+    end
+
     ent.F4Capturing = false
     ent.F4CaptureGangID = nil
     ent.F4CaptureStarter = nil

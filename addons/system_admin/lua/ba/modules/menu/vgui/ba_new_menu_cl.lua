@@ -96,13 +96,43 @@ end
 
 do
 	local color = Color(42,43,46)
+	local gradColor = Color(218, 62, 68, 25)
 	local drawRoundedBox = draw.RoundedBox
 	local gradMat = Material("vgui/gradient-u")
+
+	local function DrawRoundedGradient(x, y, radius)
+		-- Сохраняем красивый градиент, но обрезаем его по скруглённой маске.
+		-- Без stencil обычный surface.DrawTexturedRect рисуется квадратом
+		-- и в углах видны полупрозрачные квадратные артефакты.
+		render.ClearStencil()
+		render.SetStencilEnable(true)
+		render.SetStencilWriteMask(1)
+		render.SetStencilTestMask(1)
+		render.SetStencilReferenceValue(1)
+		render.SetStencilCompareFunction(STENCILCOMPARISONFUNCTION_ALWAYS)
+		render.SetStencilPassOperation(STENCILOPERATION_REPLACE)
+		render.SetStencilFailOperation(STENCILOPERATION_KEEP)
+		render.SetStencilZFailOperation(STENCILOPERATION_KEEP)
+
+		-- Пишем только stencil-маску, не трогая цветовой буфер.
+		render.OverrideColorWriteEnable(true, false)
+		drawRoundedBox(radius, 0, 0, x, y, color_white)
+		render.OverrideColorWriteEnable(false)
+
+		render.SetStencilCompareFunction(STENCILCOMPARISONFUNCTION_EQUAL)
+		render.SetStencilPassOperation(STENCILOPERATION_KEEP)
+
+		surface.SetMaterial(gradMat)
+		surface.SetDrawColor(gradColor)
+		surface.DrawTexturedRect(0, 0, x, y)
+
+		render.SetStencilEnable(false)
+		render.ClearStencil()
+	end
+
 	function PANEL:Paint(x, y)
 		drawRoundedBox(15, 0, 0, x, y, color)
-		surface.SetMaterial(gradMat)
-		surface.SetDrawColor(218, 62, 68, 25)
-		surface.DrawTexturedRect(0, 0, x, y)
+		DrawRoundedGradient(x, y, 15)
 	end
 end
 
