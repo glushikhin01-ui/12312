@@ -173,6 +173,30 @@ function enc.inventoryrefresh()
     end
     
     local pages, page = vgui.Create('Panel', accessoryinv), fr.page
+
+    local function getAccessorySlots()
+        local slots = {}
+        local inventory = LocalPlayer().inventory or {}
+
+        for slotID = 1, 50 do
+            local item = inventory[slotID]
+            if item and item.Class and item.Class[1] == "_" then
+                slots[#slots + 1] = slotID
+            end
+        end
+
+        return slots
+    end
+
+    local function getMaxAccessoryPage()
+        return math.max(1, math.ceil(#getAccessorySlots() / (4 * 7)))
+    end
+
+    if page > getMaxAccessoryPage() then
+        page = getMaxAccessoryPage()
+        fr.page = page
+    end
+
     pages:Dock(BOTTOM)
     pages:DockMargin(enc.w(33), 0, 0, enc.h(16))
     pages:SetTall(enc.h(30))
@@ -205,7 +229,7 @@ function enc.inventoryrefresh()
         box(4,0,0,w,h,enc.clrs.bg)
     end
     function nextPage.DoClick()
-        if page == 4 then return end
+        if page >= getMaxAccessoryPage() then return end
         page = page + 1
         refreshinvpanel(page)
 
@@ -232,13 +256,26 @@ function enc.inventoryrefresh()
         function refreshinvpanel(index)
             list:Clear()
 
-            local startIndex = (page - 1) * (4 * 7) + 1 // кодстайл кодера изменился
-            for slotID = startIndex, startIndex + (4 * 7) - 1 do
-                if not (slotID <= 112) then break end
+            local accessorySlots = getAccessorySlots()
+            local perPage = 4 * 7
+            local maxPage = math.max(1, math.ceil(#accessorySlots / perPage))
 
-                inv[slotID] = vgui.Create("enc.inv.slot", list)
-                inv[slotID]:SetSize(enc.w(70), enc.h(70))
-                inv[slotID]:SetSlot(slotID)
+            if page > maxPage then
+                page = maxPage
+                fr.page = page
+            end
+
+            local startIndex = (page - 1) * perPage + 1
+
+            for i = 0, perPage - 1 do
+                local slotID = accessorySlots[startIndex + i]
+                local panel = vgui.Create("enc.inv.slot", list)
+                panel:SetSize(enc.w(70), enc.h(70))
+                panel:SetSlot(slotID or 0)
+
+                if slotID then
+                    inv[slotID] = panel
+                end
             end
         end
 

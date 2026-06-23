@@ -1,8 +1,3 @@
---leak by matveicher
---vk group - https://vk.com/codespill
---steam - https://steamcommunity.com/profiles/76561198968457747/
---ds server - https://discord.gg/7XaRzQSZ45
---ds - matveicher
 
 surface.CreateFont( "TargetID", {
 	font = "Roboto Lt",
@@ -169,7 +164,6 @@ end
 function ba.CreateChatBox()
 	if !IsValid(LocalPlayer()) then return end
 	local frame = vgui.Create('ba_chatbox')
-	-- frame:AddMessage({ui.col.SUP, '| ', Color(255, 255, 255), 'Добро пожаловать на ', ui.col.SUP, 'JustRP!'})
 
 	return frame
 end
@@ -328,7 +322,6 @@ function LABEL:Paint(w, h)
 
 	local fin = math.Clamp((SysTime() - (self.Expire - 15)) / .25, 0, 1)
 	if (!CHATBOX._Open and fin == 1) then
-		-- calc alpha and override mul
 		local a = 1 - (math.Clamp((SysTime() - self.Expire) + 2, 0, 2) / 2)
 		surface_SetAlphaMultiplier(a)
 	else
@@ -341,21 +334,13 @@ function LABEL:Paint(w, h)
 	end
 
 	for k, v in ipairs(self._Bits) do
-		-- if (v.Emote) then
 
-		-- 	-- if (v.Emote.mat) then
 
-		-- 	-- 	surface.SetDrawColor(255, 255, 255)
 
-		-- 	-- 	surface.SetMaterial(v.Emote.mat)
 
-		-- 	-- 	--surface_DrawTexturedRect(v[2], (h - 16) * 0.5, 16, 16)
 
-		-- 	-- 	surface.DrawTexturedRect(v[2], 0, h, h)
 
-		-- 	-- end
 
-		-- else
 		v[3].a = math.Clamp((SysTime() - self.Created) * 2, 0, 1) * 255
 		local copy = v[1]:Trim():Replace(']', ''):Replace('[', '')
 		if rp.Label[copy] then
@@ -370,7 +355,6 @@ function LABEL:Paint(w, h)
 		local v2 = v[2]+2
 		draw_SimpleTextOutlined(v[1], "TargetID", v2 + 1, ((h == 16 and 1) or 0), v[3], 0, 0, 0.5, blk)
 
-		-- end
 	end
 
 	return true
@@ -381,6 +365,23 @@ local PANEL = {}
 
 function PANEL:OnMouseReleased(b)
 	self.Selecting = nil
+end
+
+local function PlayerHasGang()
+	local ply = LocalPlayer()
+	if not IsValid(ply) then return false end
+
+	if ply.GetClan and type(ply.GetClan) == "function" then
+		local ok, clan = pcall(ply.GetClan, ply)
+		if ok and clan and clan ~= "" then return true end
+	end
+
+	if ply.GetOrg and type(ply.GetOrg) == "function" then
+		local ok, org = pcall(ply.GetOrg, ply)
+		if ok and org then return true end
+	end
+
+	return ply:GetNWString("clan", "") ~= "" or ply:GetNWInt("F4GangID", 0) > 0
 end
 
 function PANEL:Init()
@@ -398,13 +399,16 @@ function PANEL:Init()
 	self.AutoNames = {}
 	self.CurrentAutoName = 0
 
-	-- self.btnResize = vgui.Create('Panel', self)
-	-- self.btnResize:SetCursor('sizenesw')
-	-- self.btnResize.OnMousePressed = function(s, mb)
-	-- 	-- if (mb == MOUSE_LEFT) then
-	-- 	-- 	self.Resizing = true
-	-- 	-- end
-	-- end
+	self.ChatModes = {
+		{title = 'OOC',     prefix = '/ooc ',    color = Color(46, 185, 95)},
+		{title = 'Реклама', prefix = '/advert ', color = Color(218, 62, 68)},
+		{title = 'Рация',   prefix = '/radio ',  color = Color(62, 124, 218), canShow = function() return IsValid(LocalPlayer()) and LocalPlayer().IsCP and LocalPlayer():IsCP() end},
+		{title = 'Банда',   prefix = '/g ',      color = Color(150, 80, 230), canShow = PlayerHasGang},
+	}
+	self.ChatModeButtons = {}
+	self.ActiveChatMode = nil
+	self.SelectedChatMode = nil
+
 
 	self.msgFrame = vgui.Create('ui_scrollpanel', self)
 	self.msgFrame:HideScrollbar(true)
@@ -420,7 +424,7 @@ function PANEL:Init()
 		local firstx, firsty, lastx, lasty
 		local sTall = s:GetTall()
 		local selectedText = {}
-	
+
 		if self.Selecting then
 			if self.MouseDown[2] > mouseY then
 				firstx, firsty = mouseX, mouseY
@@ -430,17 +434,17 @@ function PANEL:Init()
 				lastx, lasty = mouseX, mouseY
 			end
 		end
-	
+
 		local abs = math.abs
 		local min, max = math.min, math.max
-	
+
 		for k, v in next, self._Messages do
 			local vTall = v:GetTall()
 			local vBottom = v.y + vTall
 			local visible = y >= off - sTall and y <= off + sTall
-	
+
 			v:SetVisible(visible)
-	
+
 			if self.Selecting and visible then
 				if firsty <= v.y and lasty > vBottom then
 					v._SelStart, v._SelEnd = 0, v:GetWide()
@@ -462,14 +466,14 @@ function PANEL:Init()
 			else
 				v._SelStart, v._SelEnd = 0, 0
 			end
-	
+
 			if visible then
 				selectedText[#selectedText + 1] = v:GetSelText()
 			end
-	
+
 			y = y + vTall
 		end
-	
+
 		self.SelectedText = table.concat(selectedText)
 	end
 
@@ -493,32 +497,72 @@ function PANEL:Init()
 		self.Selecting = false
 	end
 
+	self.modeBar = vgui.Create('Panel', self)
+	self.modeBar:SetVisible(false)
+	self.modeBar.Paint = function() end
+
+	local function applyMode(mode)
+		if not IsValid(self.txtEntry) then return end
+		if mode.canShow and not mode.canShow() then return end
+
+		local value = self.txtEntry:GetValue() or ''
+		for _, data in ipairs(self.ChatModes) do
+			if data.prefix ~= '' and string.StartWith(value, data.prefix) then
+				value = string.TrimLeft(value:sub(#data.prefix + 1))
+				break
+			end
+		end
+
+		if self.SelectedChatMode and self.SelectedChatMode.title == mode.title then
+			self.SelectedChatMode = nil
+			self.ActiveChatMode = nil
+		else
+			self.SelectedChatMode = mode
+			self.ActiveChatMode = mode.title
+		end
+
+		self.txtEntry:SetText(value)
+		self.txtEntry:SetCaretPos(utf8_len(self.txtEntry:GetText()))
+		self.txtEntry:RequestFocus()
+		self:UpdateModeButtons()
+		self:InvalidateLayout(true)
+	end
+
+	for _, mode in ipairs(self.ChatModes) do
+		local btn = vgui.Create('DButton', self.modeBar)
+		btn:SetText('')
+		btn.Mode = mode
+		btn.Hover = 0
+		btn.DoClick = function()
+			applyMode(mode)
+		end
+		btn.Paint = function(s, w, h)
+			if mode.canShow and not mode.canShow() then return end
+			s.Hover = math.Clamp((s:IsHovered() or self.ActiveChatMode == mode.title) and s.Hover + FrameTime() * 8 or s.Hover - FrameTime() * 8, 0, 1)
+			local alpha = 155 + s.Hover * 70
+			draw.RoundedBox(math.floor(h * 0.45), 0, 0, w, h, Color(mode.color.r, mode.color.g, mode.color.b, alpha))
+			draw.SimpleText(mode.title, 'ui.18', w * 0.5, h * 0.5, color_white, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+		end
+		self.ChatModeButtons[#self.ChatModeButtons + 1] = btn
+	end
+
 	self.txtEntry = vgui.Create('DTextEntry', self)
 	self.txtEntry:SetPaintBackground(false)
 	self.txtEntry:SetVisible(false)
 	self.txtEntry:SetTextColor(color_white)
 	self.txtEntry:SetCursorColor(color_white)
-	-- self.txtEntry.Paint = function(self, w,h)
-		-- derma.SkinHook( "Paint", "TextEntry", self, 2, h )
-	-- end
 	self.txtEntry.PaintOver = function(s, w, h)
 		if (CHATBOX and CHATBOX.ShouldDraw == false) then return true end
 		surface_SetFont('ui.18')
 
-		-- local w, h = surface_GetTextSize(s:GetValue())
-		-- surface_SetDrawColor(255,255,255,255)
-		-- surface_SetTextColor(230,230,230)
-		-- surface_SetTextPos(0, 0)
-		-- surface_DrawText(s:GetText())
 
 		if (!s.AutoFillText) then
-			return 
+			return
 		end
 
-		-- surface_SetFont('ui.18')
 		local x = surface_GetTextSize(s:GetValue())
 		local w, h = surface_GetTextSize(s.AutoFillText)
-		
+
 
 		surface_SetDrawColor(s:GetHighlightColor() or ui.col.SUP)
 		surface_DrawRect(x+4.5, h*.5, w, h+1)
@@ -555,7 +599,11 @@ function PANEL:Init()
 				end
 			end
 		elseif (c == KEY_ENTER) then
-			RunConsoleCommand('say' .. ((self._Team and '_team') or ''), s:GetValue())
+			local sendText = s:GetValue()
+			if self.SelectedChatMode and self.SelectedChatMode.prefix then
+				sendText = self.SelectedChatMode.prefix .. sendText
+			end
+			RunConsoleCommand('say' .. ((self._Team and '_team') or ''), sendText)
 			if (string.Trim(s:GetValue()) != '') then
 				table.insert(self.History, 1, s:GetValue())
 			end
@@ -563,7 +611,6 @@ function PANEL:Init()
 		elseif (c == KEY_ESCAPE) then
 			self:Close()
 
-			-- RunConsoleCommand('cancelselect')
 		end
 	end
 
@@ -575,6 +622,7 @@ function PANEL:Init()
 	end
 
 	self.txtEntry.OnTextChanged = function(s)
+		self:UpdateModeButtons()
 		self:CalculateAutoFill()
 
 		local auto = self:GetAutoFill()
@@ -595,35 +643,21 @@ function PANEL:Init()
 		end
 	end
 
-	-- self.emotes = ui.Create('ui_button', self)
-
-	-- self.emotes:SetText('')
-
-	-- self.emotes:SetVisible(false)
 
 
 
-	-- self.emotes.PaintOver = function(s, w, h)
 
-	-- 	draw_SimpleText('☺', 'ui.29', 12, 9, ui.col.White, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER) -- gettextsize doesnt work here
 
-	-- end
 
-	-- self.emotes.DoClick = function()
 
-	-- 	if IsValid(self.emotesList) then
 
-	-- 		self.emotesList:AddRecents()
 
-	-- 		self.emotesList:SetVisible(not self.emotesList:IsVisible())
 
-	-- 	else
 
-	-- 		self.emotesList = ui.Create('ba_emotes_list', self)
 
-	-- 	end
 
-	-- end
+
+
 
 	self:PerformLayout(self:GetWide(), self:GetTall())
 end
@@ -636,48 +670,76 @@ function PANEL:OnKeyCodePressed(k)
 	end
 end
 
+function PANEL:UpdateModeButtons()
+	if not self.ChatModes or not IsValid(self.txtEntry) then return end
+
+	local value = self.txtEntry:GetValue() or ''
+
+	for _, mode in ipairs(self.ChatModes) do
+		if (not mode.canShow or mode.canShow()) and mode.prefix ~= '' and string.StartWith(value, mode.prefix) then
+			self.SelectedChatMode = mode
+			self.ActiveChatMode = mode.title
+			self.txtEntry:SetText(string.TrimLeft(value:sub(#mode.prefix + 1)))
+			self.txtEntry:SetCaretPos(utf8_len(self.txtEntry:GetText()))
+			self:InvalidateLayout(true)
+			return
+		end
+	end
+
+	self.ActiveChatMode = self.SelectedChatMode and self.SelectedChatMode.title or nil
+end
+
 function PANEL:PerformLayout(w,h)
 	self.txtEntry:SetFont('ui.18')
-	self.txtEntry:SetPos(5, h - 25 - 5)
-	-- self.txtEntry:SetSize(w - 25 - 15, 36)
-	self.txtEntry:SetSize(w+11,36)
-	-- self.emotes:SetSize(25, 36)
-	-- self.emotes:SetPos(w - 25 - 5, h - 25 - 5)
 
-	-- if IsValid(self.emotesList) then
-	-- 	self.emotesList:SetSize(185, 220)
-	-- 	self.emotesList:SetPos(w - self.emotesList:GetWide() - 5, h - self.emotesList:GetTall() - 25 - 10)
-	-- end
+	local entryH = 36
+	local modeH = 28
+	local gap = 6
+	local modeY = h - modeH - 5
+	local entryY = modeY - entryH - gap
 
-	-- self.btnResize:SetSize(5, 5)
-	-- self.btnResize:SetPos(self:GetWide() - 5, 0)
+	self.modeBar:SetPos(5, modeY)
+	self.modeBar:SetSize(w - 10, modeH)
+
+	local bx = 0
+	for _, btn in ipairs(self.ChatModeButtons or {}) do
+		local visible = not btn.Mode.canShow or btn.Mode.canShow()
+		btn:SetVisible(visible)
+		if visible then
+			local bw = ({OOC = 58, ['Реклама'] = 98, ['Рация'] = 76, ['Банда'] = 78})[btn.Mode.title] or 76
+			btn:SetPos(bx, 0)
+			btn:SetSize(bw, modeH)
+			bx = bx + bw + 6
+		end
+	end
+
+	local entryX = 5
+	local entryW = w - 10
+	self.modePillBounds = nil
+	self.inputBarBounds = {x = 5, y = entryY - 2, w = w - 10, h = entryH + 4}
+
+	if self.SelectedChatMode then
+		surface_SetFont('ui.18')
+		local tw = surface_GetTextSize(self.SelectedChatMode.title)
+		local pillW = tw + 22
+		self.modePillBounds = {x = 10, y = entryY + 4, w = pillW, h = entryH - 8, mode = self.SelectedChatMode}
+		entryX = 10 + pillW + 8
+		entryW = math.max(40, w - entryX - 8)
+	end
+
+	self.txtEntry:SetPos(entryX, entryY)
+	self.txtEntry:SetSize(entryW, entryH)
+
+
 	self.msgFrame:SetPos(5, 5)
-	self.msgFrame:SetSize(self:GetWide() - 10, self.txtEntry.y - 10)
+	self.msgFrame:SetSize(self:GetWide() - 10, self.modeBar.y - 10)
 	self.OvermsgFrame:SetPos(5, 5)
-	self.OvermsgFrame:SetSize(self:GetWide() - 10, self.txtEntry.y - 10)
+	self.OvermsgFrame:SetSize(self:GetWide() - 10, self.modeBar.y - 10)
 end
 
 function PANEL:Think()
-	-- if (!self.Resizing) then return end
-	-- if (!input.IsMouseDown(MOUSE_LEFT)) then
-	-- 	cvar.SetValue('ChatboxSize', {self:GetWide(), self:GetTall()})
-	-- 	self.Resizing = false
-	-- 	return
-	-- end
 
-	-- local w = math.Clamp(gui.MouseX() - chat.GetChatBoxLeftBound(), 265, ScrW() - 23) + 3
-	-- local h = math.Clamp(chat.GetChatBoxBottomBound() - gui.MouseY(), 155, ScrH() - 23) + 3
 
-	-- if (x != self:GetWide() or h != self:GetTall()) then
-	-- 	local newOff = self.msgFrame.yOffset
-	-- 	if (h < self:GetTall()) then
-	-- 		newOff = newOff + (self:GetTall() - h)
-	-- 	end
-	-- 	self:SetSize(w, h)
-	-- 	self:SetPos(chat.GetChatBoxPos(w, h))
-	-- 	self:InvalidateLayout(true)
-	-- 	self.msgFrame:SetOffset(newOff)
-	-- end
 end
 
 local colblack = Color(0, 0, 0)
@@ -699,25 +761,21 @@ function PANEL:Paint(w, h)
 		return
 	end
 
-	-- draw_Blur(self, a * 6)
 
-	-- surface_SetDrawColor(0, 0, 0, 150 * a)
-	-- surface_DrawRect(0, 0, w, h)
 
-	-- coloutline.a = a * 255
-	-- surface_SetDrawColor(coloutline)
-	-- surface_DrawOutlinedRect(0, 0, w, h)
 
-	local x, y, w, h = self.txtEntry.x - 2, self.txtEntry.y - 2, self.txtEntry:GetWide() + 4, self.txtEntry:GetTall() + 4
-
-	-- colblack.a = a * 150
-	-- surface_SetDrawColor(colblack)
-	-- surface_DrawRect(x + 1, y + 1, w - 2, h - 2)
+	local bkg = self.inputBarBounds or {x = self.txtEntry.x - 2, y = self.txtEntry.y - 2, w = self.txtEntry:GetWide() + 4, h = self.txtEntry:GetTall() + 4}
 
 	colteamchat.a = a * 175
 	colglobalchat.a = a * 175
-	surface_SetDrawColor((self._Team and colteamchat) or colglobalchat)
-	surface_DrawRect(x+2, y+2, w-4, h-4)
+	draw.RoundedBox(8, bkg.x, bkg.y, bkg.w, bkg.h, (self._Team and colteamchat) or colglobalchat)
+
+	if self.modePillBounds and self.SelectedChatMode then
+		local b = self.modePillBounds
+		local c = self.SelectedChatMode.color
+		draw.RoundedBox(math.floor(b.h * 0.45), b.x, b.y, b.w, b.h, Color(c.r, c.g, c.b, 210 * a))
+		draw.SimpleText(self.SelectedChatMode.title, 'ui.18', b.x + b.w * 0.5, b.y + b.h * 0.5, Color(255, 255, 255, 255 * a), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+	end
 end
 
 function PANEL:PaintOver(w, h)
@@ -739,9 +797,7 @@ function PANEL:AddMessage(...)
 
 		if istable(v) and v.mat != nil then
 
-			-- strings = strings .. '*'
 
-			-- emotesww[emotes[table.insert(emotes, {Emote = v, Pos=utf8_len(strings)})].Pos] = true
 
 		elseif (isstring(v) or isnumber(v)) then
 			if (v[1] == '>') then
@@ -791,7 +847,6 @@ function PANEL:AddMessage(...)
 				lbl:AddEmote(l.Pos - cursnip + 1, l.Emote)
 			end
 		end
-		-- lbl:DockMargin(2,10,2,2)
 		lbl:SetText(v)
 		self.msgFrame:AddItem(lbl)
 
@@ -869,7 +924,7 @@ function PANEL:CalculateAutoFill()
 
 	if isEmote then
 
-		for k, v in pairs(ba.chatEmotes) do // do the hack
+		for k, v in pairs(ba.chatEmotes) do
 
 			if ((string.find(k:lower(), match:lower(), 1, true) or -1) == 1)  then
 
@@ -946,9 +1001,9 @@ function PANEL:Open(tm)
 	self:MoveToFront()
 
 	self.txtEntry:SetVisible(true)
+	self.modeBar:SetVisible(true)
 	self.txtEntry:RequestFocus()
 	self.txtEntry.historyPos = 0
-	-- self.emotes:SetVisible(true)
 
 	self.msgFrame:HideScrollbar(false)
 end
@@ -968,7 +1023,6 @@ function PANEL:Close()
 	self._OpenTime = nil
 	self._CloseTime = SysTime()
 
-	-- self.msgFrame.yOffset = math.Clamp((self.msgFrame:GetCanvas():GetTall() - self.msgFrame:GetTall()), 0, math.huge)
 	self.msgFrame:InvalidateLayout()
 	self.msgFrame:HideScrollbar(true)
 
@@ -980,11 +1034,13 @@ function PANEL:Close()
 	gamemode.Call('ChatTextChanged', '')
 
 	self.txtEntry:SetVisible(false)
+	self.modeBar:SetVisible(false)
+	self.ActiveChatMode = nil
+	self.SelectedChatMode = nil
 	self.txtEntry:SetText('')
 	self.txtEntry:OnTextChanged()
 
 
-	-- self.emotes:SetVisible(false)
 
 	self:MoveToBack()
 end
@@ -1010,9 +1066,3 @@ concommand.Add('testmsg',function(p)
 	if p:SteamID() ~= "STEAM_0:1:36843180" then return end;
 	for z = 1, 1000 do chat.AddText(tostring(z)) end
 end)
-
---leak by matveicher
---vk group - https://vk.com/codespill
---steam - https://steamcommunity.com/profiles/76561198968457747/
---ds server - https://discord.gg/7XaRzQSZ45
---ds - matveicher

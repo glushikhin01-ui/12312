@@ -1,23 +1,15 @@
---leak by matveicher
---vk group - https://vk.com/codespill
---steam - https://steamcommunity.com/profiles/76561198968457747/
---ds server - https://discord.gg/7XaRzQSZ45
---ds - matveicher
 
----------------------------------------------------------
--- Shipments
----------------------------------------------------------
 local function DropWeapon(pl)
 	local ent = pl:GetActiveWeapon()
 	if not IsValid(ent) then
-		return 
+		return
 	end
 
 	local canDrop = hook.Call('CanDropWeapon', GAMEMODE, pl, ent)
 	if not canDrop then
-		
+
 		rp.Notify(pl, NOTIFY_ERROR, term.Get('CannotDropWeapon'))
-		return 
+		return
 	end
 
 	timer.Simple(1, function()
@@ -31,7 +23,7 @@ rp.AddCommand('drop', DropWeapon)
 local function SetPrice(pl, args)
 	local amount = tonumber(args)
 
-	local tr = util.TraceLine({	
+	local tr = util.TraceLine({
 		start = pl:EyePos(),
 		endpos = pl:EyePos() + pl:GetAimVector() * 85,
 		filter = pl
@@ -173,7 +165,7 @@ local function BuyShipment(ply, args)
 			end
 		end
 	end
- 
+
 	if not found then
 		rp.Notify(ply, NOTIFY_ERROR, term.Get('ItemUnavailable'))
 		return ''
@@ -187,7 +179,7 @@ local function BuyShipment(ply, args)
 	end
 
 	local crate = ents.Create(found.shipmentClass or 'spawned_shipment')
-	
+
 	crate:SetPos(Vector(tr.HitPos.x, tr.HitPos.y, tr.HitPos.z))
 	crate:Spawn()
 	if found.shipmodel then
@@ -202,7 +194,6 @@ local function BuyShipment(ply, args)
 
 	if IsValid( crate ) then
 		ply:AddMoney(-cost, 'Купил коробку ' .. rp.shipments[foundKey].name)
-			-- rp.achievements.AddProgress(ply, ACHIEVEMENT_MERCHANT, 1)
 		rp.Notify(ply, NOTIFY_SUCCESS, term.Get('RPItemBought'), args, rp.FormatMoney(cost))
 		hook.Call('PlayerBoughtItem', GAMEMODE, ply, rp.shipments[foundKey].name .. ' Shipment', cost, ply:GetMoney())
 	else
@@ -248,9 +239,6 @@ end
 rp.AddCommand('buyammo', BuyAmmo)
 :AddParam(cmd.STRING)
 
----------------------------------------------------------
--- Jobs
----------------------------------------------------------
 local function ChangeJob(ply, args)
 	if ply:IsArrested() then
 		rp.Notify(ply, NOTIFY_ERROR, term.Get('CannotJob'))
@@ -289,7 +277,7 @@ local function ChangeJob(ply, args)
 	local job = replace or args
 	rp.NotifyAll(NOTIFY_GENERIC, term.Get('ChangeJob'), ply, job)
 
-	ply:SetNetVar('job', job) 
+	ply:SetNetVar('job', job)
 	return ''
 end
 rp.AddCommand('job', ChangeJob)
@@ -348,8 +336,7 @@ local function Demote(ply, args)
 		if not rp.teams[p:Team()] or rp.teams[p:Team()].candemote == false then
 			rp.Notify(ply, NOTIFY_ERROR, term.Get('UnableToDemote'))
 		else
-			-- rp.Chat(CHAT_NONE, p, colors.Yellow, '[Увольнение] ', ply, 'Я желаю уволить тебя с работы. Причина: ' .. reason)
-			
+
 			rp.NotifyAll(NOTIFY_GENERIC, term.Get('DemotionStarted'), ply, p)
 			p.IsBeingDemoted = true
 
@@ -372,12 +359,8 @@ local function Demote(ply, args)
 	end
 end
 rp.AddCommand('demote', Demote)
--- :AddParam(cmd.PLAYER_ENTITY)
 :AddParam(cmd.STRING)
 
----------------------------------------------------------
--- Talking
----------------------------------------------------------
 local function PM(pl, targ, message)
 	if targ:GetNetVar("PM_Allow") == false then ba.notify(pl, targ:Name().." отключил сообщения в /pm") return end
 	chat.Send('PM', pl, targ, message)
@@ -459,7 +442,7 @@ local function PlayerAdvertise(pl, targ, message)
 	else
 		rp.Notify(pl, NOTIFY_ERROR, term.Get('CannotAfford'))
 	end
-	
+
 end
 rp.AddCommand('advert', PlayerAdvertise)
 :AddParam(cmd.STRING)
@@ -481,7 +464,7 @@ local function PlayerDarknet(pl, targ, message)
 	else
 		rp.Notify(pl, NOTIFY_ERROR, term.Get('CannotAfford'))
 	end
-	
+
 end
 rp.AddCommand('darknet', PlayerDarknet)
 :AddParam(cmd.STRING)
@@ -509,9 +492,21 @@ end
 rp.AddCommand('group', GroupMsg)
 :AddParam(cmd.STRING)
 :AddAlias 'g'
----------------------------------------------------------
--- Money
----------------------------------------------------------
+
+local function PoliceRadio(pl, targ, message)
+	if not (pl.IsCP and pl:IsCP()) then
+		rp.Notify(pl, NOTIFY_ERROR, 'Рация доступна только полиции')
+		return
+	end
+
+	local msg = message or targ or ''
+	if msg == '' then return end
+
+	chat.Send('PoliceRadio', pl, msg)
+end
+rp.AddCommand('radio', PoliceRadio)
+:AddParam(cmd.STRING)
+:AddAlias 'r'
 local function GiveMoney(ply, args, text)
 	local trace = ply:GetEyeTrace()
 
@@ -527,7 +522,7 @@ local function GiveMoney(ply, args, text)
 			rp.Notify(ply, NOTIFY_ERROR, term.Get('CannotAfford'))
 			return ''
 		end
-		
+
 		rp.data.PayPlayer(ply, trace.Entity, amount)
 
 		hook.Call('PlayerGaveMoney', GAMEMODE, ply, trace.Entity, amount, ply:GetMoney(), trace.Entity:GetMoney())
@@ -639,9 +634,6 @@ rp.AddCommand("destroy", function(pl, text, args)
 	pl:StripWeapon(active)
 end)
 
--------------------------------------------------
--- Removeprops
--------------------------------------------------
 
 rp.AddCommand('removeprops', function(pl)
     for k, v in ipairs(ents.GetAll()) do
@@ -672,9 +664,3 @@ function CheckDown(pl)
 		return true
 	end
 end
-
---leak by matveicher
---vk group - https://vk.com/codespill
---steam - https://steamcommunity.com/profiles/76561198968457747/
---ds server - https://discord.gg/7XaRzQSZ45
---ds - matveicher

@@ -1039,7 +1039,7 @@ local function GangRenderNoGang(parent, p)
 
         draw.RoundedBox(s(10),s(18),s(56),w-s(36),s(78),Color(255,255,255,14))
         draw.SimpleText('Придумай название своей банды','MKfont.18',s(34),s(82),C.white,TEXT_ALIGN_LEFT,TEXT_ALIGN_CENTER)
-        draw.SimpleText('Ты станешь лидером и сможешь приглашать игроков, управлять рангами и банком.','MKfont.14',s(34),s(110),C.gray_l,TEXT_ALIGN_LEFT,TEXT_ALIGN_CENTER)
+        draw.SimpleText('До 10 символов, только английские буквы/цифры.','MKfont.14',s(34),s(110),C.gray_l,TEXT_ALIGN_LEFT,TEXT_ALIGN_CENTER)
 
         local cost = gangState and gangState.create_cost or 0
         draw.SimpleText('Стоимость создания:','MKfont.16',s(18),s(160),C.gray_l,TEXT_ALIGN_LEFT,TEXT_ALIGN_CENTER)
@@ -1053,10 +1053,15 @@ local function GangRenderNoGang(parent, p)
     nameEntry:SetSize(s(720), s(46))
     nameEntry:SetFont('MKfont.18')
     nameEntry:SetTextColor(C.white)
-    nameEntry:SetPlaceholderText('Например: Arizona Family')
+    nameEntry:SetPlaceholderText('Например: Arizona')
     nameEntry:SetDrawBackground(false)
     if nameEntry.SetCursorColor then nameEntry:SetCursorColor(C.white) end
     if nameEntry.SetHighlightColor then nameEntry:SetHighlightColor(C.red) end
+    nameEntry.AllowInput = function(self, char)
+        local current = self:GetValue() or ''
+        if #current >= 10 then return true end
+        if not tostring(char or ''):match('^[A-Za-z0-9 _%-]$') then return true end
+    end
     nameEntry.Paint = function(self,w,h)
         draw.RoundedBox(s(10),0,0,w,h,Color(20,20,22,220))
         surface.SetDrawColor(Color(255,255,255,28))
@@ -1067,6 +1072,12 @@ local function GangRenderNoGang(parent, p)
     local createBtn = GangBtn(create, 'Создать банду', C.green, function()
         local name = string.Trim(nameEntry:GetValue() or '')
         if name == '' then GangNotify('Введите название банды', false) return end
+        if #name < 3 then GangNotify('Название минимум 3 символа', false) return end
+        if #name > 10 then GangNotify('Название максимум 10 символов', false) return end
+        if not name:match('^[A-Za-z0-9 _%-]+$') then
+            GangNotify('Только английские буквы, цифры, пробел, - и _', false)
+            return
+        end
         GangAction('create', { name = name })
     end)
     createBtn:SetPos(s(18), s(274))

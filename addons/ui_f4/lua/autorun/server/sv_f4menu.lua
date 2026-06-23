@@ -257,6 +257,24 @@ local function CleanGangName(name)
     return string.sub(name, 1, 32)
 end
 
+local function ValidateGangName(name)
+    name = CleanGangName(name)
+
+    if #name < 3 then
+        return false, 'Название минимум 3 символа'
+    end
+
+    if #name > 10 then
+        return false, 'Название максимум 10 символов'
+    end
+
+    if not name:match('^[A-Za-z0-9 _%-]+$') then
+        return false, 'Название может содержать только английские буквы, цифры, пробел, - и _'
+    end
+
+    return true
+end
+
 local function CleanRankName(name)
     name = string.Trim(tostring(name or ''))
     name = name:gsub('[\r\n\t]', ' '):gsub('%s+', ' ')
@@ -504,10 +522,8 @@ end
 
 local function ActionCreate(pl, data)
     local name = CleanGangName(data.name)
-    if utf8 and utf8.len then
-        local l = utf8.len(name) or #name
-        if l < 3 then GNotify(pl, false, 'Название минимум 3 символа') return end
-    elseif #name < 3 then GNotify(pl, false, 'Название минимум 3 символа') return end
+    local okName, nameErr = ValidateGangName(name)
+    if not okName then GNotify(pl, false, nameErr) return end
 
     GetContext(pl, function(ctx)
         if ctx then GNotify(pl, false, 'Вы уже состоите в банде') return end

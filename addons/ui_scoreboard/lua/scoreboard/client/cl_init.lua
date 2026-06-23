@@ -350,9 +350,9 @@ function enc.scoreboard()
 
     local cols = {
         name = enc.w(84),
-        rank = enc.w(230),
-        job  = enc.w(420),
-        clan = enc.w(650),
+        rank = enc.w(270),
+        job  = enc.w(505),
+        clan = enc.w(760),
         time = enc.w(905),
     }
 
@@ -364,7 +364,7 @@ function enc.scoreboard()
 
         function texts:Paint(w, h)
             text('Имя',        'MKfont.16', cols.name, h / 2, enc.clrs.whitea, 0, 1)
-            text('Ранг',       'MKfont.16', cols.rank, h / 2, enc.clrs.whitea, 0, 1)
+            text('Ранг',       'MKfont.16', cols.rank, h / 2, enc.clrs.whitea, 1, 1)
             text('Профессия',  'MKfont.16', cols.job,  h / 2, enc.clrs.whitea, 1, 1)
             text('Клан',       'MKfont.16', cols.clan, h / 2, enc.clrs.whitea, 1, 1)
             text('Часы',       'MKfont.16', cols.time, h / 2, enc.clrs.whitea, 1, 1)
@@ -448,8 +448,8 @@ function enc.scoreboard()
 
     local padX        = enc.w(12)
     local padY        = enc.h(6)
-    local rankAreaW   = enc.w(170)
-    local nameMaxW    = math.max(enc.w(35), cols.rank - cols.name - enc.w(10))
+    local rankAreaW   = enc.w(150)
+    local nameMaxW    = math.max(enc.w(35), cols.rank - cols.name - enc.w(35))
 
     local rank_fit = FitText(rank_txt, 'rank_badge', math.max(0, rankAreaW - padX * 2))
     surface.SetFont('rank_badge')
@@ -467,12 +467,11 @@ function enc.scoreboard()
         text(name_txt, 'scoreboard_name', cols.name, centerY, enc.clrs.white, 0, 1)
     end
 
-    local rank_x = math.Round(cols.rank)
+    local rank_x = math.Round(cols.rank - panel_w / 2)
     local panel_y = math.Round(centerY - panel_h / 2)
 
     box(4, rank_x, panel_y, panel_w, panel_h, Color(90, 90, 90, 255))
-    local text_x = rank_x + math.Round((panel_w - rw) / 2)
-    text(rank_fit, 'rank_badge', text_x, centerY, enc.clrs.white, 0, 1)
+    text(rank_fit, 'rank_badge', cols.rank, centerY, enc.clrs.white, 1, 1)
 
     SimpleTextLimited(SafeGetJobName(plyRef), 'MKfont.16', cols.job, centerY, SafeGetJobColor(plyRef), 1, 1, enc.w(220))
 
@@ -485,7 +484,7 @@ function enc.scoreboard()
         if nwClan ~= "" then clan_name = nwClan end
     end
 
-    SimpleTextLimited(clan_name, 'MKfont.16', cols.clan + enc.w(20), centerY, enc.clrs.white, 1, 1, enc.w(210))
+    SimpleTextLimited(clan_name, 'MKfont.16', cols.clan, centerY, enc.clrs.white, 1, 1, enc.w(230))
     SimpleTextLimited(SafeGetPlayTime(plyRef), 'MKfont.16', cols.time, centerY, enc.clrs.white, 1, 1, enc.w(115))
 
     local ping_str = plyRef:Ping() .. "ms"
@@ -706,7 +705,8 @@ end)
 
 
 -- ARIZONA+ Rainbow overhead nick
-hook.Add("PostPlayerDraw", "ArizonaPlus_Overhead3D", function(pl)
+hook.Add("PostPlayerDraw", "ArizonaPlus_Overhead3D_DISABLED", function(pl)
+    if true then return end
     if pl == LocalPlayer() then return end
     if not pl:Alive() then return end
     if not ArizonaPlus_HasPurchase(pl) then return end

@@ -40,13 +40,25 @@ function PANEL:Init( slot )
 
 		if keyCode == MOUSE_RIGHT then
 			if IsValid(Tooltip) then Tooltip:Remove() end
+			if IsValid(mm) then mm:Remove() end
 			mm = DermaMenu()
 
-			if slot.Class && slot.Class[1] == '_' then				
-				local id = string.TrimLeft( slot.Class, "_acc_" )
-				
-				local tb = AAS.GetTableById(id)
-				mm:AddOption(tb.name):SetIcon('icon16/box.png')
+			mm:AddOption('Использовать', function()
+				net.Start('enc.inv.use')
+					net.WriteInt(self.slot, 12)
+				net.SendToServer()
+			end):SetIcon('icon16/accept.png')
+
+			mm:AddOption('Выбросить', function()
+				net.Start('enc.inv.drop')
+					net.WriteInt(self.slot, 12)
+				net.SendToServer()
+			end):SetIcon('icon16/delete.png')
+
+			if slot.Class && slot.Class[1] == '_' then
+				local id = string.TrimLeft(slot.Class, "_acc_")
+				local tb = AAS and AAS.GetTableById and AAS.GetTableById(id)
+				if tb and tb.name then mm:AddSpacer() mm:AddOption(tb.name):SetIcon('icon16/box.png') end
 			end
 			
 			mm:Open()

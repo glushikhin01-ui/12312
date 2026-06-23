@@ -1,8 +1,3 @@
---leak by matveicher
---vk group - https://vk.com/codespill
---steam - https://steamcommunity.com/profiles/76561198968457747/
---ds server - https://discord.gg/7XaRzQSZ45
---ds - matveicher
 
 local col = rp.col
 rp.Label = rp.Label || {}
@@ -18,6 +13,7 @@ rp.Label['Радиовещание'] = col.Red
 rp.Label['911'] = col.Yellow
 rp.Label['Мэр Города'] = col.Red
 rp.Label['Радио'] = col.Red
+rp.Label['Рация'] = Color(62,124,218)
 rp.Label['СМИ'] = col.Red
 rp.Label['Админ-Чат'] = Color(63,111,235)
 
@@ -104,25 +100,19 @@ end
 
 
 function chat.GetChatBoxSize(setup)
-    
+
     if (setup or !IsValid(CHATBOX)) then
 
-        -- local saved = cvar.GetValue('ChatboxSize')
 
-        -- if (!saved) then
 
-        --  return ScrW() *.3, ScrH() * .25
 
-        -- else
 
-        --  return math.Clamp(saved[1], 265, ScrW() *.3), math.Clamp(saved[2], 155, ScrH()*25)
 
-        -- end
         return ScrW() *.3, ScrH() * .25
     end
 
 
-    
+
     return CHATBOX:GetSize()
 
 end

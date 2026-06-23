@@ -1,8 +1,3 @@
---leak by matveicher
---vk group - https://vk.com/codespill
---steam - https://steamcommunity.com/profiles/76561198968457747/
---ds server - https://discord.gg/7XaRzQSZ45
---ds - matveicher
 
 if (CLIENT) then
 	cvar.Register 'oocchat_enable'
@@ -35,10 +30,10 @@ function encodeURI(str)
 	end
 	return str
 end
-	
+
 function decodeURI(s)
 	if(s) then
-		s = string.gsub(s, '%%(%x%x)', 
+		s = string.gsub(s, '%%(%x%x)',
 		function (hex) return string.char(tonumber(hex,16)) end )
 	end
 	return s
@@ -221,6 +216,21 @@ chat.Register 'RadioBrodact'
 		return readmsg(col.Red, ' Радио ')
 	end)
 
+chat.Register 'PoliceRadio'
+	:Write(writemsg)
+	:Read(function()
+		return readmsg(Color(62, 124, 218), ' Рация ')
+	end)
+	:Filter(function(pl, message)
+		local targets = {}
+		for _, v in ipairs(player.GetAll()) do
+			if IsValid(v) and v.IsCP and v:IsCP() then
+				targets[#targets + 1] = v
+			end
+		end
+		return targets
+	end)
+
 local function testGroupChats(t1, t2)
 	return rp.groupChats[t1] and rp.groupChats[t1][t2]
 end
@@ -257,7 +267,7 @@ chat.Register 'Group'
 			return false
 		end)
 	end)
-	
+
 chat.Register 'OOC'
 	:Write(writemsg)
 	:Read(function()
@@ -363,7 +373,7 @@ chat.Register 'Coin'
 		end
 	end)
 	:SetLocal(250)
-	
+
 chat.Register 'Do'
 	:Write(function(pl, msg)
 		net.WritePlayer(pl)
@@ -376,9 +386,3 @@ chat.Register 'Do'
 		end
 	end)
 	:SetLocal(250)
-
---leak by matveicher
---vk group - https://vk.com/codespill
---steam - https://steamcommunity.com/profiles/76561198968457747/
---ds server - https://discord.gg/7XaRzQSZ45
---ds - matveicher

@@ -65,30 +65,69 @@ end
 if CLIENT then
 	surface.CreateFont('ArrestBaton.Title', {
 		font = 'Roboto',
-		size = 22,
-		weight = 700,
+		size = 30,
+		weight = 800,
 		extended = true
 	})
 
 	surface.CreateFont('ArrestBaton.Text', {
 		font = 'Roboto',
-		size = 16,
-		weight = 500,
+		size = 18,
+		weight = 600,
 		extended = true
 	})
 
-	local bg = Color(8, 16, 35, 245)
-	local panel = Color(13, 28, 59, 255)
-	local panelLight = Color(19, 43, 87, 255)
-	local accent = Color(45, 135, 255, 255)
-	local accentHover = Color(70, 155, 255, 255)
-	local redHover = Color(240, 85, 100, 255)
-	local text = Color(235, 242, 255, 255)
-	local muted = Color(150, 170, 205, 255)
+	surface.CreateFont('ArrestBaton.Button', {
+		font = 'Roboto',
+		size = 24,
+		weight = 600,
+		extended = true
+	})
 
-	local function PaintButton(btn, w, h, color, hoverColor)
-		draw.RoundedBox(8, 0, 0, w, h, btn:IsHovered() and hoverColor or color)
-		draw.SimpleText(btn:GetText(), 'ArrestBaton.Text', w / 2, h / 2, text, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+	local panelBg = Color(42, 43, 46, 255)
+	local red = Color(218, 62, 68, 255)
+	local redHover = Color(235, 70, 76, 255)
+	local inputBg = Color(159, 159, 159, 64)
+	local inputBgHover = Color(159, 159, 159, 82)
+	local sliderLine = Color(157, 118, 126, 255)
+	local sliderKnob = Color(199, 150, 160, 255)
+	local text = Color(255, 255, 255, 255)
+	local muted = Color(136, 136, 136, 255)
+	local cancelText = Color(180, 180, 180, 255)
+
+	local function sc(v)
+		return math.Round(v * math.min(ScrW(), ScrH()) / 1080)
+	end
+
+	local function DrawPanelGradient(w, h)
+		-- Аккуратный градиент внутри настоящего скругления без прозрачных квадратов по углам.
+		-- Не используем vgui/gradient-d, потому что у него могут быть артефакты на закруглениях.
+		local radius = sc(15)
+		local maxAlpha = 26
+
+		for y = 0, h - 1 do
+			local alpha = math.floor((y / h) * maxAlpha)
+			if alpha <= 0 then continue end
+
+			local inset = 0
+
+			if y < radius then
+				local dy = radius - y
+				inset = radius - math.sqrt(math.max(radius * radius - dy * dy, 0))
+			elseif y > h - radius then
+				local dy = y - (h - radius)
+				inset = radius - math.sqrt(math.max(radius * radius - dy * dy, 0))
+			end
+
+			inset = math.ceil(inset)
+			surface.SetDrawColor(red.r, red.g, red.b, alpha)
+			surface.DrawRect(inset, y, w - inset * 2, 1)
+		end
+	end
+
+	local function PaintButton(btn, w, h, color, hoverColor, textColor)
+		draw.RoundedBox(sc(5), 0, 0, w, h, btn:IsHovered() and hoverColor or color)
+		draw.SimpleText(btn:GetText(), 'ArrestBaton.Button', w / 2, h / 2, textColor or text, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 		return true
 	end
 
@@ -98,43 +137,34 @@ if CLIENT then
 
 		local frame = vgui.Create('DFrame')
 		rpArrestBatonMenu = frame
-		frame:SetSize(430, 285)
+		frame:SetSize(sc(700), sc(450))
 		frame:Center()
 		frame:SetTitle('')
 		frame:ShowCloseButton(false)
+		frame:SetDraggable(false)
 		frame:MakePopup()
 		frame.Paint = function(self, w, h)
-			draw.RoundedBox(14, 0, 0, w, h, bg)
-			draw.RoundedBoxEx(14, 0, 0, w, 58, panel, true, true, false, false)
-			draw.RoundedBox(0, 0, 57, w, 1, Color(35, 78, 145, 255))
-			draw.SimpleText('Арест игрока', 'ArrestBaton.Title', 22, 18, text, TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
-			draw.SimpleText(target:Name(), 'ArrestBaton.Text', 22, 40, muted, TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
-		end
+			draw.RoundedBox(sc(15), 0, 0, w, h, panelBg)
 
-		local closeButton = vgui.Create('DButton', frame)
-		closeButton:SetPos(382, 14)
-		closeButton:SetSize(32, 32)
-		closeButton:SetText('')
-		closeButton.Paint = function(self, w, h)
-			draw.RoundedBox(8, 0, 0, w, h, self:IsHovered() and redHover or Color(26, 50, 92, 255))
-			draw.SimpleText('×', 'ArrestBaton.Title', w / 2, h / 2 - 1, text, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
-		end
-		closeButton.DoClick = function()
-			frame:Remove()
+			-- Нижний красный градиент без квадратных артефактов на закруглениях.
+			DrawPanelGradient(w, h)
+
+			draw.SimpleText('АРЕСТ ИГРОКА', 'ArrestBaton.Title', sc(22), sc(35), text, TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
+			draw.SimpleText(target:Name(), 'ArrestBaton.Text', sc(28), sc(75), text, TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
 		end
 
 		local timeBox = vgui.Create('DPanel', frame)
-		timeBox:SetPos(18, 74)
-		timeBox:SetSize(394, 82)
+		timeBox:SetPos(sc(78), sc(115))
+		timeBox:SetSize(sc(545), sc(88))
 		timeBox.Paint = function(self, w, h)
-			draw.RoundedBox(10, 0, 0, w, h, panel)
-			draw.SimpleText('Срок ареста, сек.', 'ArrestBaton.Text', 14, 16, text, TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
-			draw.SimpleText('Максимум: ' .. MAX_ARREST_TIME, 'ArrestBaton.Text', w - 14, 16, muted, TEXT_ALIGN_RIGHT, TEXT_ALIGN_CENTER)
+			draw.RoundedBox(sc(5), 0, 0, w, h, inputBg)
+			draw.SimpleText('Срок ареста, сек.', 'ArrestBaton.Text', sc(15), sc(21), text, TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
+			draw.SimpleText('максимум ' .. MAX_ARREST_TIME, 'ArrestBaton.Text', w - sc(15), sc(21), muted, TEXT_ALIGN_RIGHT, TEXT_ALIGN_CENTER)
 		end
 
 		local timeSlider = vgui.Create('DNumSlider', timeBox)
-		timeSlider:SetPos(10, 31)
-		timeSlider:SetSize(374, 42)
+		timeSlider:SetPos(sc(110), sc(38))
+		timeSlider:SetSize(sc(420), sc(43))
 		timeSlider:SetText('')
 		timeSlider:SetMin(60)
 		timeSlider:SetMax(MAX_ARREST_TIME)
@@ -142,35 +172,37 @@ if CLIENT then
 		timeSlider:SetValue(60)
 
 		if IsValid(timeSlider.Label) then
-			timeSlider.Label:SetTextColor(text)
+			timeSlider.Label:SetWide(0)
+			timeSlider.Label:SetText('')
 		end
 
 		if IsValid(timeSlider.TextArea) then
+			timeSlider.TextArea:SetWide(sc(70))
 			timeSlider.TextArea:SetTextColor(text)
-			timeSlider.TextArea:SetHighlightColor(accent)
+			timeSlider.TextArea:SetHighlightColor(sliderKnob)
 			timeSlider.TextArea:SetCursorColor(text)
 			timeSlider.TextArea:SetNumeric(true)
 			timeSlider.TextArea:SetContentAlignment(5)
+			timeSlider.TextArea:SetFont('ArrestBaton.Text')
 			timeSlider.TextArea.Paint = function(self, w, h)
-				draw.RoundedBox(6, 0, 0, w, h, panelLight)
-				self:DrawTextEntryText(text, accent, text)
+				self:DrawTextEntryText(text, sliderKnob, text)
 			end
 		end
 
 		if IsValid(timeSlider.Slider) then
 			timeSlider.Slider.Paint = function(self, w, h)
-				draw.RoundedBox(4, 8, h / 2 - 3, w - 16, 6, Color(28, 60, 115, 255))
+				draw.RoundedBox(sc(100), sc(8), h / 2 - sc(2), w - sc(16), sc(4), sliderLine)
 			end
 
 			if IsValid(timeSlider.Slider.Knob) then
 				timeSlider.Slider.Knob:SetText('')
-				timeSlider.Slider.Knob:SetSize(14, 14)
+				timeSlider.Slider.Knob:SetSize(sc(14), sc(14))
 				timeSlider.Slider.Knob.PaintOver = function() end
 				timeSlider.Slider.Knob.Paint = function(self, w, h)
-					local r = math.min(w, h) / 2
 					draw.NoTexture()
-					surface.SetDrawColor(self:IsHovered() and accentHover or accent)
+					surface.SetDrawColor(self:IsHovered() and Color(220, 170, 180) or sliderKnob)
 					local circle = {}
+					local r = math.min(w, h) / 2
 					for i = 0, 32 do
 						local a = math.rad((i / 32) * 360)
 						circle[#circle + 1] = {x = w / 2 + math.cos(a) * r, y = h / 2 + math.sin(a) * r}
@@ -198,45 +230,45 @@ if CLIENT then
 			return value
 		end
 
-		timeSlider.OnValueChanged = function(self, value)
-			-- Clamping is handled on OnEnter and OnLoseFocus to allow manual input
-		end
+		timeSlider.OnValueChanged = function() end
 
 		if IsValid(timeSlider.TextArea) then
 			timeSlider.TextArea.OnEnter = ClampSliderValue
 			timeSlider.TextArea.OnLoseFocus = ClampSliderValue
 		end
 
-		local reasonLabel = vgui.Create('DLabel', frame)
-		reasonLabel:SetPos(22, 166)
-		reasonLabel:SetSize(386, 20)
-		reasonLabel:SetFont('ArrestBaton.Text')
-		reasonLabel:SetTextColor(text)
-		reasonLabel:SetText('Причина ареста')
+		local reasonBox = vgui.Create('DPanel', frame)
+		reasonBox:SetPos(sc(78), sc(238))
+		reasonBox:SetSize(sc(545), sc(88))
+		reasonBox.Paint = function(self, w, h)
+			draw.RoundedBox(sc(5), 0, 0, w, h, inputBg)
+			draw.SimpleText('Причина ареста', 'ArrestBaton.Text', sc(15), sc(21), text, TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
+		end
 
-		local reasonEntry = vgui.Create('DTextEntry', frame)
-		reasonEntry:SetPos(18, 190)
-		reasonEntry:SetSize(394, 38)
-		reasonEntry:SetPlaceholderText('Введите причину вручную')
+		local reasonEntry = vgui.Create('DTextEntry', reasonBox)
+		reasonEntry:SetPos(sc(110), sc(48))
+		reasonEntry:SetSize(sc(325), sc(35))
+		reasonEntry:SetText('')
 		reasonEntry:SetUpdateOnType(true)
 		reasonEntry:SetTextColor(text)
-		reasonEntry:SetHighlightColor(accent)
+		reasonEntry:SetHighlightColor(sliderKnob)
 		reasonEntry:SetCursorColor(text)
+		reasonEntry:SetFont('ArrestBaton.Text')
 		reasonEntry.Paint = function(self, w, h)
-			draw.RoundedBox(8, 0, 0, w, h, panelLight)
-			self:DrawTextEntryText(text, accent, text)
+			draw.RoundedBox(sc(5), 0, 0, w, h, self:HasFocus() and inputBgHover or sliderLine)
+			self:DrawTextEntryText(text, sliderKnob, text)
 
 			if self:GetValue() == '' and not self:HasFocus() then
-				draw.SimpleText('Введите причину вручную', 'ArrestBaton.Text', 12, h / 2, muted, TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
+				draw.SimpleText('Введите текст...', 'ArrestBaton.Text', w / 2, h / 2, text, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 			end
 		end
 
 		local arrestButton = vgui.Create('DButton', frame)
-		arrestButton:SetPos(18, 242)
-		arrestButton:SetSize(192, 34)
+		arrestButton:SetPos(sc(78), sc(356))
+		arrestButton:SetSize(sc(218), sc(54))
 		arrestButton:SetText('Арестовать')
 		arrestButton.Paint = function(self, w, h)
-			return PaintButton(self, w, h, accent, accentHover)
+			return PaintButton(self, w, h, red, redHover, text)
 		end
 		arrestButton.DoClick = function()
 			if not IsValid(target) then frame:Remove() return end
@@ -259,11 +291,11 @@ if CLIENT then
 		end
 
 		local cancelButton = vgui.Create('DButton', frame)
-		cancelButton:SetPos(220, 242)
-		cancelButton:SetSize(192, 34)
+		cancelButton:SetPos(sc(405), sc(356))
+		cancelButton:SetSize(sc(218), sc(54))
 		cancelButton:SetText('Отмена')
 		cancelButton.Paint = function(self, w, h)
-			return PaintButton(self, w, h, Color(31, 58, 105, 255), Color(43, 76, 132, 255))
+			return PaintButton(self, w, h, inputBg, inputBgHover, cancelText)
 		end
 		cancelButton.DoClick = function()
 			frame:Remove()

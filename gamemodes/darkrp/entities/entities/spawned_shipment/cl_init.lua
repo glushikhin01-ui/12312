@@ -19,7 +19,7 @@ function ENT:Draw()
 
 	if (not inView) then return end
 
-	local ang = IsAngle(self:GetAngles()) and self:GetAngles() or Angle(0,0,0)
+	local ang = isangle(self:GetAngles()) and self:GetAngles() or Angle(0,0,0)
 	ang:RotateAroundAxis(ang:Up(), 180)
 
 	cam.Start3D2D(self:GetPos() + ang:Up() * 14.01, ang, 0.023)
@@ -88,7 +88,7 @@ function ENT:RenderTexture()
 		render.SetStencilCompareFunction(STENCILCOMPARISONFUNCTION_ALWAYS)
 
 			local x, y, w, h = (rf.X and isnumber(rf.X) and rf.X > 0) and rf.X or 10, (rf.Y and isnumber(rf.Y) and rf.Y > 0) and rf.Y or 10, 1004, 492
-			cam.Start3D(Angle(-96,0,0), Vector(0, 0, -15), 30, x, y, w, h)
+			cam.Start3D(Vector(0, 0, -15), Angle(-96, 0, 0), 30, x, y, w, h)
 					clmodel:DrawModel()
 			cam.End3D()
 

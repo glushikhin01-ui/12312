@@ -133,9 +133,11 @@ nw.Register'WantedReason':Write(net.WriteString):Read(net.ReadString):SetLocalPl
 
 nw.Register'ArrestedInfo':Write(function(v)
     net.WriteUInt(v.Release, 32)
+    net.WriteString(v.Reason or '')
 end):Read(function()
     return {
-        Release = net.ReadUInt(32)
+        Release = net.ReadUInt(32),
+        Reason = net.ReadString()
     }
 end):SetLocalPlayer()
 

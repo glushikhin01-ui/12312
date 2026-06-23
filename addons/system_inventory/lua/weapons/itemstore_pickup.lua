@@ -43,14 +43,39 @@ function SWEP:OnDrop()
 	self:Remove()
 end
 
+SWEP.Range = 140
+
 function SWEP:PrimaryAttack()
+	self:SetNextPrimaryFire(CurTime() + 0.35)
+
 	if CLIENT then return end
 
-	self.Owner:PickupItem()
+	local owner = self:GetOwner()
+	if not IsValid(owner) then return end
+
+	local tr = util.TraceLine({
+		start = owner:GetShootPos(),
+		endpos = owner:GetShootPos() + owner:GetAimVector() * self.Range,
+		filter = owner
+	})
+
+	local ent = tr.Entity
+	if not IsValid(ent) then return end
+
+	if owner.EncPickupEntityToInventory then
+		owner:EncPickupEntityToInventory(ent)
+		return
+	end
+
+	if owner.PickupItem then
+		owner:PickupItem(ent)
+	end
 end
 
 function SWEP:SecondaryAttack()
-	if CLIENT then 
+	self:SetNextSecondaryFire(CurTime() + 0.35)
+
+	if CLIENT and enc and enc.inventory then
 		enc.inventory()
 	end
 end

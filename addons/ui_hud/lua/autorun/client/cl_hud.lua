@@ -421,12 +421,33 @@ hook.Add("HUDPaint", "JustRP.HUD", function()
 
 	if P:IsArrested() then
 		local arrestInfo = P:GetArrestInfo()
-		local timeStr = stringFormattedTime(arrestInfo.Release - CurTime(), "%02i:%02i")
-		DrawRoundedBox(s(10), scrW * 0.5 - s(52) * 0.5 - s(70), scrH - s(100), s(70), s(70), clr.back)
-		drawMat(scrW * 0.5 - s(52) * 0.5 - s(40) - s(13), scrH - s(85), s(40), s(40), mat.jail, clr.white)
-		DrawRoundedBox(s(10), scrW * 0.5 - s(140) * 0.5 + s(52), scrH - s(100), s(140), s(70), clr.back)
-		drawSimpleText(timeStr, "hFont3", scrW * 0.5 + s(52), scrH - s(75), clr.white, 1, 1)
-		drawSimpleText("ВЫ В ТЮРЬМЕ", "hFont4", scrW * 0.5 + s(50), scrH - s(47), clr.jail, 1, 1)
+		local timeLeft = math.max(0, mathCeil((arrestInfo.Release or CurTime()) - CurTime()))
+		local reason = arrestInfo.Reason
+		if not reason or reason == "" then reason = "Не указана" end
+
+		local panelW, panelH = s(472), s(79)
+		local panelX, panelY = scrW * 0.5 - panelW * 0.5, scrH - s(90)
+		local radius = s(12)
+
+		DrawRoundedBox(radius, panelX, panelY, panelW, panelH, clr.cardBg)
+		drawGradientOverlay(radius, panelX, panelY, panelW, panelH, themes.red.accent)
+
+		local titleX = panelX + s(6)
+		local titleY = panelY + s(20)
+		drawSimpleText("#", "hFont6", titleX, titleY, themes.red.accent, 0, 1)
+		surfaceSetFont("hFont6")
+		local hashW = surfaceGetTextSize("# ")
+		drawSimpleText("ВЫ АРЕСТОВАНЫ", "hFont6", titleX + hashW, titleY, clr.white, 0, 1)
+
+		local reasonText = "Причина: " .. reason
+		surfaceSetFont("hFont4")
+		local maxReasonW = panelW - s(205)
+		while surfaceGetTextSize(reasonText) > maxReasonW and #reasonText > 15 do
+			reasonText = reasonText:sub(1, #reasonText - 4) .. "..."
+		end
+
+		drawSimpleText(reasonText, "hFont4", panelX + s(17), panelY + s(52), clr.white, 0, 1)
+		drawSimpleText("До выхода: " .. timeLeft .. " сек", "hFont4", panelX + panelW - s(8), panelY + s(20), clr.white, 2, 1)
 	end
 
 	if P:IsHitman() then

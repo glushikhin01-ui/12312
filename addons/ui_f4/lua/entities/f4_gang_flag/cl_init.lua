@@ -77,6 +77,19 @@ local function DrawCenteredText(text, font, x, y, col)
     draw.SimpleText(text, font, x, y, col, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 end
 
+local function CanSeeFlagPanel(lp, ent, pos)
+    if not IsValid(lp) or not IsValid(ent) then return false end
+
+    local tr = util.TraceLine({
+        start = lp:EyePos(),
+        endpos = pos,
+        filter = {lp, ent},
+        mask = MASK_SOLID
+    })
+
+    return not tr.Hit
+end
+
 function ENT:Draw()
     self:DrawModel()
 
@@ -87,6 +100,8 @@ function ENT:Draw()
     if distSqr > (DRAW_DISTANCE * DRAW_DISTANCE) then return end
 
     local pos = self:GetPos() + Vector(0, 0, 86)
+    if not CanSeeFlagPanel(lp, self, pos) then return end
+
     local ang = Angle(0, lp:EyeAngles().y - 90, 90)
     local name = self:GetNWString('F4FlagName', 'Флаг')
     local ownerName = self:GetNWString('F4FlagGangName', '')
@@ -99,8 +114,6 @@ function ENT:Draw()
     local cdLeft = math.max(0, math.ceil(nextCapture - CurTime()))
 
     cam.Start3D2D(pos, ang, 0.08)
-        cam.IgnoreZ(true)
-
         local w = 460
         local h = capturing and 202 or 176
         local top = -h / 2
@@ -133,6 +146,5 @@ function ENT:Draw()
             DrawCenteredText('Нужно ' .. minPlayers .. ' живых участника в радиусе', 'F4Flag.Small', 0, top + 138, Color(225, 225, 225))
         end
 
-        cam.IgnoreZ(false)
     cam.End3D2D()
 end
