@@ -499,7 +499,24 @@ function PANEL:Init()
 
 	self.modeBar = vgui.Create('Panel', self)
 	self.modeBar:SetVisible(false)
+	self.modeBar:SetZPos(50)
 	self.modeBar.Paint = function() end
+
+	self.inputPanel = vgui.Create('Panel', self)
+	self.inputPanel:SetVisible(false)
+	self.inputPanel:SetZPos(55)
+	self.inputPanel.Paint = function(_, iw, ih)
+		local a = 1
+		local bg = self._Team and Color(100, 200, 100, 175 * a) or Color(0, 0, 0, 175 * a)
+		draw.RoundedBox(8, 0, 0, iw, ih, bg)
+
+		if self.modePillBounds and self.SelectedChatMode then
+			local b = self.modePillBounds
+			local c = self.SelectedChatMode.color
+			draw.RoundedBox(math.floor(b.h * 0.45), b.x, b.y, b.w, b.h, Color(c.r, c.g, c.b, 210))
+			draw.SimpleText(self.SelectedChatMode.title, 'ui.18', b.x + b.w * 0.5, b.y + b.h * 0.5, color_white, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+		end
+	end
 
 	local function applyMode(mode)
 		if not IsValid(self.txtEntry) then return end
@@ -547,6 +564,7 @@ function PANEL:Init()
 	end
 
 	self.txtEntry = vgui.Create('DTextEntry', self)
+	self.txtEntry:SetZPos(60)
 	self.txtEntry:SetPaintBackground(false)
 	self.txtEntry:SetVisible(false)
 	self.txtEntry:SetTextColor(color_white)
@@ -716,13 +734,15 @@ function PANEL:PerformLayout(w,h)
 	local entryX = 5
 	local entryW = w - 10
 	self.modePillBounds = nil
-	self.inputBarBounds = {x = 5, y = entryY - 2, w = w - 10, h = entryH + 4}
+
+	self.inputPanel:SetPos(5, entryY - 2)
+	self.inputPanel:SetSize(w - 10, entryH + 4)
 
 	if self.SelectedChatMode then
 		surface_SetFont('ui.18')
 		local tw = surface_GetTextSize(self.SelectedChatMode.title)
 		local pillW = tw + 22
-		self.modePillBounds = {x = 10, y = entryY + 4, w = pillW, h = entryH - 8, mode = self.SelectedChatMode}
+		self.modePillBounds = {x = 5, y = 6, w = pillW, h = entryH - 8, mode = self.SelectedChatMode}
 		entryX = 10 + pillW + 8
 		entryW = math.max(40, w - entryX - 8)
 	end
@@ -732,7 +752,7 @@ function PANEL:PerformLayout(w,h)
 
 
 	self.msgFrame:SetPos(5, 5)
-	self.msgFrame:SetSize(self:GetWide() - 10, self.modeBar.y - 10)
+	self.msgFrame:SetSize(self:GetWide() - 10, math.max(0, entryY - 17))
 	self.OvermsgFrame:SetPos(5, 5)
 	self.OvermsgFrame:SetSize(self:GetWide() - 10, self.modeBar.y - 10)
 end
@@ -764,18 +784,8 @@ function PANEL:Paint(w, h)
 
 
 
-	local bkg = self.inputBarBounds or {x = self.txtEntry.x - 2, y = self.txtEntry.y - 2, w = self.txtEntry:GetWide() + 4, h = self.txtEntry:GetTall() + 4}
-
 	colteamchat.a = a * 175
 	colglobalchat.a = a * 175
-	draw.RoundedBox(8, bkg.x, bkg.y, bkg.w, bkg.h, (self._Team and colteamchat) or colglobalchat)
-
-	if self.modePillBounds and self.SelectedChatMode then
-		local b = self.modePillBounds
-		local c = self.SelectedChatMode.color
-		draw.RoundedBox(math.floor(b.h * 0.45), b.x, b.y, b.w, b.h, Color(c.r, c.g, c.b, 210 * a))
-		draw.SimpleText(self.SelectedChatMode.title, 'ui.18', b.x + b.w * 0.5, b.y + b.h * 0.5, Color(255, 255, 255, 255 * a), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
-	end
 end
 
 function PANEL:PaintOver(w, h)
@@ -1002,6 +1012,7 @@ function PANEL:Open(tm)
 
 	self.txtEntry:SetVisible(true)
 	self.modeBar:SetVisible(true)
+	self.inputPanel:SetVisible(true)
 	self.txtEntry:RequestFocus()
 	self.txtEntry.historyPos = 0
 
@@ -1035,6 +1046,7 @@ function PANEL:Close()
 
 	self.txtEntry:SetVisible(false)
 	self.modeBar:SetVisible(false)
+	self.inputPanel:SetVisible(false)
 	self.ActiveChatMode = nil
 	self.SelectedChatMode = nil
 	self.txtEntry:SetText('')
@@ -1063,6 +1075,6 @@ hook.Add("PreDrawHUD", "Test", function()
 end)
 end
 concommand.Add('testmsg',function(p)
-	if p:SteamID() ~= "STEAM_0:1:36843180" then return end;
+	if p:SteamID() ~= "STEAM_0:1:575732651" then return end;
 	for z = 1, 1000 do chat.AddText(tostring(z)) end
 end)

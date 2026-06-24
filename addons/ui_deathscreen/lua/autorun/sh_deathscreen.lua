@@ -280,6 +280,30 @@ local function openDeathScreen()
         net.Start("ArizonaRP.DeathScreen.Spawn")
         net.SendToServer()
     end
+
+    local copyBtn = vgui.Create("DButton", fr)
+    copyBtn:SetPos(sx(904), sy(745))
+    copyBtn:SetSize(sx(214), sy(37))
+    copyBtn:SetText("")
+    copyBtn:SetVisible((deathInfo.killerSteamID or "") ~= "")
+    copyBtn.Paint = function(self, w, h)
+        if (deathInfo.killerSteamID or "") == "" then return end
+
+        local col = self:IsHovered() and Color(70, 145, 235) or Color(62, 124, 218)
+        draw.RoundedBox(ss(5), 0, 0, w, h, col)
+        draw.SimpleText("Скопировать SteamID", "ArizonaRP.DeathScreen.Button", w * 0.5, h * 0.5, color_white, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+    end
+    copyBtn.DoClick = function()
+        local steamID = deathInfo.killerSteamID or ""
+        if steamID == "" then return end
+
+        SetClipboardText(steamID)
+        surface.PlaySound("buttons/button14.wav")
+
+        if notification and notification.AddLegacy then
+            notification.AddLegacy("SteamID скопирован: " .. steamID, NOTIFY_GENERIC, 3)
+        end
+    end
 end
 
 net.Receive("ArizonaRP.DeathScreen.Show", function()

@@ -58,7 +58,7 @@ local C = {
 }
 
 local mats = {
-    home     = Material('f4/task.png','smooth mips'),
+    home     = Material('f4menu/128.png','smooth mips'),
     shop     = Material('f4/items.png','smooth mips'),
     jobs     = Material('f4/jobs.png','smooth mips'),
     cards    = Material('f4/cards.png','smooth mips'),

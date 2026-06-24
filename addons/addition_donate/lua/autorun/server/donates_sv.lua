@@ -27,6 +27,79 @@ util.AddNetworkString(Tag)
 util.AddNetworkString(toggleweaponnetwork)
 KylDonate = KylDonate or {}
 
+-- Все донат-рубли теперь хранятся ТОЛЬКО по SteamID64.
+-- Старые записи STEAM_0:* мигрируются в backup-таблицу KylDonate_Players_old_steamid,
+-- а рабочая таблица KylDonate_Players пересоздаётся как (SteamID64, Balance BIGINT).
+KylDonate.NormalizeSteamID64 = function(sid)
+    sid = tostring(sid or "")
+    if sid == "" then return "" end
+    if sid:match("^765611%d+$") then return sid end
+
+    local converted = util.SteamIDTo64(sid)
+    if converted and converted ~= "" and converted ~= "0" then return tostring(converted) end
+
+    local ply = player.GetBySteamID(sid)
+    if IsValid(ply) then return ply:SteamID64() end
+
+    return sid
+end
+
+KylDonate.FindPlayerByAnySteamID = function(sid)
+    local sid64 = KylDonate.NormalizeSteamID64(sid)
+    local ply = player.GetBySteamID64(sid64)
+    if IsValid(ply) then return ply end
+    ply = player.GetBySteamID(tostring(sid or ""))
+    if IsValid(ply) then return ply end
+    return nil
+end
+
+KylDonate.MigratePlayersTableToSteamID64 = function()
+    if not rp or not rp._Stats or not rp._Stats.Query then return end
+
+    rp._Stats:Query("CREATE TABLE IF NOT EXISTS KylDonate_Players (SteamID64 VARCHAR(32) PRIMARY KEY, Balance BIGINT NOT NULL DEFAULT 0)", function()
+        rp._Stats:Query("SHOW COLUMNS FROM KylDonate_Players LIKE 'SteamID64'", function(cols)
+            cols = cols or {}
+            if next(cols) then
+                return
+            end
+
+            rp._Stats:Query("DROP TABLE IF EXISTS KylDonate_Players64_tmp", function()
+                rp._Stats:Query("CREATE TABLE KylDonate_Players64_tmp (SteamID64 VARCHAR(32) PRIMARY KEY, Balance BIGINT NOT NULL DEFAULT 0)", function()
+                    rp._Stats:Query("SELECT * FROM KylDonate_Players", function(data)
+                        data = data or {}
+                        for _, row in ipairs(data) do
+                            local sid = row.SteamID64 or row.SteamID or row.steamid or row.steamid64 or ""
+                            local sid64 = KylDonate.NormalizeSteamID64(sid)
+                            local balance = math.floor(tonumber(row.Balance or row.balance or 0) or 0)
+
+                            if sid64 ~= "" and sid64:match("^765611%d+$") then
+                                rp._Stats:Query(string.format(
+                                    "INSERT INTO KylDonate_Players64_tmp (SteamID64, Balance) VALUES (%s, %d) ON DUPLICATE KEY UPDATE Balance = GREATEST(Balance, VALUES(Balance))",
+                                    sql.SQLStr(sid64), balance
+                                ))
+                            end
+                        end
+
+                        timer.Simple(3, function()
+                            rp._Stats:Query("DROP TABLE IF EXISTS KylDonate_Players_old_steamid", function()
+                                rp._Stats:Query("RENAME TABLE KylDonate_Players TO KylDonate_Players_old_steamid", function()
+                                    rp._Stats:Query("RENAME TABLE KylDonate_Players64_tmp TO KylDonate_Players", function()
+                                        rp._Stats:Query("DROP TABLE IF EXISTS KylDonate_Players_old_steamid")
+                                    end)
+                                end)
+                            end)
+                        end)
+                    end)
+                end)
+            end)
+        end)
+    end)
+end
+
+timer.Simple(2, function()
+    KylDonate.MigratePlayersTableToSteamID64()
+end)
+
 
 
 --[[ 
@@ -36,7 +109,7 @@ KylDonate = KylDonate or {}
     rp._Stats:Query("DROP TABLE KylDonate_BuyLogs")
 
     rp._Stats:Query("CREATE TABLE IF NOT EXISTS KylDonate_Weapons (id INT AUTO_INCREMENT PRIMARY KEY, SteamID TEXT, DItemID TEXT, toggle BOOLEAN) ")
-    rp._Stats:Query("CREATE TABLE IF NOT EXISTS KylDonate_Players (SteamID VARCHAR(32) PRIMARY KEY, Balance INT)")
+    rp._Stats:Query("CREATE TABLE IF NOT EXISTS KylDonate_Players (SteamID64 VARCHAR(32) PRIMARY KEY, Balance BIGINT NOT NULL DEFAULT 0)")
     rp._Stats:Query("CREATE TABLE IF NOT EXISTS KylDonate_BuyLogs (SteamID TEXT, DItemName TEXT, DItemID TEXT, DItemType TEXT, BuyTime TEXT)") 
 ]]--
 
@@ -49,32 +122,37 @@ KylDonate.AddBuyLog = function(sid, name, id, typer)
 end
 
 KylDonate.SetDonateCoins = function(sid, balance)
-    local PL = player.GetBySteamID( sid )
+    local sid64 = KylDonate.NormalizeSteamID64(sid)
+    local PL = KylDonate.FindPlayerByAnySteamID(sid)
+    balance = math.floor(tonumber(balance) or 0)
 
-    rp._Stats:Query(string.format("REPLACE INTO KylDonate_Players (SteamID, Balance) VALUES (%s, %d)", sql.SQLStr(sid), balance))
-    if PL then
-        PL:SetNWInt("kyl_balance", tonumber(balance))
+    if sid64 == "" or not sid64:match("^765611%d+$") then return end
+
+    rp._Stats:Query(string.format("REPLACE INTO KylDonate_Players (SteamID64, Balance) VALUES (%s, %d)", sql.SQLStr(sid64), balance))
+    if IsValid(PL) and PL:IsPlayer() then
+        PL:SetNWInt("kyl_balance", balance)
     end
 end
 
 KylDonate.AddDonateCoins = function(sid, balance)
-    local olx = player.GetBySteamID(sid)
+    local sid64 = KylDonate.NormalizeSteamID64(sid)
+    local olx = KylDonate.FindPlayerByAnySteamID(sid)
+    balance = math.floor(tonumber(balance) or 0)
+
+    if sid64 == "" or not sid64:match("^765611%d+$") then return end
     
-    rp._Stats:Query( "SELECT Balance FROM KylDonate_Players WHERE SteamID = " .. sql.SQLStr( sid ) .. ";", function(data)
-        if next(data) then
-            local balik = data[1].Balance
-            if not balik then balik = 0 end
+    rp._Stats:Query("SELECT Balance FROM KylDonate_Players WHERE SteamID64 = " .. sql.SQLStr(sid64) .. ";", function(data)
+        data = data or {}
+        local current = 0
+        if data[1] and data[1].Balance ~= nil then
+            current = tonumber(data[1].Balance) or 0
+        end
 
-            KylDonate.SetDonateCoins(sid, tonumber(balik + balance))
+        local newBalance = math.floor(current + balance)
+        KylDonate.SetDonateCoins(sid64, newBalance)
 
-            if IsValid(olx) and olx:IsPlayer() then
-                olx:SetNWInt("kyl_balance", tonumber(balik + balance))
-            end
-        else
-            KylDonate.SetDonateCoins(sid, balance)
-            if IsValid(olx) and olx:IsPlayer() then
-                olx:SetNWInt("kyl_balance", balance)
-            end
+        if IsValid(olx) and olx:IsPlayer() then
+            olx:SetNWInt("kyl_balance", newBalance)
         end
     end)
 end
@@ -152,10 +230,13 @@ end)
 
 hook.Add("LibFuse:PlayerFullyLoad", "DonateInit", function(ply)
 
-    rp._Stats:Query( "SELECT Balance FROM KylDonate_Players WHERE SteamID = " .. sql.SQLStr( ply:SteamID() ) .. ";", function(data)
-        if next(data) then
-            local coins = data[1].Balance
-            ply:SetNWInt("kyl_balance", tonumber(coins))
+    rp._Stats:Query("SELECT Balance FROM KylDonate_Players WHERE SteamID64 = " .. sql.SQLStr(ply:SteamID64()) .. ";", function(data)
+        data = data or {}
+        if data[1] then
+            local coins = tonumber(data[1].Balance) or 0
+            ply:SetNWInt("kyl_balance", coins)
+        else
+            ply:SetNWInt("kyl_balance", 0)
         end
     end)
     
@@ -221,7 +302,7 @@ local function checkdonates()
     http.Fetch('http://46.174.50.240:3000/gmod/checkdatabase/justrpfunwithloveurbanichka', function(body)
         srv = util.JSONToTable(body) -- its json with info
         for k, v in pairs(srv.donators) do
-            local olx = player.GetBySteamID(k)
+            local olx = KylDonate.FindPlayerByAnySteamID(k)
                 KylDonate.AddDonateCoins(k, math.floor(v.coins))
                 if IsValid(olx) and olx:IsPlayer() then
                     otec.SendToChatAll(Color(255,77,119), "[DONATE] ", olx:GetJobColor(), olx:Name() , Color(255,255,255), " пополнил счёт на ", Color(0,166,17), v.coins, Color(255,255,255), " RUB с помощью ", table_donate_colors[v.pay_service] or Color(107,169,230), string.upper(v.pay_service))

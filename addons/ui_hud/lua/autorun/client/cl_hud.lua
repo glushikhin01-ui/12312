@@ -212,7 +212,7 @@ local function drawCard(x, y, w, h, th, iconMat, title, subtitle, radius, iconTi
 	end
 
 	if iconMat then
-		local mSz = s(24)
+		local mSz = s(18)
 		local mx = iconX + mathFloor((iconSize - mSz) / 2)
 		local my = iconY + mathFloor((iconSize - mSz) / 2)
 		drawMat(mx, my, mSz, mSz, iconMat, iconTint or clr.white)
@@ -318,7 +318,15 @@ hook.Add("HUDPaint", "JustRP.HUD", function()
 	local row2Y = scrH - s(30) - cardH
 	local row1Y = row2Y - gap - cardH
 
-	local playerCardW = s(173)
+	surfaceSetFont("hudCardTitle")
+	local playerNameW = surfaceGetTextSize(playerName)
+	surfaceSetFont("hudCardSub")
+	local jobNameW = surfaceGetTextSize(jobName)
+
+	local playerCardMinW = s(173)
+	local playerCardMaxW = s(360)
+	local playerCardNeeded = s(54) + math.max(playerNameW, jobNameW) + s(14)
+	local playerCardW = math.Clamp(playerCardNeeded, playerCardMinW, playerCardMaxW)
 
 	surfaceSetFont("hudCardTitle")
 	local moneyTextW = surfaceGetTextSize(money)
