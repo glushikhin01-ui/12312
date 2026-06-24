@@ -40,13 +40,212 @@ local function IGS_MirrorEnsureTables()
 	) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci]])
 end
 
-timer.Simple(3, IGS_MirrorEnsureTables)
+local function IGS_MirrorTransactionRow(tr)
+	if not IGS_DBReady() or not istable(tr) then return end
+
+	IGS_MirrorEnsureTables()
+
+	local sid64 = tostring(tr.sid or tr.SteamID or tr.SteamID64 or tr.steamid or tr.player or "")
+	if sid64 == "" then return end
+
+	local sum = math.floor(tonumber(tr.Sum or tr.sum or 0) or 0)
+	local note = tostring(tr.Note or tr.note or "")
+	local txTime = math.floor(tonumber(tr.Time or tr.time or tr.Date or tr.date or 0) or 0)
+	local raw = util.TableToJSON(tr, false) or "{}"
+	local idPart = tostring(tr.ID or tr.Id or tr.id or "")
+	local hash = util.CRC(sid64 .. "|" .. idPart .. "|" .. tostring(sum) .. "|" .. tostring(txTime) .. "|" .. note)
+
+	rp._Stats:Query(string.format(
+		[[INSERT INTO GMDonate_Transactions (TxHash, SteamID64, Sum, Note, TxTime, RawJSON, UpdatedAt)
+		  VALUES (%s, %s, %d, %s, %d, %s, %d)
+		  ON DUPLICATE KEY UPDATE Sum = VALUES(Sum), Note = VALUES(Note), TxTime = VALUES(TxTime), RawJSON = VALUES(RawJSON), UpdatedAt = VALUES(UpdatedAt)]],
+		IGS_SQLStr(hash), IGS_SQLStr(sid64), sum, IGS_SQLStr(note), txTime, IGS_SQLStr(raw), os.time()
+	))
+end
+
+local function IGS_FetchGlobalTransactions(iLimit, iOffset)
+	if not IGS_DBReady() then return end
+
+	IGS_MirrorEnsureTables()
+
+	iLimit = tonumber(iLimit) or 255
+	iOffset = tonumber(iOffset) or 0
+
+	IGS.GetTransactions(function(data)
+		if not istable(data) then return end
+
+		print("[IGS] Получено " .. #data .. " глобальных транзакций (offset " .. iOffset .. ")")
+
+		for _, tr in ipairs(data) do
+			IGS_MirrorTransactionRow(tr)
+		end
+
+		if #data >= iLimit then
+			timer.Simple(2, function()
+				IGS_FetchGlobalTransactions(iLimit, iOffset + iLimit)
+			end)
+		end
+	end, nil, true, iLimit, iOffset)
+end
+
+local function IGS_MirrorPlayerData(sid64, nick, balance, score, totalTransactions, lvl)
+	if not IGS_DBReady() then return end
+
+	IGS_MirrorEnsureTables()
+
+	balance = math.floor(tonumber(balance) or 0)
+	score = math.floor(tonumber(score) or 0)
+	totalTransactions = math.floor(tonumber(totalTransactions) or 0)
+	lvl = math.floor(tonumber(lvl) or 0)
+
+	rp._Stats:Query(string.format(
+		[[INSERT INTO GMDonate_Players (SteamID64, Nick, Balance, Score, TotalTransactions, Level, UpdatedAt)
+		  VALUES (%s, %s, %d, %d, %d, %d, %d)
+		  ON DUPLICATE KEY UPDATE Nick = VALUES(Nick), Balance = VALUES(Balance), Score = VALUES(Score),
+		  TotalTransactions = VALUES(TotalTransactions), Level = VALUES(Level), UpdatedAt = VALUES(UpdatedAt)]],
+		IGS_SQLStr(sid64), IGS_SQLStr(nick or ""), balance, score, totalTransactions, lvl, os.time()
+	))
+end
+
+local function IGS_FetchAllBalances()
+	if not IGS_DBReady() then return end
+
+	rp._Stats:Query("SELECT CAST(steamid AS CHAR) AS sid64 FROM ba_users WHERE steamid > 0", function(data)
+		if not istable(data) then return end
+
+		local count = 0
+		for _, row in ipairs(data) do
+			local sid64 = tostring(row.sid64 or row.steamid or "")
+			if sid64 ~= "" then
+				count = count + 1
+				IGS.GetPlayer(sid64, function(d)
+					if d and (d.Balance or d.Score) then
+						IGS_MirrorPlayerData(sid64, d.Name, d.Balance, d.Score, 0, 0)
+					end
+				end)
+			end
+		end
+
+		print("[IGS] Начата загрузка балансов для " .. count .. " игроков. Очередь обрабатывается репитером.")
+	end)
+end
+
+local function IGS_MirrorAllUsers(bFetchBalances)
+	if not IGS_DBReady() then return end
+
+	IGS_MirrorEnsureTables()
+
+	rp._Stats:Query(string.format(
+		[[INSERT INTO GMDonate_Players (SteamID64, Nick, Balance, Score, TotalTransactions, Level, UpdatedAt)
+		  SELECT CAST(steamid AS CHAR), name, 0, 0, 0, 0, %d
+		  FROM ba_users
+		  WHERE steamid > 0
+		  ON DUPLICATE KEY UPDATE Nick = VALUES(Nick), UpdatedAt = VALUES(UpdatedAt)]],
+		os.time()
+	), function()
+		if bFetchBalances then
+			IGS_FetchAllBalances()
+		end
+	end)
+end
+
+local function IGS_FetchAllTransactions()
+	if not IGS_DBReady() then return end
+
+	rp._Stats:Query("SELECT CAST(steamid AS CHAR) AS sid64 FROM ba_users WHERE steamid > 0", function(data)
+		if not istable(data) then return end
+
+		print("[IGS] Загрузка транзакций для " .. #data .. " игроков...")
+
+		local i = 0
+		for _, row in ipairs(data) do
+			local sid64 = tostring(row.sid64 or row.steamid or "")
+			if sid64 ~= "" then
+				timer.Simple(i * 0.5, function()
+					IGS.GetPlayerTransactionsBypassingLimit(function(dat)
+						if not istable(dat) then return end
+						for _, tr in ipairs(dat) do
+							tr.SteamID64 = sid64
+							tr.sid = sid64
+							IGS_MirrorTransactionRow(tr)
+						end
+					end, sid64)
+				end)
+				i = i + 1
+			end
+		end
+	end)
+end
+
+timer.Simple(3, function()
+	IGS_MirrorEnsureTables()
+	IGS_MirrorAllUsers(true)
+	IGS_FetchAllTransactions() 
+end)
+
+timer.Create("IGS_MirrorAllUsers", 600, 0, function() IGS_MirrorAllUsers(true) end)
+timer.Create("IGS_FetchLatestTransactions", 900, 0, function() IGS_FetchGlobalTransactions(255, 0) end)
+timer.Create("IGS_FetchAllTransactions", 600, 0, function() IGS_FetchAllTransactions() end) 
+
+concommand.Add("igs_sync_all_users", function(pl, cmd, args)
+	if IsValid(pl) and not pl:IsSuperAdmin() then
+		pl:ChatPrint("Только супер-админ может использовать эту команду")
+		return
+	end
+
+	local bFetch = tonumber(args[1]) ~= 0
+	IGS_MirrorAllUsers(bFetch)
+
+	local msg = "[IGS] Синхронизация всех игроков из ba_users в GMDonate_Players выполнена" .. (bFetch and " (с загрузкой балансов)" or "")
+	if IsValid(pl) then pl:ChatPrint(msg) else print(msg) end
+end)
+
+concommand.Add("igs_sync_balances", function(pl)
+	if IsValid(pl) and not pl:IsSuperAdmin() then
+		pl:ChatPrint("Только супер-админ может использовать эту команду")
+		return
+	end
+
+	IGS_FetchAllBalances()
+
+	local msg = "[IGS] Запущена загрузка балансов всех игроков из IGS API"
+	if IsValid(pl) then pl:ChatPrint(msg) else print(msg) end
+end)
+
+concommand.Add("igs_sync_transactions", function(pl, cmd, args)
+	if IsValid(pl) and not pl:IsSuperAdmin() then
+		pl:ChatPrint("Только супер-админ может использовать эту команду")
+		return
+	end
+
+	local limit = tonumber(args[1]) or 255
+	local offset = tonumber(args[2]) or 0
+	IGS_FetchGlobalTransactions(limit, offset)
+
+	local msg = "[IGS] Запущена загрузка глобальных транзакций (limit=" .. limit .. ", offset=" .. offset .. ")"
+	if IsValid(pl) then pl:ChatPrint(msg) else print(msg) end
+end)
+
+concommand.Add("igs_sync_all_transactions", function(pl)
+	if IsValid(pl) and not pl:IsSuperAdmin() then
+		pl:ChatPrint("Только супер-админ может использовать эту команду")
+		return
+	end
+
+	IGS_FetchAllTransactions()
+
+	local msg = "[IGS] Запущена загрузка транзакций для всех игроков из ba_users"
+	if IsValid(pl) then pl:ChatPrint(msg) else print(msg) end
+end)
 
 local function IGS_MirrorPlayer(pl, balance, score, totalTransactions, lvl)
 	if not IGS_DBReady() or not IsValid(pl) then return end
+
 	IGS_MirrorEnsureTables()
+
 	local sid64 = pl:SteamID64()
 	local nick = pl:Nick() or pl:Name() or ""
+
 	balance = math.floor(tonumber(balance) or tonumber(pl:IGSFunds()) or 0)
 	score = math.floor(tonumber(score) or tonumber(pl.igs_score) or 0)
 	totalTransactions = math.floor(tonumber(totalTransactions) or tonumber(pl:GetIGSVar("igs_total_transactions")) or 0)
@@ -63,8 +262,11 @@ end
 
 local function IGS_MirrorTransactions(pl, dat)
 	if not IGS_DBReady() or not IsValid(pl) or not istable(dat) then return end
+
 	IGS_MirrorEnsureTables()
+
 	local sid64 = pl:SteamID64()
+
 	for _, tr in ipairs(dat) do
 		local sum = math.floor(tonumber(tr.Sum or tr.sum or 0) or 0)
 		local note = tostring(tr.Note or tr.note or "")
@@ -72,6 +274,7 @@ local function IGS_MirrorTransactions(pl, dat)
 		local raw = util.TableToJSON(tr, false) or "{}"
 		local idPart = tostring(tr.ID or tr.Id or tr.id or "")
 		local hash = util.CRC(sid64 .. "|" .. idPart .. "|" .. tostring(sum) .. "|" .. tostring(txTime) .. "|" .. note)
+
 		rp._Stats:Query(string.format(
 			[[INSERT INTO GMDonate_Transactions (TxHash, SteamID64, Sum, Note, TxTime, RawJSON, UpdatedAt)
 			  VALUES (%s, %s, %d, %s, %d, %s, %d)
@@ -81,31 +284,29 @@ local function IGS_MirrorTransactions(pl, dat)
 	end
 end
 
-
 local function giveLvlBonuses(pl, from_lvl, to_lvl)
-	for i = from_lvl,to_lvl do
+	for i = from_lvl, to_lvl do
 		local lvl = IGS.LVL.Get(i)
-
 		if lvl.bonus then
 			lvl.bonus(pl)
 		end
-
 		IGS.NotifyAll(pl:Name() .. " получил новый (" .. i .. ") бизнес уровень - " .. lvl:Name())
 	end
 end
 
 local function recalcTransactionsAndBonuses(pl, bGiveBonuses)
-	-- Сумма операций
 	IGS.GetPlayerTransactionsBypassingLimit(function(dat)
 		local tt = 0
-		for _,v in ipairs(dat) do
+		for _, v in ipairs(dat) do
 			tt = v.Sum > 0 and tt + v.Sum or tt
 		end
 
-		local prev_lvl = IGS.PlayerLVL(pl) or 0 -- не двигать под igs_lvl!
-		local newLvl = IGS.LVL.GetByCost( IGS.RealPrice(tt) ):LVL()
+		local prev_lvl = IGS.PlayerLVL(pl) or 0
+		local newLvl = IGS.LVL.GetByCost(IGS.RealPrice(tt)):LVL()
+
 		pl:SetIGSVar("igs_lvl", newLvl)
 		pl:SetIGSVar("igs_total_transactions", tt)
+
 		IGS_MirrorTransactions(pl, dat)
 		IGS_MirrorPlayer(pl, pl:IGSFunds(), pl.igs_score, tt, newLvl)
 
@@ -115,29 +316,28 @@ local function recalcTransactionsAndBonuses(pl, bGiveBonuses)
 	end, pl:SteamID64())
 end
 
-
 local function updateBalance(pl, fOnFinish, bGiveBonuses)
-	IGS.GetPlayer(pl:SteamID64(),function(pld_)
+	IGS.GetPlayer(pl:SteamID64(), function(pld_)
 		if not IsValid(pl) then return end
+
 		local now_igs_ = pld_ and pld_.Balance
 		local now_score_ = pld_ and pld_.Score
-
 		local was_igs = pl:IGSFunds()
 		local diff = (now_igs_ or 0) - was_igs
 
-		if diff ~= 0 then -- баланс ~= nil и не 0 (? https://t.me/c/1353676159/45001)
-			pl:SetIGSVar("igs_balance", now_igs_) -- НЕ ДОЛЖНО ВЫПОЛНЯТЬСЯ НА НЕ_КЛИЕНТОВ
+		if diff ~= 0 then
+			pl:SetIGSVar("igs_balance", now_igs_)
 		end
 
 		if now_score_ ~= nil then
-			pl.igs_score = now_score_ -- #todo make netvar
+			pl.igs_score = now_score_
 		end
 
 		if now_igs_ ~= nil then
 			IGS_MirrorPlayer(pl, now_igs_, now_score_)
 		end
 
-		if now_igs_ then 
+		if now_igs_ then
 			recalcTransactionsAndBonuses(pl, bGiveBonuses)
 		end
 
@@ -147,12 +347,11 @@ local function updateBalance(pl, fOnFinish, bGiveBonuses)
 	end)
 end
 
-
 hook.Add("PlayerInitialSpawn", "IGS.LoadPlayer", function(pl)
 	if pl:IsBot() then return end
 
 	updateBalance(pl, function(now_igs_)
-		if (not IsValid(pl)) then return end
+		if not IsValid(pl) then return end
 
 		IGS.LoadPlayerPurchases(pl)
 		IGS.LoadInventory(pl)
@@ -163,36 +362,28 @@ hook.Add("PlayerInitialSpawn", "IGS.LoadPlayer", function(pl)
 	end)
 end)
 
-local function repairBrokenPurchases(pl,purchases)
-	for uid in pairs(purchases) do -- , count
+local function repairBrokenPurchases(pl, purchases)
+	for uid in pairs(purchases) do
 		local ITEM = IGS.GetItemByUID(uid)
-
 		if ITEM:IsValid(pl) == false then
-			ITEM:Setup(pl) 
+			ITEM:Setup(pl)
 		end
 	end
 end
 
-hook.Add("IGS.PlayerPurchasesLoaded", "RestorePex", function(pl,purchases)
+hook.Add("IGS.PlayerPurchasesLoaded", "RestorePex", function(pl, purchases)
 	if purchases then
 		repairBrokenPurchases(pl, purchases)
 	end
 end)
 
-
--- https://gist.github.com/1b41e1f869752d4750440619339e4085
-hook.Add("IGS.PaymentStatusUpdated","NoRejoiningCharge",function(pl,dat)
+hook.Add("IGS.PaymentStatusUpdated", "NoRejoiningCharge", function(pl, dat)
 	if dat.method ~= "pay" then return end
 
-	--timer.Simple(1,function() -- даем успеть в БД обновить данные
-
-		updateBalance(pl,function(new_bal, diff)
-			hook.Run("IGS.PlayerDonate", pl, diff, new_bal)
-		end, true) -- updateBalance with bGiveBonuses
-
-	--end) -- timer 1
+	updateBalance(pl, function(new_bal, diff)
+		hook.Run("IGS.PlayerDonate", pl, diff, new_bal)
+	end, true)
 end)
-
 
 --leak by matveicher
 --vk group - https://vk.com/gmodffdev
