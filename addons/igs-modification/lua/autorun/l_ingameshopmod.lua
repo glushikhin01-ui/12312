@@ -1,9 +1,3 @@
---leak by matveicher
---vk group - https://vk.com/gmodffdev
---steam - https://steamcommunity.com/profiles/76561198968457747/
---ds server - https://discord.gg/V329W7Ce8g
---ds - matveicher
-
 file.CreateDir("igs")
 
 -- Вы можете сделать форк основного репозитория, сделать там изменения и указать его имя здесь
@@ -121,14 +115,7 @@ if SERVER then
 
 elseif CLIENT then
 	CreateConVar("igs_version", "", {FCVAR_REPLICATED})
-	local version = GetConVarString("igs_version")
-	assert(tonumber(version), "cvar igs_version не передался клиенту. " .. tostring(version) .. ": https://forum.gm-donate.net/t/1663")
+	local version = GetConVar("igs_version"):GetString()
+	assert(tonumber(version), "cvar igs_version не передался клиенту. " .. version .. ": https://forum.gm-donate.net/t/1663")
 	downloadSuperfile(version, loadFromFile)
 end
-
-
---leak by matveicher
---vk group - https://vk.com/gmodffdev
---steam - https://steamcommunity.com/profiles/76561198968457747/
---ds server - https://discord.gg/V329W7Ce8g
---ds - matveicher

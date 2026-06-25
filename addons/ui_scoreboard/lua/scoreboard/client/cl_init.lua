@@ -350,7 +350,7 @@ function enc.scoreboard()
 
     local cols = {
         name = enc.w(84),
-        rank = enc.w(270),
+        rank = enc.w(310),
         job  = enc.w(505),
         clan = enc.w(760),
         time = enc.w(905),
@@ -449,6 +449,7 @@ function enc.scoreboard()
     local padX        = enc.w(12)
     local padY        = enc.h(6)
     local rankAreaW   = enc.w(150)
+    local hasAzPlus   = ArizonaPlus_HasPurchase(plyRef)
     local nameMaxW    = math.max(enc.w(35), cols.rank - cols.name - enc.w(35))
 
     local rank_fit = FitText(rank_txt, 'rank_badge', math.max(0, rankAreaW - padX * 2))
@@ -461,7 +462,15 @@ function enc.scoreboard()
 
     local centerY = math.Round(h / 2)
 
-    if ArizonaPlus_HasPurchase(plyRef) then
+    if hasAzPlus then
+        -- Рисуем RGB "A+" прямо на месте где есть пространство слева от ника (cols.name - отступ)
+        local time  = CurTime()
+        local apColor = Color(0, 200, 255)
+        surface.SetFont('scoreboard_name')
+        local apW = surface.GetTextSize("A+")
+        local apX = cols.name - apW - enc.w(4)
+        draw.SimpleText("A+", 'scoreboard_name', apX, centerY, apColor, TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
+        -- Ник на своём месте, не двигаем
         ArizonaPlus_DrawRainbowText(name_txt, 'scoreboard_name', cols.name, centerY, TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
     else
         text(name_txt, 'scoreboard_name', cols.name, centerY, enc.clrs.white, 0, 1)
