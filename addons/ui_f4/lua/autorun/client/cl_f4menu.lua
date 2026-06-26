@@ -128,6 +128,7 @@ local categoriess = {
     ['Гражданские']=true,['Разное']=true,['Поликлиника']=true,
     ['Военные']=true,['ФСИН']=true,['Криминал']=true,
     ['Правительство']=true,['Полиция']=true,['Личные профессии']=true,
+    ['Гос структуры']=true,['SWAT']=true,
 }
 
 local catSettings = {
@@ -1630,7 +1631,22 @@ local function BuildJobs(parent, p)
             end
         end
     end
-    table.sort(catsOrder)
+    local catPriority = {
+        ['Гражданские'] = 1,
+        ['Гос структуры'] = 2,
+        ['Гос.структуры'] = 2,
+        ['SWAT'] = 3,
+        ['Криминал'] = 4,
+        ['Личные профессии'] = 5,
+        ['Лич.проф'] = 5,
+        ['Разное'] = 6
+    }
+    table.sort(catsOrder, function(a, b)
+        local pa = catPriority[a] or 99
+        local pb = catPriority[b] or 99
+        if pa == pb then return a < b end
+        return pa < pb
+    end)
 
     local bodyHolder = c:Add('Panel')
     bodyHolder:Dock(FILL)
