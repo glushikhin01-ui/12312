@@ -1,0 +1,12 @@
+"VertexLitGeneric"
+{
+	// Original shader: VertexLitTexture
+	"$basetexture" "models/Humans/Female/Group01/scrubs1_shtfe"
+	"$bumpmap"	"models/Humans/Female/Group01/scrubs1_shtfe_n"
+	"$phong" "1"
+//	"$phongexponent" 3
+	"$phongexponenttexture" "models/Humans/Male/Group01/p"
+	"$phongboost"	"1"
+	"$phongfresnelranges"	"[0.02 0.2 0.23]"
+	"$halflambert" 1
+}

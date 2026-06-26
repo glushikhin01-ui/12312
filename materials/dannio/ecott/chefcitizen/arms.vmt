@@ -1,0 +1,24 @@
+"VertexLitGeneric"
+{
+	"$basetexture" "dannio/ecott/chefcitizen/arms"
+	"$bumpmap" "dannio/ecott/chefcitizen/arms_normal"
+	$normalmapalphaenvmapmask 1
+	"$blendTintByBaseAlpha"	"1"
+
+    	$phong "1"
+    	$phongexponent "1"
+    	$phongboost "0.5"
+    	$phongfresnelranges "[ .1.1 1]"
+
+    	"$colorfix" "[1 1 1]"
+    	"Proxies"
+    	{
+       		 "Equals"
+       		 {
+           			 srcVar1 $colorfix
+          			 resultVar    $color
+       		 }
+    	}
+}
+
+

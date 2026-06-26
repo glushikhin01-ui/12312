@@ -1,0 +1,5 @@
+"VertexLitGeneric"
+{
+	"$basetexture" "models/Bala/feet"
+	"$bumpmap" "models/Bala/feet_n"
+}

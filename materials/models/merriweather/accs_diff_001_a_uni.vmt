@@ -1,0 +1,5 @@
+"VertexlitGeneric"
+{
+	"$basetexture" "models\merriweather/accs_diff_001_a_uni"
+	"$bumpmap"     "models\merriweather\accs_diff_000_normal"
+}

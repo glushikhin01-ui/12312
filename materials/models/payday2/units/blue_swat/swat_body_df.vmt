@@ -1,0 +1,15 @@
+"VertexlitGeneric"
+{
+	"$basetexture"	"models/payday2/units/blue_swat/swat_body_df"
+	"$bumpmap"	"models/payday2/units/blue_swat/swat_body_nm"
+	"$detail"	"models/payday2/units/blue_swat/swat_body_sp"
+
+	"$detailscale" 	"1"
+	"$detailblendfactor"	"0.6"
+	"$detailblendmode"	"0"
+
+	"$phong"	"1"
+	"$phongexponent"	"40"
+	"$phongboost"	1
+	"$phongfresnelranges"	"[0.5 0.5 1]"
+}

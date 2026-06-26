@@ -1,0 +1,7 @@
+vertexlitgeneric
+{
+	$basetexture			models\elgator\t_base_fullfinger_glove_color
+	$bumpmap				models\elgator\t_base_fullfinger_glove_normal
+	$phongexponenttexture	models\elgator\t_base_fullfinger_glove_color_exp
+		
+}

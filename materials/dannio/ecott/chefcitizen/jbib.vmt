@@ -1,0 +1,31 @@
+"VertexlitGeneric"
+{
+	"$basetexture" "dannio/ecott/chefcitizen/lowr"
+	"$blendTintByBaseAlpha"	"1"
+	"$bumpmap" "dannio/ecott/chefcitizen/lowr_nm"
+	$normalmapalphaenvmapmask 1
+
+    	$phong "1"
+    	$phongexponent "1"
+    	$phongboost "0.5"
+    	$phongfresnelranges "[ .1.1 1]"
+
+
+	"$detail" "dannio/ecott/chefcitizen/detail_cloth"
+	$detailscale 30
+	$detailblendfactor 1
+	$detailblendmode 0
+
+    	"$colorfix" "[1 1 1]"
+    	"Proxies"
+    	{
+       		 "Equals"
+       		 {
+           			 srcVar1 $colorfix
+          			 resultVar    $color
+       		 }
+    	}
+}
+
+
+

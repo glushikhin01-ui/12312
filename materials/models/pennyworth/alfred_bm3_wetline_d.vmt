@@ -1,0 +1,5 @@
+"VertexlitGeneric"
+{
+	"$basetexture" "models/pennyworth/Alfred_BM3_Wetline_D"
+	"$translucent" 1
+}

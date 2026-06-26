@@ -1,2 +1,0 @@
-player_manager.AddValidModel( "Bell Killer Playermodel", "models/player/fusion/bellkiller/bellkiller_pm.mdl" );
-list.Set( "PlayerOptionsModel", "Bell Killer Playermodel", "models/player/fusion/bellkiller/bellkiller_pm.mdl" );

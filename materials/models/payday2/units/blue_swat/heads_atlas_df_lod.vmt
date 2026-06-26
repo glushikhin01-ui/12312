@@ -1,0 +1,9 @@
+"VertexlitGeneric"
+{
+	"$basetexture"	"models/payday2/units/blue_swat/heads_atlas_df"
+	"$detail"	"models/payday2/units/blue_swat/heads_atlas_sp"
+
+	"$detailscale" 	"1"
+	"$detailblendfactor"	"0.65"
+	"$detailblendmode"	"0"
+}

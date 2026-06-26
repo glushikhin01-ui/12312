@@ -1,0 +1,6 @@
+"eyes"
+{
+	"$basetexture" "models/fbi_pack/dark_eyeball_r"
+	"$iris" "models/fbi_pack/pupil_r"
+	"$halflambert" 1
+}

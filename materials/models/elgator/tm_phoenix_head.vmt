@@ -1,0 +1,6 @@
+"VertexLitGeneric"
+{
+
+	"$baseTexture" "models\elgator\tm_phoenix_head"
+	"$bumpmap" "models\elgator\tm_phoenix_head_normal"	
+}

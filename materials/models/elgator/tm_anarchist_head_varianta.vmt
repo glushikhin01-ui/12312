@@ -1,0 +1,5 @@
+"VertexLitGeneric"
+	{	
+	"$baseTexture" "models\elgator\tm_anarchist_head_varianta"
+	"$bumpmap" "models\elgator\tm_anarchist_head_normal"
+}

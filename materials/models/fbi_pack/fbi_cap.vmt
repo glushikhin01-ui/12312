@@ -1,0 +1,5 @@
+"VertexLitGeneric"
+{
+	"$basetexture" "models/fbi_pack/fbi_cap"
+	"$bumpmap" "models/fbi_pack/fbi_cap_normal"
+}

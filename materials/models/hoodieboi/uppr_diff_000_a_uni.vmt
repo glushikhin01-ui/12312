@@ -1,0 +1,5 @@
+"VertexLitGeneric"
+{
+	"$baseTexture" "models\hoodieboi/uppr_diff_000_a_uni"
+	"$bumpmap" "models\hoodieboi/uppr_diff_000_a_uni_norm"
+}

@@ -1,0 +1,6 @@
+"VertexLitGeneric"
+{
+	"$basetexture" "models\humans\suits/lowr_diff_000_a_uni"
+	"$bumpmap" "models\humans\suits/lowr_normal_000"
+	"$halflambert" 1
+}

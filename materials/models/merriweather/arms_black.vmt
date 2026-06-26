@@ -1,0 +1,5 @@
+"VertexLitGeneric"
+{
+	"$basetexture" "models\merriweather\arms_black"
+	"$bumpmap" "models\merriweather\arms_normal"
+}

@@ -1,0 +1,31 @@
+"VertexlitGeneric"
+{
+	"$basetexture" "dannio\ecott\chefcitizen/eyeball"
+	"$bumpmap" "dannio\ecott\chefcitizen/bumpmap"
+	"$normalmapalphaenvmapmask" 1
+	"$blendtintbybasealpha" "1"
+   	$surfaceprop "flesh"
+
+    	$envmap "env_cubemap"
+    	$envmaptint "[ .15 .15 .15]"
+    	$envmapcontrast "1"
+    	$envmapsaturation "1"
+    	$envmapfresnel "1"
+
+    	$phong "1"
+    	$phongexponent "30"
+    	$phongboost ".1"
+    	$phongfresnelranges "[ .5  .7 4]"
+
+    	"$colorfix" "[1 1 1]"
+    	"Proxies"
+    	{
+       		 "Equals"
+       		 {
+           			 srcVar1 $colorfix
+          			 resultVar    $color
+       		 }
+    	}
+}
+
+

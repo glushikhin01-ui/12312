@@ -1,0 +1,6 @@
+"VertexLitGeneric"
+{
+
+	"$baseTexture" "models\hoodieboi\tm_phoenix_head"
+	"$bumpmap" "models\hoodieboi\tm_phoenix_head_normal"	
+}

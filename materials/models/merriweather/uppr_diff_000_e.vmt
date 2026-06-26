@@ -1,0 +1,5 @@
+"VertexlitGeneric"
+{
+	"$basetexture" "models/merriweather/uppr_diff_000_e"
+                "$bumpmap"     "models/merriweather/uppr_diff_000_c_norma"
+}

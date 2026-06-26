@@ -1,0 +1,6 @@
+"eyes"
+{
+	"$basetexture" "models\Bala/eyeball_l"
+	"$iris" "models\Bala/pupil_l"
+	"$halflambert" 1
+}

@@ -1,0 +1,6 @@
+"VertexlitGeneric"
+{
+	"$baseTexture" 		"models/cultist/male_arm_white"
+	"$bumpmap" 			"models/cultist/male_arm_normal"
+
+}

@@ -1,0 +1,11 @@
+"VertexLitGeneric"
+{
+	"$basetexture" "models/fbi_pack/eric_facemap"
+	"$bumpmap" "models/fbi_pack/flat_normal"
+	
+	"$phong" "1"
+	"$phongexponent" "15.0"
+	"$phongboost" "0.5"
+	"$phongfresnelranges"	"[0.1 0.5 1]"
+	"$basemapalphaphongmask" "1"
+}

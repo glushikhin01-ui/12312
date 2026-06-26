@@ -1,0 +1,8 @@
+"VertexLitGeneric"
+{
+	"$basetexture" 			"models/cultist/body_m"
+	"$bumpmap" 				"models/cultist/male_citizen_normal"
+
+	"$halflambert" 		"1"
+	
+}

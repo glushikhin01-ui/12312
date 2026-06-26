@@ -1,0 +1,5 @@
+"VertexLitGeneric"
+{
+	"$baseTexture" "models\tuxs/male/erdim_cylmap"
+$blendtintbybasealpha 1
+}

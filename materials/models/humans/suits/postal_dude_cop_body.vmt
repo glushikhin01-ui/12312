@@ -1,0 +1,13 @@
+"VertexLitGeneric"
+{
+	"$basetexture" "models\humans\suits/Postal_Dude_Cop_body"
+	"$bumpmap" "models\humans\suits/Postal_Dude_Cop_body_normal"
+	"$normalmapalphaenvmapmask" "1"
+	"translucent" "0"
+	"$model" "1"
+	"$halflambert" "1"
+	"$phong" "1"
+	"$phongexponent" "10"
+	"$phongboost"	"1.5"
+	"$phongfresnelranges"	"[0.2 0.5 1.0]"
+}

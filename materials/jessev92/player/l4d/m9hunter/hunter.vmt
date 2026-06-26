@@ -1,0 +1,5 @@
+"VertexLitGeneric"
+{
+	"$baseTexture" "jessev92/player/l4d/m9hunter/hunter"
+	"$bumpmap" "jessev92/player/l4d/m9hunter/hunter_n"
+}

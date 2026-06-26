@@ -1,0 +1,12 @@
+"VertexLitGeneric"
+{
+	$baseTexture 				"models/tnb/heads/miner_face"
+    "$bumpmap"     				"models/tnb/heads/miner_face_normal"
+    "$phong" 					"1"
+	"$phongexponent" 			"5"
+	"$phongboost" 				"1"	
+	"$phongfresnelranges"		"[.1 0.2 1]"
+
+
+	"$blendtintbybasealpha" 	"1"
+}

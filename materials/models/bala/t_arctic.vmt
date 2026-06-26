@@ -1,0 +1,5 @@
+"VertexlitGeneric"
+{
+	"$basetexture" "models/Bala/t_arctic"
+	"$bumpmap" "models/Bala/t_arctic_normal"
+}

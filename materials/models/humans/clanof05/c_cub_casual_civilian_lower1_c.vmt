@@ -1,0 +1,5 @@
+"VertexLitGeneric"
+{
+	"$baseTexture" "models\humans\clanof05\c_cub_casual_civilian_lower1_c"
+                "$bumpmap"    "models\humans\clanof05\c_cub_casual_civilian_lower2_n"
+}

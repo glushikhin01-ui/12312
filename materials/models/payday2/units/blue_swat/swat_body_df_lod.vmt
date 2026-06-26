@@ -1,0 +1,9 @@
+"VertexlitGeneric"
+{
+	"$basetexture"	"models/payday2/units/blue_swat/swat_body_df"
+	"$detail"	"models/payday2/units/blue_swat/swat_body_sp"
+	
+	"$detailscale" 	"1"
+	"$detailblendfactor"	"0.6"
+	"$detailblendmode"	"0"
+}

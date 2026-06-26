@@ -1,0 +1,7 @@
+vertexlitgeneric
+{
+	$basetexture			models\hoodieboi\t_base_fullfinger_glove_color
+	$bumpmap				models\hoodieboi\t_base_fullfinger_glove_normal
+	$phongexponenttexture	models\hoodieboi\t_base_fullfinger_glove_color_exp
+		
+}

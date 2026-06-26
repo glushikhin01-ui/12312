@@ -1,0 +1,5 @@
+"VertexLitGeneric"
+{
+	"$baseTexture" "models\tuxs/male/eric_facemap"
+$blendtintbybasealpha 1
+}

@@ -1,0 +1,6 @@
+"VertexLitGeneric"
+{
+	"$basetexture" "models\humans\suits/pants"
+	"$bumpmap" "models\humans\suits/pants_bump"
+	"$halflambert" "1"
+}

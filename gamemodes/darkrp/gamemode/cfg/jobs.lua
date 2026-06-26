@@ -72,7 +72,7 @@ TEAM_NACH = -1
 
 TEAM_CITIZEN = rp.addTeam('Гражданский', {
     color = Color(20, 150, 20),
-    model = {'models/player/vitalya.mdl', 'models/player/gpd/karin/female_02.mdl', 'models/player/kamenshik.mdl', 'models/tsoy.mdl', 'models/1000shells/professional/professional.mdl', 'models/8mile/playermodels/8mile.mdl', 'models/cmbfdr/rashkinsk/bodrov.mdl', 'models/thebigcube/pm_gopnik_freeman/gopnik_freeman.mdl', 'models/dejtriyev/georgia/sokhumski_makho.mdl', 'models/sandman/russian/male_07_gopnik.mdl', 'models/yariktriplesix/pena/pena.mdl', 'models/player/kavkaz.mdl'},
+    model = {'models/player/clanof05/male_06.mdl', 'models/player/clanof05/male_05.mdl', 'models/player/clanof05/male_04.mdl', 'models/player/clanof05/male_08.mdl', 'models/player/clanof05/male_09.mdl'},
     weapons = {},
     command = 'citizen',
     max = 0,
@@ -312,7 +312,7 @@ TEAM_FISHER = rp.addTeam('Рыболов', {
 
 TEAM_POLICE = rp.addTeam('Полиция', {
     color = Color(60, 80, 255),
-    model = 'models/player/kerry/russian_police_snow/male_01_patrol_snow.mdl',
+    model = "models/player/santosrp/Male_02_santosrp.mdl", "models/player/santosrp/Male_04_santosrp.mdl", "models/player/santosrp/Male_05_santosrp.mdl", "models/player/santosrp/Male_06_santosrp.mdl", "models/player/santosrp/Male_07_santosrp.mdl", "models/player/santosrp/Male_08_santosrp.mdl", "models/player/santosrp/Male_09_santosrp.mdl",
     CanRaid = 'Рейдить',
     weapons = {'weapon_taser', 'weapon_finebook', 'arrest_baton', 'rwp_tfa_pist_mp443', 'stun_baton', 'door_ram', 'handcuffs', 'weaponchecker'},
     spawns = police_spawns,
@@ -334,7 +334,7 @@ TEAM_POLICE = rp.addTeam('Полиция', {
 
 TEAM_CHIEF = rp.addTeam('Начальник полиции', {
     color = Color(60, 80, 255),
-    model = 'models/player/kerry/russian_police_snow/male_06_officer_snow.mdl',
+    model = "models/player/santosrp/Male_02_santosrp.mdl", "models/player/santosrp/Male_04_santosrp.mdl", "models/player/santosrp/Male_05_santosrp.mdl", "models/player/santosrp/Male_06_santosrp.mdl", "models/player/santosrp/Male_07_santosrp.mdl", "models/player/santosrp/Male_08_santosrp.mdl", "models/player/santosrp/Male_09_santosrp.mdl",
     CanRaid = 'Рейдить',
     weapons = {'weapon_taser', 'weapon_finebook', 'arrest_baton', 'unarrest_baton', 'rwp_tfa_pist_mp416rex', 'rwp_tfa_assault_ak74', 'rwp_tfa_shotgun_becas12m', 'stun_baton', 'door_ram', 'handcuffs', 'weaponchecker'},
     spawns = police_spawns,
@@ -370,7 +370,7 @@ TEAM_SUPERVISOR = rp.addTeam('SuperVisor', {
 
 TEAM_JAGGEROMON = rp.addTeam('Джагернаут', {
     color = Color(0, 0, 139),
-    model = "models/omonru/riot/riot_ru.mdl",
+    model = "models/mark2580/payday2/pd2_bulldozer_player.mdl",
     CanRaid = 'Рейдить',
     weapons = {'weapon_taser', 'rwp_tfa_pist_ot33', 'rwp_tfa_heavy_pkp', 'rwp_tfa_heavy_rpk74', 'arrest_baton', 'stun_baton', 'door_ram', 'handcuffs', 'weaponchecker'},
     spawns = police_spawns,
@@ -394,7 +394,7 @@ TEAM_JAGGER = TEAM_JAGGEROMON
 
 TEAM_FBI = rp.addTeam('FBI', {
     color = Color(83,83,242),
-    model = {'models/rashkinsk/fsin/camo/camo_02.mdl', 'models/rashkinsk/fsin/camo/camo_03.mdl', 'models/rashkinsk/fsin/camo/camo_04.mdl', 'models/rashkinsk/fsin/camo/camo_05.mdl'},
+    model = {'models/fbi_pack/fbi_01.mdl', 'models/fbi_pack/fbi_02.mdl', 'models/fbi_pack/fbi_03.mdl', 'models/fbi_pack/fbi_04.mdl', 'models/fbi_pack/fbi_05.mdl', 'models/fbi_pack/fbi_06.mdl', 'models/fbi_pack/fbi_07.mdl', 'models/fbi_pack/fbi_08.mdl', 'models/fbi_pack/fbi_09.mdl'},
     CanRaid = 'Рейдить',
     weapons = {'weapon_taser', 'arrest_baton', 'unarrest_baton', 'rwp_tfa_pist_gsh18', 'rwp_tfa_assault_vikhr', 'stun_baton', 'door_ram', 'handcuffs', 'weapon_radio', 'weaponchecker'},
     spawns = fsin_spawns,
@@ -456,7 +456,7 @@ TEAM_MAYOR = rp.addTeam('Мэр', {
 
 TEAM_PIMP = rp.addTeam('Сутенер', {
     color = Color(180, 50, 180),
-    model = 'models/player/vitalya.mdl',
+    model = 'models/Lenoax/CaveJohnson_PM.mdl',
     weapons = {},
     command = 'pimp',
     max = 2,
@@ -491,7 +491,7 @@ TEAM_GANGSTER = rp.addTeam('Бандит', {
 
 TEAM_EXPGANGSTER = rp.addTeam('Опытный Бандит', {
     color = Color(85, 85, 85),
-    model = 'models/player/vitalya.mdl',
+    model = 'models/player/Suits/male_01_closed_coat_tie.mdl', 'models/player/Suits/male_01_closed_tie.mdl', 'models/player/Suits/male_01_open.mdl', 'models/player/Suits/male_01_open_tie.mdl', 'models/player/Suits/male_01_open_waistcoat.mdl', 'models/player/Suits/male_01_shirt.mdl', 'models/player/Suits/male_01_shirt_tie.mdl', 'models/player/Suits/male_02_closed_coat_tie.mdl', 'models/player/Suits/male_02_closed_tie.mdl', 'models/player/Suits/male_02_open.mdl', 'models/player/Suits/male_02_open_tie.mdl', 'models/player/Suits/male_02_open_waistcoat.mdl', 'models/player/Suits/male_02_shirt.mdl', 'models/player/Suits/male_02_shirt_tie.mdl', 'models/player/Suits/male_03_closed_coat_tie.mdl', 'models/player/Suits/male_03_closed_tie.mdl', 'models/player/Suits/male_03_open.mdl', 'models/player/Suits/male_03_open_tie.mdl', 'models/player/Suits/male_03_open_waistcoat.mdl', 'models/player/Suits/male_03_shirt.mdl', 'models/player/Suits/male_03_shirt_tie.mdl', 'models/player/Suits/male_04_closed_coat_tie.mdl', 'models/player/Suits/male_04_closed_tie.mdl', 'models/player/Suits/male_04_open.mdl', 'models/player/Suits/male_04_open_tie.mdl', 'models/player/Suits/male_04_open_waistcoat.mdl', 'models/player/Suits/male_04_shirt.mdl', 'models/player/Suits/male_04_shirt_tie.mdl', 'models/player/Suits/male_05_closed_coat_tie.mdl', 'models/player/Suits/male_05_closed_tie.mdl', 'models/player/Suits/male_05_open.mdl', 'models/player/Suits/male_05_open_tie.mdl', 'models/player/Suits/male_05_open_waistcoat.mdl', 'models/player/Suits/male_05_shirt_tie.mdl', 'models/player/Suits/male_06_closed_coat_tie.mdl', 'models/player/Suits/male_06_closed_tie.mdl', 'models/player/Suits/male_06_open.mdl', 'models/player/Suits/male_06_open_tie.mdl', 'models/player/Suits/male_06_open_waistcoat.mdl', 'models/player/Suits/male_06_shirt.mdl', 'models/player/Suits/male_06_shirt_tie.mdl', 'models/player/Suits/male_07_closed_coat_tie.mdl', 'models/player/Suits/male_07_closed_tie.mdl', 'models/player/Suits/male_07_open.mdl', 'models/player/Suits/male_07_open_tie.mdl', 'models/player/Suits/male_07_open_waistcoat.mdl', 'models/player/Suits/male_07_shirt.mdl', 'models/player/Suits/male_07_shirt_tie.mdl', 'models/player/Suits/male_08_closed_coat_tie.mdl', 'models/player/Suits/male_08_closed_tie.mdl', 'models/player/Suits/male_08_open.mdl', 'models/player/Suits/male_08_open_tie.mdl', 'models/player/Suits/male_08_open_waistcoat.mdl', 'models/player/Suits/male_08_shirt.mdl', 'models/player/Suits/male_08_shirt_tie.mdl', 'models/player/Suits/male_09_closed_coat_tie.mdl', 'models/player/Suits/male_09_closed_tie.mdl', 'models/player/Suits/male_09_open.mdl', 'models/player/Suits/male_09_open_tie.mdl', 'models/player/Suits/male_09_open_waistcoat.mdl', 'models/player/Suits/male_09_shirt.mdl', 'models/player/Suits/male_09_shirt_tie.mdl', 'models/player/Suits/robber_open.mdl', 'models/player/Suits/robber_shirt.mdl', 'models/player/Suits/robber_shirt_2.mdl', 'models/player/Suits/robber_tie.mdl', 'models/player/Suits/robber_tuckedtie.mdl',
     weapons = {},
     command = 'expbandit',
     max = 6,
@@ -505,7 +505,7 @@ TEAM_EXPGANGSTER = rp.addTeam('Опытный Бандит', {
 
 TEAM_TERRORIST = rp.addTeam('Террорист', {
     color = Color(150, 20, 20),
-    model = 'models/player/vitalya.mdl',
+    model = 'models/player/ninjuerilla.mdl',
     weapons = {},
     command = 'terrorist',
     max = 3,
@@ -520,7 +520,7 @@ TEAM_TERROR = TEAM_TERRORIST
 
 TEAM_GANG2 = rp.addTeam('Наемный Убийца', {
     color = Color(128, 128, 128),
-    model = 'models/zhmurki/saimon.mdl',
+    model = 'models/code_gs/robber/robberplayer.mdl',
     CanRaid = 'Рейдить',
     CanMug = 'Грабить',
     CanHostage = 'Брать в заложники',
@@ -544,11 +544,11 @@ TEAM_HITMAN = TEAM_GANG2
 
 TEAM_VIPHITMAN = rp.addTeam('Опытный Убийца', {
     color = Color(112, 128, 144),
-    model = 'models/rashkinsk/ded.mdl',
+    model = 'models/wick_chapter2/wick_chapter2.mdl',
     weapons = {'rwp_tfa_pist_tt33'},
     command = 'exphitman',
     max = 3,
-    salary = 1250,
+    salary = 1250,																		
     admin = 0,
     spawns = citizen_spawns,
     candemote = false,
@@ -565,7 +565,7 @@ TEAM_VIPHITMAN = rp.addTeam('Опытный Убийца', {
 
 TEAM_MOBBOSS = rp.addTeam('Глава Бандитов', {
     color = Color(128, 128, 128),
-    model = "models/player/zubenko.mdl",
+    model = 'models/player/tuxmale_01player.mdl', 'models/player/tuxmale_02player.mdl', 'models/player/tuxmale_03player.mdl', 'models/player/tuxmale_04player.mdl', 'models/player/tuxmale_05player.mdl', 'models/player/tuxmale_06player.mdl', 'models/player/tuxmale_07player.mdl', 'models/player/tuxmale_08player.mdl', 'models/player/tuxmale_09player.mdl',
     CanRaid = 'Рейдить',
     CanMug = 'Грабить',
     CanHostage = 'Брать в заложники',
@@ -607,10 +607,10 @@ TEAM_GROMILA = rp.addTeam('Громила', {
     vip = true,
     PlayerSpawn = function(pl) pl:SetArmor(200) pl:SetMaxHealth(150) pl:SetHealth(150) end
 })
-
+--[[
 TEAM_MANIAC = rp.addTeam('Маньяк', {
     color = Color(130, 10, 10),
-    model = 'models/player/vitalya.mdl',
+    model = '',
     weapons = {},
     command = 'maniac',
     max = 1,
@@ -621,10 +621,10 @@ TEAM_MANIAC = rp.addTeam('Маньяк', {
     category = "Криминал",
     candemote = false,
 })
-
+-- ]]
 TEAM_METHVARSHIK = rp.addTeam('Метоварщик', {
     color = Color(32, 178, 170),
-    model = 'models/jopa_player.mdl',
+    model = 'models/player/scientist.mdl',
     weapons = {},
     command = 'varshik',
     max = 3,
@@ -659,7 +659,7 @@ TEAM_GUN1 = rp.addTeam('Нелегальный торговец', {
 
 TEAM_THIEF = rp.addTeam('Взломщик', {
     color = Color(100, 100, 100),
-    model = 'models/player/vitalya.mdl',
+    model = 'models/deepalley/alley_thug.mdl',
     weapons = {},
     command = 'thief',
     max = 4,
@@ -673,7 +673,7 @@ TEAM_THIEF = rp.addTeam('Взломщик', {
 
 TEAM_PROTHIEF = rp.addTeam('Проф Взломщик', {
     color = Color(80, 80, 80),
-    model = 'models/player/vitalya.mdl',
+    model = 'models/deepalley/alley_thug.mdl',
     weapons = {},
     command = 'prothief',
     max = 2,
@@ -687,7 +687,7 @@ TEAM_PROTHIEF = rp.addTeam('Проф Взломщик', {
 
 TEAM_DRUGMAKER = rp.addTeam('Гровер', {
     color = Color(128, 128, 128),
-    model = 'models/player/player_simon_henriksson.mdl',
+    model = 'models/player/voikanaa/snoop_dogg.mdl',
     weapons = {},
     command = 'grover',
     max = 4,
@@ -702,7 +702,7 @@ TEAM_DRUGMAKER = rp.addTeam('Гровер', {
 
 TEAM_PICKPOCKET = rp.addTeam('Карманик', {
     color = Color(110, 90, 80),
-    model = 'models/player/vitalya.mdl',
+    model = 'models/gatorcreek/el_gator.mdl',
     weapons = {},
     command = 'pickpocket',
     max = 3,
@@ -716,7 +716,7 @@ TEAM_PICKPOCKET = rp.addTeam('Карманик', {
 
 TEAM_HOOLIGAN = rp.addTeam('Хулиган', {
     color = Color(140, 100, 70),
-    model = 'models/player/vitalya.mdl',
+    model = 'models/player/Bala_pm.mdl',
     weapons = {},
     command = 'hooligan',
     max = 5,
@@ -734,7 +734,7 @@ TEAM_HOOLIGAN = rp.addTeam('Хулиган', {
 
 TEAM_SWATM = rp.addTeam('Com SWAT', {
     color = Color(139, 0, 0),
-    model = "models/player/wisay/gai_1.mdl",
+    model = "models/payday2/units/blue_swat_player.mdl",
     CanRaid = 'Рейдить',
     weapons = {'weapon_taser', 'rwp_tfa_pist_mp443', 'rwp_tfa_smg_aks74u', 'rwp_tfa_shotgun_ks23', 'arrest_baton', 'stun_baton', 'med_kit', 'door_ram', 'handcuffs', 'weaponchecker'},
     spawns = police_spawns,
@@ -760,7 +760,7 @@ TEAM_COMSWAT = TEAM_SWATM
 
 TEAM_SWAT = rp.addTeam('Shturm SWAT', {
     color = Color(139, 0, 0),
-    model = "models/sirris_lvpd1/lvpd1_pm.mdl",
+    model = "models/payday2/units/blue_swat_player.mdl",
     CanRaid = 'Рейдить',
     weapons = {'weapon_taser', 'rwp_tfa_pist_pm', 'rwp_tfa_smg_aks74u', 'arrest_baton', 'stun_baton', 'door_ram', 'handcuffs', 'weaponchecker'},
     spawns = police_spawns,
@@ -786,7 +786,7 @@ TEAM_SHTURMSWAT = TEAM_SWAT
 
 TEAM_MEDICSWAT = rp.addTeam('Medic SWAT', {
     color = Color(150, 20, 20),
-    model = 'models/player/vitalya.mdl',
+    model = 'models/payday2/units/blue_swat_player.mdl',
     weapons = {},
     command = 'medicswat',
     max = 2,
@@ -800,7 +800,7 @@ TEAM_MEDICSWAT = rp.addTeam('Medic SWAT', {
 
 TEAM_SNIPERSWAT = rp.addTeam('Sniper SWAT', {
     color = Color(100, 20, 20),
-    model = 'models/player/vitalya.mdl',
+    model = 'models/payday2/units/blue_swat_player.mdl',
     weapons = {},
     command = 'sniperswat',
     max = 2,

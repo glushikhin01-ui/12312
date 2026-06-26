@@ -1,0 +1,5 @@
+"VertexLitGeneric"
+{	
+	"$baseTexture" "models\elgator\tm_pirate_upperbody"
+	"$bumpmap" "models\elgator\tm_pirate_upperbody_normal"	
+}

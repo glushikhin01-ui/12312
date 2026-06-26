@@ -1,0 +1,5 @@
+"VertexlitGeneric"
+{
+	"$basetexture" "models\humans\clanof05\Legs"
+	"$bumpmap" "models\humans\clanof05\Legs_n"
+}

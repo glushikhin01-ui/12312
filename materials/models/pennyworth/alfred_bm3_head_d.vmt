@@ -1,0 +1,5 @@
+"VertexlitGeneric"
+{
+	"$basetexture" "models/pennyworth/Alfred_BM3_Head_D"
+	"$bumpmap" "models/pennyworth/Alfred_BM3_Head_N"
+}

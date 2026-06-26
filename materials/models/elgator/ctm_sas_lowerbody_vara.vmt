@@ -1,0 +1,7 @@
+"VertexLitGeneric"
+{	
+	"$baseTexture" "models\elgator\ctm_sas_lowerbody_varA"
+	"$bumpmap" "models\elgator\ctm_sas_lowerbody_normal"
+
+}
+

@@ -1,0 +1,12 @@
+"VertexLitGeneric"
+{
+	"$baseTexture" "models\tuxs/male/arms"
+	"$bumpmap" "models\tuxs/male/arms_n"
+$blendtintbybasealpha 1
+$phong 1
+$phongboost .23
+$phongexponent 4
+$phongtint "[1 1 1.23]"
+$halflambert 0
+$phongfresnelranges "[1 1 5]"
+}

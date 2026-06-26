@@ -1,0 +1,10 @@
+"VertexLitGeneric"
+{
+	"$basetexture" 			"models/cultist/helmet"
+	"$bumpmap" 				"models/cultist/helmet_n"
+
+	$detail 				"models/cultist/noise_detail"
+	$detailscale 			"15"		
+
+	
+}
