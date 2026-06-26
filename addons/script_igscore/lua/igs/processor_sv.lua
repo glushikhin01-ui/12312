@@ -38,6 +38,17 @@ local function IGS_MirrorEnsureTables()
 		KEY idx_gmd_tx_sid (SteamID64),
 		KEY idx_gmd_tx_time (TxTime)
 	) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci]])
+
+	rp._Stats:Query([[CREATE TABLE IF NOT EXISTS GMDonate_Inventory (
+		InvID INT NOT NULL PRIMARY KEY,
+		SteamID64 VARCHAR(32) NOT NULL,
+		ItemUID VARCHAR(128) NOT NULL,
+		ItemName VARCHAR(255) DEFAULT '',
+		RawJSON MEDIUMTEXT,
+		UpdatedAt INT NOT NULL DEFAULT 0,
+		KEY idx_gmd_inv_sid (SteamID64),
+		KEY idx_gmd_inv_item (ItemUID)
+	) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci]])
 end
 
 local function IGS_MirrorTransactionRow(tr)
@@ -61,6 +72,50 @@ local function IGS_MirrorTransactionRow(tr)
 		  ON DUPLICATE KEY UPDATE Sum = VALUES(Sum), Note = VALUES(Note), TxTime = VALUES(TxTime), RawJSON = VALUES(RawJSON), UpdatedAt = VALUES(UpdatedAt)]],
 		IGS_SQLStr(hash), IGS_SQLStr(sid64), sum, IGS_SQLStr(note), txTime, IGS_SQLStr(raw), os.time()
 	))
+end
+
+
+local function IGS_GetItemName(uid)
+	local ITEM = IGS.GetItemByUID and IGS.GetItemByUID(uid)
+	if ITEM and ITEM.Name then
+		local ok, name = pcall(function() return ITEM:Name() end)
+		if ok and name then return tostring(name) end
+	end
+	return tostring(uid or "")
+end
+
+local function IGS_MirrorInventoryRows(sid64, inv)
+	if not IGS_DBReady() or not sid64 or sid64 == "" then return end
+	IGS_MirrorEnsureTables()
+
+	inv = istable(inv) and inv or {}
+	rp._Stats:Query("DELETE FROM GMDonate_Inventory WHERE SteamID64 = " .. IGS_SQLStr(sid64), function()
+		for _, row in ipairs(inv) do
+			local invID = tonumber(row.ID or row.Id or row.id or 0) or 0
+			local itemUID = tostring(row.Item or row.item or row.UID or row.uid or "")
+			if invID > 0 and itemUID ~= "" then
+				local raw = util.TableToJSON(row, false) or "{}"
+				rp._Stats:Query(string.format(
+					[[INSERT INTO GMDonate_Inventory (InvID, SteamID64, ItemUID, ItemName, RawJSON, UpdatedAt)
+					  VALUES (%d, %s, %s, %s, %s, %d)
+					  ON DUPLICATE KEY UPDATE SteamID64 = VALUES(SteamID64), ItemUID = VALUES(ItemUID), ItemName = VALUES(ItemName), RawJSON = VALUES(RawJSON), UpdatedAt = VALUES(UpdatedAt)]],
+					invID, IGS_SQLStr(sid64), IGS_SQLStr(itemUID), IGS_SQLStr(IGS_GetItemName(itemUID)), IGS_SQLStr(raw), os.time()
+				))
+			end
+		end
+	end)
+end
+
+local function IGS_MirrorInventory(pl)
+	if not IGS_DBReady() or not IsValid(pl) then return end
+	IGS_MirrorInventoryRows(pl:SteamID64(), IGS.Inventory(pl) or {})
+end
+
+local function IGS_FetchAndMirrorInventory(sid64)
+	if not IGS_DBReady() or not sid64 or sid64 == "" then return end
+	IGS.FetchInventory(function(inv)
+		IGS_MirrorInventoryRows(sid64, inv or {})
+	end, sid64)
 end
 
 local function IGS_FetchGlobalTransactions(iLimit, iOffset)
@@ -177,15 +232,96 @@ local function IGS_FetchAllTransactions()
 	end)
 end
 
+
+local function IGS_FetchAllInventories()
+	if not IGS_DBReady() then return end
+
+	IGS_MirrorEnsureTables()
+
+	rp._Stats:Query("SELECT CAST(steamid AS CHAR) AS sid64 FROM ba_users WHERE steamid > 0", function(data)
+		if not istable(data) then return end
+
+		print("[IGS] Загрузка F6-инвентарей для " .. #data .. " игроков...")
+
+		local i = 0
+		for _, row in ipairs(data) do
+			local sid64 = tostring(row.sid64 or row.steamid or "")
+			if sid64 ~= "" then
+				timer.Simple(i * 0.5, function()
+					IGS_FetchAndMirrorInventory(sid64)
+				end)
+				i = i + 1
+			end
+		end
+	end)
+end
+
 timer.Simple(3, function()
 	IGS_MirrorEnsureTables()
 	IGS_MirrorAllUsers(true)
-	IGS_FetchAllTransactions() 
+	IGS_FetchAllTransactions()
+	IGS_FetchAllInventories()
 end)
 
 timer.Create("IGS_MirrorAllUsers", 600, 0, function() IGS_MirrorAllUsers(true) end)
 timer.Create("IGS_FetchLatestTransactions", 900, 0, function() IGS_FetchGlobalTransactions(255, 0) end)
-timer.Create("IGS_FetchAllTransactions", 600, 0, function() IGS_FetchAllTransactions() end) 
+timer.Create("IGS_FetchAllTransactions", 600, 0, function() IGS_FetchAllTransactions() end)
+timer.Create("IGS_FetchAllInventories", 900, 0, function() IGS_FetchAllInventories() end)
+timer.Create("IGS_MirrorOnlineInventories", 300, 0, function()
+	for _, pl in ipairs(player.GetHumans()) do
+		if IsValid(pl) then IGS_MirrorInventory(pl) end
+	end
+end)
+
+hook.Add("IGS.PlayerPurchasedItem", "GMDonate_MirrorInventory_OnBuy", function(pl)
+	timer.Simple(1, function()
+		if IsValid(pl) then IGS.LoadInventory(pl, function() IGS_MirrorInventory(pl) end) end
+	end)
+end)
+
+hook.Add("IGS.PlayerActivatedInventoryItem", "GMDonate_MirrorInventory_OnActivate", function(pl)
+	timer.Simple(1, function()
+		if IsValid(pl) then IGS.LoadInventory(pl, function() IGS_MirrorInventory(pl) end) end
+	end)
+end)
+
+
+concommand.Add("igs_sync_all_inventories", function(pl)
+	if IsValid(pl) and not pl:IsSuperAdmin() then
+		pl:ChatPrint("Только супер-админ может использовать эту команду")
+		return
+	end
+
+	IGS_FetchAllInventories()
+
+	local msg = "[IGS] Запущена загрузка F6-инвентарей для всех игроков из ba_users"
+	if IsValid(pl) then pl:ChatPrint(msg) else print(msg) end
+end)
+
+concommand.Add("igs_sync_inventory", function(pl, cmd, args)
+	if IsValid(pl) and not pl:IsSuperAdmin() then
+		pl:ChatPrint("Только супер-админ может использовать эту команду")
+		return
+	end
+	local sid64 = tostring(args[1] or "")
+	if sid64 == "" and IsValid(pl) then sid64 = pl:SteamID64() end
+	if sid64 == "" then print("igs_sync_inventory <SteamID64>") return end
+	IGS_FetchAndMirrorInventory(sid64)
+	local msg = "[IGS] Запущена синхронизация F6-инвентаря для " .. sid64
+	if IsValid(pl) then pl:ChatPrint(msg) else print(msg) end
+end)
+
+concommand.Add("igs_sync_online_inventories", function(pl)
+	if IsValid(pl) and not pl:IsSuperAdmin() then
+		pl:ChatPrint("Только супер-админ может использовать эту команду")
+		return
+	end
+	for _, p in ipairs(player.GetHumans()) do
+		if IsValid(p) then IGS.LoadInventory(p, function() IGS_MirrorInventory(p) end) end
+	end
+	local msg = "[IGS] Запущена синхронизация F6-инвентаря онлайн игроков"
+	if IsValid(pl) then pl:ChatPrint(msg) else print(msg) end
+end)
 
 concommand.Add("igs_sync_all_users", function(pl, cmd, args)
 	if IsValid(pl) and not pl:IsSuperAdmin() then
@@ -354,7 +490,7 @@ hook.Add("PlayerInitialSpawn", "IGS.LoadPlayer", function(pl)
 		if not IsValid(pl) then return end
 
 		IGS.LoadPlayerPurchases(pl)
-		IGS.LoadInventory(pl)
+		IGS.LoadInventory(pl, function() IGS_MirrorInventory(pl) end)
 
 		if now_igs_ and now_igs_ > 0 then
 			IGS.UpdatePlayerName(pl:SteamID64(), pl:Name())

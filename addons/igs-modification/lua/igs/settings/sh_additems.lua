@@ -655,7 +655,7 @@ IGS("Разбан", "unban")
     :SetStackable(true)
     :SetIcon("indiana_store/Unban1.png")
     :SetDescription([[Разбан]])
-    :SetCategory("Остальное")
+    :SetCategory("Деньги")
     :SetMeta("donate")
     :SetOnBuy(function(ply)
         ply:ChatPrint("Для разбана напишите /donate и перейдите в 'Инвентарь'")
@@ -758,7 +758,7 @@ IGS("Говорилка", "ttsdonate")
     :SetDiscountedFrom(999)
     :SetPerma()
     :SetStackable(false)
-    :SetCategory("Остальное")
+    :SetCategory("Деньги")
     :SetIcon("indiana_store/govorilka1.png")
     :SetDescription([[
         Озвучивает все написанные тобой в чат фразы.
@@ -768,9 +768,11 @@ IGS("Говорилка", "ttsdonate")
         частью игрового опыта!
     ]])
     :SetOnActivate(function(pl)
+        pl.Govorilka = true
         pl:SetNWBool("GovorilkaHave", true)
     end)
     :SetValidator(function(pl)
+        pl.Govorilka = true
         pl:SetNWBool("GovorilkaHave", true)
     end)
     

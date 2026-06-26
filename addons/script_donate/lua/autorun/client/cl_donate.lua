@@ -1,10 +1,20 @@
 surface.CreateFont("MM_14",{font="Tahoma",size=14,weight=500})
+surface.CreateFont("Donate_16",{font="Tahoma",size=16,weight=700,extended=true})
+surface.CreateFont("Donate_18",{font="Tahoma",size=18,weight=800,extended=true})
+surface.CreateFont("Donate_20",{font="Tahoma",size=20,weight=900,extended=true})
+surface.CreateFont("Donate_22",{font="Tahoma",size=22,weight=900,extended=true})
 
 buttonsLockeds = false
 
-local backgroundColor = Color(14, 14, 14, 255)
-local secondaryBackgroundColor = Color(19, 19, 19, 82)
+local backgroundColor = Color(14, 14, 18, 255)
+local secondaryBackgroundColor = Color(26, 27, 34, 235)
+local itemInnerColor = Color(36, 38, 48, 245)
 local categoryColor = Color(1,89,224)
+
+local function DrawShadowText(text, font, x, y, col, ax, ay)
+    draw.SimpleText(text, font, x + 1, y + 1, Color(0, 0, 0, 220), ax, ay)
+    draw.SimpleText(text, font, x, y, col, ax, ay)
+end
 
 local function Nums(String) local TableLetters = {"1", "2", "3", "4", "5", "6", "7", "8", "9", "0"} local Accept = false  for k, v in pairs(TableLetters) do  if v == string.upper(String) then  Accept = true  end  end  return Accept  end 
 local function niceSum(i, fb) return math.Truncate(tonumber(i) or fb or 0, 2) end
@@ -20,6 +30,15 @@ local function FixCam( self )
     self:SetFOV( 90 )
     self:SetCamPos(min:Distance(max) * Vector(0.43, 0.43, 0))
     self:SetLookAt((max + min) / 2)
+end
+
+local function FixInventoryWeaponCam( self )
+    if not IsValid(self.Entity) then return end
+    local min, max = self.Entity:GetRenderBounds()
+    local size = math.max(math.abs(min.x) + math.abs(max.x), math.abs(min.y) + math.abs(max.y), math.abs(min.z) + math.abs(max.z), 1)
+    self:SetFOV(34)
+    self:SetCamPos(Vector(size * 0.72, size * 0.72, size * 0.32))
+    self:SetLookAt((min + max) * 0.5)
 end
 
 local crateMat = Material("bu2/case.png","smooth noclamp")
@@ -148,7 +167,7 @@ function OpenDonateUI()
     end
 
     local topBalBox = vgui.Create('Panel', mainFrame)
-    topBalBox:SetSize(weight(500), height(110))
+    topBalBox:SetSize(weight(760), height(110))
     topBalBox:SetPos(weight(70), height(70))
     local azIcon = Material("f6donate/coinaz.png", "smooth")
     topBalBox.Paint = function(self, w, h)
@@ -173,6 +192,9 @@ function OpenDonateUI()
         if IsValid(self.plusBtn) then
             self.plusBtn:SetPos(textOffset + tw + weight(25), height(50))
             draw.SimpleText("1 RUB = 3 AZ", "Trebuchet24", textOffset + tw + weight(25) + self.plusBtn:GetWide()/2, height(38), Color(255, 255, 255, 240), 1, 1)
+            if IsValid(self.inventoryBtn) then
+                self.inventoryBtn:SetPos(self.plusBtn:GetX() + self.plusBtn:GetWide() + weight(12), height(50))
+            end
         end
     end
 
@@ -184,6 +206,23 @@ function OpenDonateUI()
         draw.RoundedBox(8, 0, 0, w, h, self:IsHovered() and Color(255, 220, 50) or Color(255, 200, 0))
         draw.SimpleText("+ ПОПОЛНИТЬ", "DermaDefaultBold", w/2, h/2, Color(0, 0, 0), 1, 1)
     end
+
+    local inventoryBtn = vgui.Create('DButton', topBalBox)
+    topBalBox.inventoryBtn = inventoryBtn
+    inventoryBtn:SetSize(height(40), height(40))
+    inventoryBtn:SetText('')
+    inventoryBtn:SetTooltip('Инвентарь')
+    inventoryBtn.Paint = function(self, w, h)
+        draw.RoundedBox(8, 0, 0, w, h, self:IsHovered() and Color(70,70,78,245) or Color(45,45,52,235))
+        local gap = math.floor(w * 0.13)
+        local sz = math.floor((w - gap * 3) / 2)
+        for ix = 0, 1 do
+            for iy = 0, 1 do
+                draw.RoundedBox(3, gap + ix * (sz + gap), gap + iy * (sz + gap), sz, sz, Color(105,105,112,255))
+            end
+        end
+    end
+
     plusBtn.DoClick = function()
         if IsValid(activeDep) then activeDep:Remove() end
         activeDep = vgui.Create('DFrame')
@@ -246,17 +285,21 @@ function OpenDonateUI()
     local function openProfile()
         if IsValid(Profile) then return end
         Profile = vgui.Create('Panel',mainFrame)
-        Profile:SetSize(weight(1400),height(950))
-        Profile:SetPos(weight(480),height(68))
+        local profileX, profileY = weight(480), height(68)
+        Profile:SetSize(ScrW() - profileX - weight(35), ScrH() - profileY - height(30))
+        Profile:SetPos(profileX, profileY)
+        Profile.Paint = function(self,w,h)
+            draw.RoundedBox(14, 0, 0, w, h, Color(18, 19, 26, 235))
+        end
 
         local bpanel = vgui.Create('Panel',Profile)
-        bpanel:SetSize(weight(147)*1.3,height(38)*1.3)
-        bpanel:SetPos(weight(611)*1.3,height(10)*1.3)
+        bpanel:SetSize(weight(210)*1.3,height(38)*1.3)
+        bpanel:SetPos(Profile:GetWide() - weight(250), height(13)*1.3)
 
         local function openInv()
             if IsValid(profileInv) then profileInv:Remove() end
             profileInv = vgui.Create('DScrollPanel',Profile)
-            profileInv:SetSize(weight(775)*1.3,height(484)*1.3)
+            profileInv:SetSize(Profile:GetWide() - weight(40), Profile:GetTall() - height(95))
             profileInv:SetPos(weight(20)*1.3,height(66)*1.3)
             profileInv.VBar:SetWide(0)
 
@@ -268,7 +311,8 @@ function OpenDonateUI()
                     item:SetPos(xpos,ypos)
                     item.Paint = function(self,w,h)
                         draw.RoundedBox(10,0,0,w,h,secondaryBackgroundColor)
-                        draw.SimpleText(v.item.name, 'M_14', w/2, h/2-weight(107)*1.3, color_white, 1,1)
+                        draw.RoundedBox(10,weight(10)*1.3,height(38)*1.3,w-weight(20)*1.3,height(140)*1.3,itemInnerColor)
+                        DrawShadowText(v.item.name, 'Donate_16', w/2, height(18)*1.3, color_white, 1,1)
                     end
 
                     if not v or not v.item then continue end
@@ -329,11 +373,12 @@ function OpenDonateUI()
                         model_panels:SetMouseInputEnabled(false)
                     end
                     xpos = xpos + weight(196)*1.3
-                    if xpos > weight(775)*1.3 then
+                    if xpos + weight(196)*1.3 > profileInv:GetWide() then
                         xpos = 0
                         ypos = ypos + height(270)*1.3
                     end
                 end
+                if IsValid(profileInv) then profileInv:GetCanvas():SetTall(ypos + height(285)*1.3) end
             end)
         end
         openInv()
@@ -342,7 +387,7 @@ function OpenDonateUI()
         local function matveicher()
             if IsValid(matveicherCat247) then matveicherCat247:Remove() end
             matveicherCat247 = vgui.Create('DScrollPanel',Profile)
-            matveicherCat247:SetSize(weight(775)*1.3,height(484)*1.3)
+            matveicherCat247:SetSize(Profile:GetWide() - weight(40), Profile:GetTall() - height(95))
             matveicherCat247:SetPos(weight(20)*1.3,height(66)*1.3)
             matveicherCat247.VBar:SetWide(0)
 
@@ -358,6 +403,8 @@ function OpenDonateUI()
                     item:SetPos(xpos,ypos)
                     item.Paint = function(self,w,h)
                         draw.RoundedBox(10,0,0,w,h,secondaryBackgroundColor)
+                        draw.RoundedBox(10,weight(10)*1.3,height(38)*1.3,w-weight(20)*1.3,height(140)*1.3,itemInnerColor)
+                        DrawShadowText(ITEM:Name(), 'Donate_16', w/2, height(18)*1.3, color_white, 1,1)
                     end
                     local should_give = LocalPlayer():GetNWBool("igs.gos." .. ITEM:ID())
                     if ITEM.swep then 
@@ -417,11 +464,12 @@ function OpenDonateUI()
                         model_panels:SetMouseInputEnabled(false)
                     end
                     xpos = xpos + weight(196)*1.3
-                    if xpos > weight(775)*1.3 then
+                    if xpos + weight(196)*1.3 > matveicherCat247:GetWide() then
                         xpos = 0
                         ypos = ypos + height(270)*1.3
                     end
                 end
+                if IsValid(matveicherCat247) then matveicherCat247:GetCanvas():SetTall(ypos + height(285)*1.3) end
             end)
         end
 
@@ -429,8 +477,8 @@ function OpenDonateUI()
         local function history()
             if IsValid(profileHistoryScroll) then profileHistoryScroll:Remove() end
             profileHistoryScroll = vgui.Create('DScrollPanel',Profile)
-            profileHistoryScroll:SetSize(weight(780)*1.3,height(482)*1.3)
-            profileHistoryScroll:SetPos(weight(14)*1.3,height(68)*1.3)
+            profileHistoryScroll:SetSize(Profile:GetWide() - weight(40), Profile:GetTall() - height(95))
+            profileHistoryScroll:SetPos(weight(20)*1.3,height(66)*1.3)
             profileHistoryScroll.VBar:SetWide(0)
 
             local space = 0
@@ -587,7 +635,7 @@ function OpenDonateUI()
             mpanel:SetSize(weight(147)*1.3,height(147)*1.3)
             mpanel:SetPos(weight(10)*1.3,height(10)*1.3)
             mpanel.Paint = function(self,w,h)
-                draw.RoundedBox(10,0,0,w,h,Color(255,255,255,10))
+                draw.RoundedBox(10,0,0,w,h,itemInnerColor)
                 if v.color then
                     surface.SetMaterial(CreateMaterials('Ellipse_6-info')) 
                     surface.SetDrawColor(v.color:Unpack()) 
@@ -623,10 +671,10 @@ function OpenDonateUI()
             main:SetSize(weight(167)*1.3,height(167)*1.3)
             main:SetPos(0,height(167)*1.3)
             main.Paint = function(self,w,h)
-                draw.SimpleText(v.name,'M_14',weight(10)*1.3)
-                draw.SimpleText(math.Round(v.price, 0) .. ' P','M_14',weight(10)*1.3,height(28)*1.3,categoryColor)
+                DrawShadowText(v.name,'Donate_16',weight(10)*1.3, height(4)*1.3, Color(255,255,255), 0, 0)
+                DrawShadowText(math.Round(v.price, 0) .. ' P','Donate_18',weight(10)*1.3,height(31)*1.3,Color(80,170,255), 0, 0)
                 if v.discounted_from then
-                    draw.SimpleText(v.discounted_from .. ' P','M_14',weight(20)*1.3,height(57)*1.3,Color(255,255,255,255/2))
+                    DrawShadowText(v.discounted_from .. ' P','Donate_16',weight(20)*1.3,height(57)*1.3,Color(255,255,255,255/2))
                     surface.SetFont('M_14')
                     local gx,xy = surface.GetTextSize(v.discounted_from .. ' P')
                     draw.RoundedBox(0,weight(20)*1.3,height(65)*1.3,gx+weight(1)*1.3,height(1)*1.3,Color(255,255,255,127))
@@ -645,7 +693,7 @@ function OpenDonateUI()
                     self.alpha = Lerp(FrameTime()*8,self.alpha,1)
                 end
                 draw.RoundedBox(6,0,0,w,h,Color(categoryColor.r, categoryColor.g, categoryColor.b, 255*self.alpha))
-                draw.SimpleText('Купить','M_14',w/2,h/2,Color(255,255,255),1,1)
+                draw.SimpleText('Купить','Donate_16',w/2,h/2,Color(255,255,255),1,1)
             end
 
             local function purchase(ITEM, buy_button)
@@ -761,6 +809,79 @@ function OpenDonateUI()
             end
         end
     end
+    local function showCrateContents(crateID)
+        local crate = BUC2.ITEMS[crateID]
+        if not crate or not crate.items then return end
+
+        local overlay = vgui.Create('Panel', mainFrame)
+        overlay:SetSize(ScrW(), ScrH())
+        overlay:SetPos(0, 0)
+        overlay:SetZPos(900)
+        overlay.Paint = function(self,w,h) draw.RoundedBox(0,0,0,w,h,Color(0,0,0,170)) end
+
+        local win = vgui.Create('Panel', overlay)
+        win:SetSize(weight(850), height(620))
+        win:Center()
+        win.Paint = function(self,w,h)
+            draw.RoundedBox(14,0,0,w,h,Color(20,21,28,252))
+            draw.RoundedBox(14,1,1,w-2,h-2,Color(29,31,41,250))
+            DrawShadowText('Содержимое кейса: ' .. (crate.name1 or crateID), 'Donate_22', weight(24), height(24), Color(255,255,255), 0, 0)
+            DrawShadowText('Перед покупкой можно посмотреть все возможные предметы', 'Donate_16', weight(24), height(56), Color(185,190,205), 0, 0)
+        end
+
+        local closePreview = vgui.Create('DButton', win)
+        closePreview:SetSize(height(34), height(34))
+        closePreview:SetPos(win:GetWide() - height(44), height(10))
+        closePreview:SetText('')
+        closePreview.Paint = function(self,w,h)
+            draw.RoundedBox(7,0,0,w,h,self:IsHovered() and Color(210,70,70) or Color(150,55,55))
+            draw.SimpleText('✕','Donate_18',w/2,h/2,Color(255,255,255),1,1)
+        end
+        closePreview.DoClick = function() overlay:Remove() end
+
+        local sc = vgui.Create('DScrollPanel', win)
+        sc:SetPos(weight(24), height(95))
+        sc:SetSize(win:GetWide() - weight(48), win:GetTall() - height(120))
+        sc:GetVBar():SetWide(0)
+        local layout = vgui.Create('DIconLayout', sc)
+        layout:Dock(TOP)
+        layout:SetSpaceX(weight(12))
+        layout:SetSpaceY(height(12))
+
+        for _, itemID in pairs(crate.items or {}) do
+            local it = BUC2.ITEMS[itemID]
+            if not it then continue end
+            local card = vgui.Create('Panel', layout)
+            card:SetSize(weight(150), height(145))
+            card.Paint = function(self,w,h)
+                draw.RoundedBox(10,0,0,w,h,secondaryBackgroundColor)
+                draw.RoundedBox(10,weight(8),height(8),w-weight(16),height(92),itemInnerColor)
+                DrawShadowText(it.name1 or itemID, 'Donate_16', w/2, h - height(20), Color(255,255,255), 1, 1)
+            end
+            if it.itemType == "Weapon" and it.model then
+                local mdl = vgui.Create("DModelPanel", card)
+                mdl:SetPos(weight(12), height(5))
+                mdl:SetSize(card:GetWide() - weight(24), height(95))
+                mdl:SetModel(it.model)
+                mdl:SetMouseInputEnabled(false)
+                mdl:SetAnimated(false)
+                mdl.LayoutEntity = function() return false end
+                timer.Simple(0, function()
+                    if IsValid(mdl) then FixInventoryWeaponCam(mdl) end
+                end)
+            elseif it.itemType == "IGS" then
+                local moneyPreview = vgui.Create("Panel", card)
+                moneyPreview:SetPos(weight(18), height(14))
+                moneyPreview:SetSize(card:GetWide() - weight(36), height(78))
+                moneyPreview.Paint = function(self,w,h)
+                    surface.SetDrawColor(255,255,255,255)
+                    surface.SetMaterial(moneyIcon)
+                    surface.DrawTexturedRect(w/2 - height(31), h/2 - height(31), height(62), height(62))
+                end
+            end
+        end
+    end
+
     local case
     local function unbox()
         if IsValid(case) then return end
@@ -841,7 +962,7 @@ function OpenDonateUI()
                 end
 
                 mpanel.Paint = function(self,w,h)
-                    draw.RoundedBox(10,0,0,w,h,Color(255,255,255,10))
+                    draw.RoundedBox(10,0,0,w,h,itemInnerColor)
                     if v.itemType == "Crate" then
                         local customIcon = BUC2.CustomCrateIcons[ v.name1 ]
                         if customIcon then
@@ -866,8 +987,8 @@ function OpenDonateUI()
                 main:SetSize(weight(167)*1.3,height(167)*1.3)
                 main:SetPos(0,height(167)*1.3)
                 main.Paint = function(self,w,h)
-                    draw.SimpleText(v.name1,'M_14',weight(10)*1.3, 0)
-                    draw.SimpleText(v.price .. ' P','M_14',weight(10)*1.3,height(28)*1.3,categoryColor)
+                    DrawShadowText(v.name1,'Donate_16',weight(10)*1.3, height(3)*1.3, Color(255,255,255), 0, 0)
+                    DrawShadowText(v.price .. ' P','Donate_18',weight(10)*1.3,height(31)*1.3,Color(80,170,255), 0, 0)
                     if owned > 0 then
                         draw.SimpleText('В наличии: x' .. owned, 'DermaDefault', weight(10)*1.3, height(50)*1.3, Color(200, 200, 200))
                     end
@@ -879,8 +1000,28 @@ function OpenDonateUI()
                 buy:SetText('')
                 buy.Paint = function(self,w,h)
                     draw.RoundedBox(6,0,0,w,h,categoryColor)
-                    draw.SimpleText('Купить','M_14',w/2,h/2,Color(255,255,255),1,1)
+                    draw.SimpleText('Купить','Donate_16',w/2,h/2,Color(255,255,255),1,1)
                 end
+                local preview = vgui.Create('DButton', main)
+                preview:SetSize(height(29)*1.3, height(29)*1.3)
+                -- Квадратик "состав" слева от кнопки Купить
+                preview:SetPos(weight(62)*1.3, height(23)*1.3)
+                preview:SetText('')
+                preview:SetTooltip('Состав кейса')
+                preview.Paint = function(self,w,h)
+                    draw.RoundedBox(6,0,0,w,h,self:IsHovered() and Color(70,70,78,245) or Color(45,45,52,235))
+                    local gap = math.floor(w * 0.13)
+                    local sz = math.floor((w - gap * 3) / 2)
+                    for ix = 0, 1 do
+                        for iy = 0, 1 do
+                            draw.RoundedBox(3, gap + ix * (sz + gap), gap + iy * (sz + gap), sz, sz, Color(105,105,112,255))
+                        end
+                    end
+                end
+                preview.DoClick = function()
+                    showCrateContents(k)
+                end
+
                 buy.DoClick = function(s,w,h)
                     local panelBuy2
                     if IsValid(panelBuy2) then return end
@@ -932,13 +1073,7 @@ function OpenDonateUI()
         upgrad:SetSize(weight(1400),height(950))
         upgrad:SetPos(weight(480),height(68))
         upgrad.Paint = function(self,w,h)
-            surface.SetMaterial(CreateMaterials('Ellipse_4')) 
-            surface.SetDrawColor(255,255,255) 
-            surface.DrawTexturedRect(weight(75)*1.3,height(20)*1.3,weight(145)*1.3,height(145)*1.3)
-
-            surface.SetMaterial(CreateMaterials('Ellipse_5')) 
-            surface.SetDrawColor(255,255,255) 
-            surface.DrawTexturedRect(weight(510)*1.3,height(20)*1.3,weight(145)*1.3,height(145)*1.3)
+            -- Убраны Ellipse_4/Ellipse_5: если материалов нет, Garry's Mod рисует розово-черный ERROR за кругом апгрейда.
         end
         local page = vgui.CreateFromTable( UpgradePage, upgrad, "Upgrade Panel" )
         page:Dock( FILL )
@@ -1150,13 +1285,13 @@ function OpenDonateUI()
             over.itemID = k
             over.Paint = function(s , w , h)
                 draw.RoundedBox(10,0,0,w,h,secondaryBackgroundColor)
-                draw.RoundedBox(10,weight(10)*1.3,height(10)*1.3,weight(147)*1.3,height(147)*1.3,Color(255,255,255,10))
-                draw.SimpleText(v.name1,'M_14',weight(10)*1.3,height(167)*1.3)
+                draw.RoundedBox(10,weight(10)*1.3,height(10)*1.3,weight(147)*1.3,height(147)*1.3,itemInnerColor)
+                DrawShadowText(v.name1,'Donate_16',weight(10)*1.3,height(167)*1.3,Color(255,255,255),0,0)
             end
 
             local mod = vgui.Create("DModelPanel" , over)
-            mod:SetPos(weight(25),0)
-            mod:SetSize(weight(180)*1.3,height(180)*1.3)
+            mod:SetPos(weight(-25)*1.3,height(-8)*1.3)
+            mod:SetSize(weight(230)*1.3,height(190)*1.3)
             mod:SetModel(v.model)
             mod:SetAnimated(false)
             mod.ang = mod.Entity:GetAngles()
@@ -1165,7 +1300,7 @@ function OpenDonateUI()
                     self:RunAnimation()
                 end
             end
-            FixCam( mod )
+            FixInventoryWeaponCam( mod )
             local open = vgui.Create('DButton',over)
             open:SetPos(weight(10)*1.3,height(194)*1.3)
             open:SetSize(weight(72)*1.3,height(29)*1.3)
@@ -1178,7 +1313,7 @@ function OpenDonateUI()
                     self.alpha = Lerp(FrameTime()*8,self.alpha,1)
                 end
                 draw.RoundedBox(6,0,0,w,h,Color(categoryColor.r, categoryColor.g, categoryColor.b, 255*self.alpha))
-                draw.SimpleText('Забрать','M_14',w/2,h/2,Color(255,255,255),1,1)
+                draw.SimpleText('Забрать','Donate_16',w/2,h/2,Color(255,255,255),1,1)
             end
             open.DoClick = function(s) 
                 net.Start("ub_equipweapon")
@@ -1196,8 +1331,8 @@ function OpenDonateUI()
             over.itemID = k
             over.Paint = function(s , w , h)
                 draw.RoundedBox(10,0,0,w,h,secondaryBackgroundColor)
-                draw.RoundedBox(10,weight(10)*1.3,height(10)*1.3,weight(147)*1.3,height(147)*1.3,Color(255,255,255,10))
-                draw.SimpleText(v.name1,'M_14',weight(10)*1.3,height(167)*1.3)
+                draw.RoundedBox(10,weight(10)*1.3,height(10)*1.3,weight(147)*1.3,height(147)*1.3,itemInnerColor)
+                DrawShadowText(v.name1,'Donate_16',weight(10)*1.3,height(167)*1.3,Color(255,255,255),0,0)
             end
 
             local cratePanelTemp = vgui.CreateFromTable( CratePanel, over, "CratePanel" )
@@ -1217,7 +1352,7 @@ function OpenDonateUI()
                     self.alpha = Lerp(FrameTime()*8,self.alpha,1)
                 end
                 draw.RoundedBox(6,0,0,w,h,Color(categoryColor.r, categoryColor.g, categoryColor.b, 255*self.alpha))
-                draw.SimpleText('Открыть','M_14',w/2,h/2,Color(255,255,255),1,1)
+                draw.SimpleText('Открыть','Donate_16',w/2,h/2,Color(255,255,255),1,1)
             end
             open.DoClick = function(s) 
                 initSpinMenus(v.name1) 
@@ -1225,57 +1360,210 @@ function OpenDonateUI()
             return over
         end
 
-        function UrefreshInv()
-            if LocalPlayer().ubinv ~= nil and table.Count(LocalPlayer().ubinv) > 0 then
-                local xPos = 0
-                local yPos = 0
+        local function createIGSInventoryModule(data, x, y)
+            local itemData = data.item
+            if not itemData then return end
 
-                local grouped = {}
-                for k, v in pairs(LocalPlayer().ubinv) do
-                    if v ~= nil and BUC2.ITEMS[v] ~= nil then
-                        if not grouped[v] then
-                            grouped[v] = { count = 1, first_k = k }
-                        else
-                            grouped[v].count = grouped[v].count + 1
-                        end
-                    end
-                end
+            local over = vgui.Create("Panel", inv)
+            over:SetPos(x, y)
+            over:SetSize(weight(167)*1.3, height(233)*1.3)
+            over.Paint = function(s, w, h)
+                draw.RoundedBox(10, 0, 0, w, h, secondaryBackgroundColor)
+                draw.RoundedBox(10, weight(10)*1.3, height(10)*1.3, weight(147)*1.3, height(147)*1.3, itemInnerColor)
+                DrawShadowText(itemData.name or "Предмет", 'Donate_16', weight(10)*1.3, height(167)*1.3, Color(255,255,255), 0, 0)
+            end
 
-                for item_id, data in pairs(grouped) do
-                    local id = item_id
-                    local k = data.first_k
-                    local v = BUC2.ITEMS[id]
-                    local pan = nil
-
-                    if v.itemType == "Key" or v.itemType == "Crate" then
-                        pan = createPngModules(k , v , xPos , yPos) 
-                    else
-                        pan = createModelModules(k , v , xPos , yPos)
-                    end
-
-                    if data.count > 1 then
-                        local countLbl = vgui.Create("DLabel", pan)
-                        countLbl:SetPos(weight(10)*1.3, height(145)*1.3)
-                        countLbl:SetSize(weight(147)*1.3, height(20)*1.3)
-                        countLbl:SetFont("DermaDefaultBold")
-                        countLbl:SetTextColor(Color(200, 255, 200))
-                        countLbl:SetText("x" .. data.count .. " шт.")
-                    end
-
-                    pan.itemID = id
-                    xPos = xPos + weight(187)*1.3
-                    if xPos > weight(1200) then
-                        xPos = 0
-                        yPos = yPos + height(253)*1.3
-                    end
-                end
-
-                if IsValid(inv) and inv.GetCanvas then
-                    timer.Simple(0, function() 
-                        if IsValid(inv) then inv:GetCanvas():SetTall(math.max(inv:GetTall(), yPos + height(260)*1.3)) end 
-                    end)
+            if itemData.icon and itemData.icon.icon then
+                if itemData.icon.isModel then
+                    local mdl = vgui.Create('ModelImage', over)
+                    mdl:SetSize(weight(128)*1.3, height(128)*1.3)
+                    mdl:SetPos(over:GetWide()/2 - weight(128)*1.3/2, height(22)*1.3)
+                    mdl:SetModel(itemData.icon.icon or 'models/items/item_item_crate.mdl')
+                    mdl:SetTooltip()
+                    mdl:SetMouseInputEnabled(false)
+                else
+                    local img = vgui.Create("igs_wmat", over)
+                    img:SetSize(weight(128)*1.3, height(128)*1.3)
+                    img:SetPos(over:GetWide()/2 - weight(128)*1.3/2, height(22)*1.3)
+                    img:SetURL(itemData.icon.icon)
+                    img:SetMouseInputEnabled(false)
                 end
             end
+
+            local activeBut = vgui.Create('DButton', over)
+            activeBut:SetPos(weight(10)*1.3, height(194)*1.3)
+            activeBut:SetSize(weight(72)*1.3, height(29)*1.3)
+            activeBut:SetText('')
+            activeBut.Paint = function(self,w,h)
+                draw.RoundedBox(6,0,0,w,h,Color(categoryColor.r, categoryColor.g, categoryColor.b, self:IsHovered() and 255 or 220))
+                draw.SimpleText('Актив.', 'Donate_16', w/2, h/2, Color(255,255,255), 1, 1)
+            end
+            activeBut.DoClick = function()
+                local itemName = itemData.name or "предмет"
+                ui.BoolRequest("Подтверждение активации", 'Вы уверены, что хотите активировать '.. itemName ..' ?', function(t)
+                    if not t then return end
+                    IGS.ProcessActivate(data.id, function(ok)
+                        if ok then UrefreshInv() end
+                    end)
+                end)
+            end
+
+            local del = vgui.Create('DButton', over)
+            del:SetPos(weight(90)*1.3, height(194)*1.3)
+            del:SetSize(weight(67)*1.3, height(29)*1.3)
+            del:SetText('')
+            del.Paint = function(self,w,h)
+                draw.RoundedBox(6,0,0,w,h,self:IsHovered() and Color(210,70,70) or Color(160,55,55))
+                draw.SimpleText('Удал.', 'Donate_16', w/2, h/2, Color(255,255,255), 1, 1)
+            end
+            del.DoClick = function()
+                local itemName = itemData.name or "предмет"
+                ui.BoolRequest("Подтверждение выбрасывания", 'Вы уверены, что хотите выбросить ' .. itemName .. ' ?', function(t)
+                    if not t then return end
+                    IGS.DropItem(data.id)
+                    timer.Simple(0.2, function() if IsValid(inv) then UrefreshInv() end end)
+                end)
+            end
+
+            return over
+        end
+
+
+        local function createPurchaseInventoryModule(purchaseData, x, y)
+            local ITEM = IGS.GetItemByUID(purchaseData.item)
+            if not ITEM or ITEM.isnull then return end
+
+            local exp = IGS.TimestampToDate(purchaseData.expire) or 'Навсегда'
+            local over = vgui.Create("Panel", inv)
+            over:SetPos(x, y)
+            over:SetSize(weight(167)*1.3, height(233)*1.3)
+            over.Paint = function(s, w, h)
+                draw.RoundedBox(10, 0, 0, w, h, secondaryBackgroundColor)
+                draw.RoundedBox(10, weight(10)*1.3, height(10)*1.3, weight(147)*1.3, height(147)*1.3, itemInnerColor)
+                DrawShadowText(ITEM:Name(), 'Donate_16', weight(10)*1.3, height(167)*1.3, Color(255,255,255), 0, 0)
+                if ITEM.swep then
+                    local should_give = LocalPlayer():GetNWBool("igs.gos." .. ITEM:ID())
+                    DrawShadowText(should_give and 'Выдача: ВКЛ' or 'Выдача: ВЫКЛ', 'DermaDefaultBold', weight(10)*1.3, height(184)*1.3, should_give and Color(130,255,130) or Color(255,145,145), 0, 0)
+                elseif ITEM.category == 'Привилегии' then
+                    DrawShadowText(exp, 'DermaDefaultBold', weight(10)*1.3, height(184)*1.3, Color(210,210,220), 0, 0)
+                end
+            end
+
+            if ITEM.icon then
+                if ITEM.icon.isModel then
+                    local mdl = vgui.Create('ModelImage', over)
+                    mdl:SetSize(weight(96)*1.3, height(96)*1.3)
+                    mdl:SetPos(over:GetWide()/2 - weight(96)*1.3/2, height(38)*1.3)
+                    mdl:SetModel(ITEM.icon.icon or 'models/Items/item_item_crate.mdl')
+                    mdl:SetTooltip()
+                    mdl:SetMouseInputEnabled(false)
+                else
+                    local img = vgui.Create("igs_wmat", over)
+                    img:SetSize(weight(96)*1.3, height(96)*1.3)
+                    img:SetPos(over:GetWide()/2 - weight(96)*1.3/2, height(38)*1.3)
+                    img:SetURL(ITEM.icon.icon)
+                    img:SetMouseInputEnabled(false)
+                end
+            end
+
+            if ITEM.swep then
+                local toggle = vgui.Create('DButton', over)
+                toggle:SetPos(weight(10)*1.3, height(200)*1.3)
+                toggle:SetSize(weight(147)*1.3, height(26)*1.3)
+                toggle:SetText('')
+                toggle.Paint = function(self,w,h)
+                    local should_give = LocalPlayer():GetNWBool("igs.gos." .. ITEM:ID())
+                    local col = should_give and Color(190,65,65, self:IsHovered() and 255 or 225) or Color(65,150,65, self:IsHovered() and 255 or 225)
+                    draw.RoundedBox(6,0,0,w,h,col)
+                    draw.SimpleText(should_give and 'Отключить' or 'Включить', 'Donate_16', w/2, h/2, Color(255,255,255), 1, 1)
+                end
+                toggle.DoClick = function()
+                    local should_give = LocalPlayer():GetNWBool("igs.gos." .. ITEM:ID())
+                    net.Start("IGS.GiveOnSpawnWep")
+                    net.WriteIGSItem(ITEM)
+                    net.WriteBool(not should_give)
+                    net.SendToServer()
+                    timer.Simple(0.25, function() if IsValid(inv) then UrefreshInv() end end)
+                end
+            end
+
+            return over
+        end
+
+        function UrefreshInv()
+            if not IsValid(inv) then return end
+            inv:Clear()
+
+            local xPos = 0
+            local yPos = 0
+            local stepX = weight(187)*1.3
+            local stepY = height(253)*1.3
+
+            local function NextSlot()
+                xPos = xPos + stepX
+                if xPos + stepX > inv:GetWide() - weight(20) then
+                    xPos = 0
+                    yPos = yPos + stepY
+                end
+            end
+
+            local grouped = {}
+            for k, v in pairs(LocalPlayer().ubinv or {}) do
+                if v ~= nil and BUC2.ITEMS[v] ~= nil then
+                    if not grouped[v] then
+                        grouped[v] = { count = 1, first_k = k }
+                    else
+                        grouped[v].count = grouped[v].count + 1
+                    end
+                end
+            end
+
+            for item_id, data in pairs(grouped) do
+                local id = item_id
+                local k = data.first_k
+                local v = BUC2.ITEMS[id]
+                local pan = nil
+
+                if v.itemType == "Key" or v.itemType == "Crate" then
+                    pan = createPngModules(k, v, xPos, yPos)
+                else
+                    pan = createModelModules(k, v, xPos, yPos)
+                end
+
+                if data.count > 1 and IsValid(pan) then
+                    local countLbl = vgui.Create("DLabel", pan)
+                    countLbl:SetPos(weight(10)*1.3, height(145)*1.3)
+                    countLbl:SetSize(weight(147)*1.3, height(20)*1.3)
+                    countLbl:SetFont("DermaDefaultBold")
+                    countLbl:SetTextColor(Color(200, 255, 200))
+                    countLbl:SetText("x" .. data.count .. " шт.")
+                end
+
+                if IsValid(pan) then pan.itemID = id end
+                NextSlot()
+            end
+
+            IGS.GetInventory(function(datas)
+                if not IsValid(inv) then return end
+                for _, data in ipairs(datas or {}) do
+                    if data and data.item then
+                        local pan = createIGSInventoryModule(data, xPos, yPos)
+                        if IsValid(pan) then NextSlot() end
+                    end
+                end
+
+                IGS.GetMyPurchases(function(purchases)
+                    if not IsValid(inv) then return end
+                    for _, purchaseData in ipairs(purchases or {}) do
+                        local pan = createPurchaseInventoryModule(purchaseData, xPos, yPos)
+                        if IsValid(pan) then NextSlot() end
+                    end
+
+                    if IsValid(inv) and inv.GetCanvas then
+                        inv:GetCanvas():SetTall(math.max(inv:GetTall(), yPos + height(260)*1.3))
+                    end
+                end)
+            end)
         end
         UrefreshInv()
     end
@@ -1393,17 +1681,21 @@ function OpenDonateUI()
 
     local category = {
         { name = 'ARIZONA +', icon = 'f6donate/azplus.png', action = function() drawDashboard() end },
+        { name = 'ПРИВИЛЕГИИ', icon = 'f6donate/upgrade.png', action = function() drawCategory('Привилегии') end },
+        { name = 'ОРУЖИЯ', icon = 'f6donate/tickeyt.png', action = function() drawCategory('Оружие') end },
+        { name = 'КЕЙСЫ', icon = 'f6donate/box.png', action = function() unbox() end },
         { name = 'ВАЛЮТА', icon = 'f6donate/rocket.png', action = function() drawCategory('Деньги') end },
         { name = 'БОЕВОЙ ПРОПУСК', icon = 'f6donate/granata.png', action = function() drawCategory('Premium Pass') end },
-        { name = 'КЕЙСЫ', icon = 'f6donate/box.png', action = function() unbox() end },
         { name = 'ДЛЯ СТАРТА', icon = 'f6donate/upgrade.png', action = function() drawCategory('Наборы') end },
-        { name = 'АПГРЕЙДЫ', icon = 'f6donate/upgrade.png', action = function() drawCategory('Привилегии') end },
-        { name = 'СПИНЫ', icon = 'f6donate/spin.png', action = function() drawCategory('Спины') end },
-        { name = 'ПРОФЕССИИ', icon = 'f6donate/tickeyt.png', action = function() drawCategory('Профессии') end },
-        { name = 'ОРУЖИЕ', icon = 'f6donate/tickeyt.png', action = function() drawCategory('Оружие') end },
-        { name = 'ИНВЕНТАРЬ', icon = 'f6donate/box.png', action = function() inventory() end },
-        { name = 'ПРОФИЛЬ', icon = 'f6donate/box.png', action = function() openProfile() end }
+        { name = 'АПГРЕЙД', icon = 'f6donate/upgrade.png', action = function() upgrade() end },
+        { name = 'СПИНЫ', icon = 'f6donate/spin.png', action = function() drawCategory('Спины') end }
     }
+
+    if IsValid(inventoryBtn) then
+        inventoryBtn.DoClick = function()
+            handleCategoryClick(0, inventory)
+        end
+    end
 
     handleCategoryClick(1, category[1].action)
 
