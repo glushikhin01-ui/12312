@@ -1,0 +1,41 @@
+"VertexlitGeneric"
+{
+//Pragma Settings
+	"$fakepbr_layer" 				"1"
+	
+//Base
+	"$basetexture" 					"models\MrShlapa\Fortnite\Characters\Midas\Head_D"
+	"$bumpmap" 						"models\MrShlapa\Fortnite\Characters\Midas\Head_N"
+	"$phongexponenttexture" 		"models\MrShlapa\Fortnite\Characters\Midas\Head_E"
+
+	"$phongalbedotint"				"1"
+	
+//Other
+	"$color2"						"[0.35 0.35 0.35]"
+	"$translucent"					"1"
+
+//Self-Illumination
+	"$SelfIllum" 			 	  "1"
+	"$SelfIllumTint" 		 	  "[2 2 2]"
+	"$SelfIllumMask" 		   	  "models\MrShlapa\Fortnite\Characters\Midas\Head_Lights"
+	"$SelfIllumFresnel"			  "1"
+
+//Detail
+	"$Detail" 				  	  "models\MrShlapa\Fortnite\Characters\Midas\Head_Lights"
+	"$DetailScale" 			  	  "1"
+	"$DetailBlendFactor" 	  	  "1.5"
+	"$DetailBlendMode" 		   	  "5"
+	
+//Phong
+	"$phong" 						"1"
+	"$phongboost"					"19.986979"
+	"$phongfresnelranges"			"[0.87 0.9 1]"
+
+	"$ambientocclusion"				"0.7"
+}
+
+//2/3 Metalls (don't change commands order)
+//VMT Setting by:
+//BlueFlytrap - PBR method 
+//Galaxyi -  Almost all numbers and command
+//MrShlapa - Small adjustments and visual overhaul

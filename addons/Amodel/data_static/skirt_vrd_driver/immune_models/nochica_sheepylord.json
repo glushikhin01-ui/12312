@@ -5,9 +5,9 @@
   "immune": true,
   "reason": "This model already ships generated VRD/procedural skirt handling or was authored by the MMD Character Importer workflow.",
   "model_paths": [
-    "models/sheepylord/Nochica/Nochica.mdl",
-    "models/sheepylord/Nochica/Nochica_pm.mdl",
-    "models/sheepylord/Nochica/Nochica_arms.mdl"
+    "models/sheepylord/nochica/nochica.mdl",
+    "models/sheepylord/nochica/nochica_pm.mdl",
+    "models/sheepylord/nochica/nochica_arms.mdl"
   ],
   "model_prefixes": [],
   "author": "sheepylord",

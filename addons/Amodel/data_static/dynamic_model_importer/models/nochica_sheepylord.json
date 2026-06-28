@@ -10,9 +10,9 @@
   "model_name": "Nochica",
   "display_name": "Nochica",
   "paths": {
-    "model": "models/sheepylord/Nochica/Nochica.mdl",
-    "player_model": "models/sheepylord/Nochica/Nochica_pm.mdl",
-    "arms_model": "models/sheepylord/Nochica/Nochica_arms.mdl",
+    "model": "models/sheepylord/nochica/nochica.mdl",
+    "player_model": "models/sheepylord/nochica/nochica_pm.mdl",
+    "arms_model": "models/sheepylord/nochica/nochica_arms.mdl",
     "friendly_icon": "materials/vgui/entities/Nochica_sheepylord_F.vtf",
     "enemy_icon": "materials/vgui/entities/Nochica_sheepylord_E.vtf"
   },

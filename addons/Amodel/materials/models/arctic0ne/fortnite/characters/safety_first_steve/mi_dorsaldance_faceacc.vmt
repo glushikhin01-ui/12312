@@ -1,0 +1,22 @@
+VertexLitGeneric
+{
+	$basetexture "models/arctic0ne/fortnite/characters/Safety_First_Steve/T_DorsalDance_FaceAcc_D"
+	$bumpmap "models/arctic0ne/fortnite/characters/Safety_First_Steve/T_DorsalDance_FaceAcc_N"
+
+	$detail "models/arctic0ne/fortnite/characters/Safety_First_Steve/T_DorsalDance_FaceAcc_M"
+	$detailscale 1
+	$detailblendfactor 0.35
+	
+	$phong 1
+	$phongfresnelranges "[1 3 6]"
+	$phongexponenttexture "models/arctic0ne/shared/cyan"
+	$phongalbedotint 1
+	$phongexponent 12
+	$phongboost 2.2
+
+	$rimlight 1
+	$rimlightexponent 4
+	$rimlightboost 3.5	
+	
+	$nodecal 1
+}

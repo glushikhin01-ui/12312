@@ -1,0 +1,11 @@
+"VertexlitGeneric"
+{
+	"$basetexture" "models/player/billy_fn/billy_fn_head"
+	"$bumpmap" "models/player/billy_fn/billy_fn_head_normal"
+    "$alphatest" "1" // Si usas transparencias, activa esto
+    "$translucent" "1" // Activa para cabello más realista
+    "$phong" "1" // Agrega iluminación especular
+    "$phongexponent" "10" // Controla la nitidez de los reflejos
+    "$phongboost" "0.5" // Ajusta la intensidad del brillo
+    "$detailscale" "1.0" // Escala de la máscara
+}

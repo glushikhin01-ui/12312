@@ -1,0 +1,10 @@
+"VertexLitGeneric"
+{
+	"$basetexture" "models/fortnite/plague/T_M_MED_Plague_Body_D"
+	"$bumpmap" "models/fortnite/plague/T_M_MED_Plague_Body_N"
+	"$phong" "1"
+	"$phongboost" "2"
+	"$phongfresnelranges" "[0 0.5 1]"
+	"$phongexponent" "30"
+	"$phongtint" "[1 1 1]"
+}

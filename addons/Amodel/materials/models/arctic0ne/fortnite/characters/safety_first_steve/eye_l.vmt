@@ -1,0 +1,16 @@
+EyeRefract
+{
+	$envmap "models/arctic0ne/shared/cubemap_eyes"
+	$envmaptint "[1 1 1]"
+
+	$ambientocclcolor "[0.8 0.8 0.8]"
+	$ambientoccltexture "engine\eye-extra"
+	$ambientocclusion 0.5
+	$corneabumpstrength 1
+	$corneatexture "engine\eye-cornea"
+	$dilation 0.5
+	$glossiness 0.5
+	$iris "models/arctic0ne/fortnite/characters/safety_first_steve/T_DorsalDance_Eye"
+	$parallaxstrength 0.15
+	$nodecal 1
+}
