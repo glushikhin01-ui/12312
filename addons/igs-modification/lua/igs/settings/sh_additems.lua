@@ -2918,16 +2918,6 @@ IGS("Керамбит - Fade", "bp_karambit_flame")
     ////////// BATTLE PASS JOBS AND DONATE JOBS ///////////
     ///////////////////////////////////////////////////////
 
-
-
-IGS("SuperVisor", "supervisor_job")
-    :SetDarkRPTeams("svisor")
-    :SetDescription("Доступ к профессии SuperVisor")
-    :SetPerma()
-    :SetPrice(10000)
-    :SetHidden()
-    :SetNetworked(true)
-
 IGS("Хранитель", "hranitel_job_7d")
     :SetDarkRPTeams("hran")
     :SetDescription("Доступ к профессии Хранитель на 7 дней")

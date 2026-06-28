@@ -88,7 +88,7 @@ TEAM_CITIZEN = rp.addTeam('Гражданский', {
 
 TEAM_CAZINO = rp.addTeam('Владелец Казино', {
     color = Color(147, 112, 219),
-    model = 'models/winningrook/gtav/dean/dean_baddman.mdl',
+    model = {'models/player/tuxmale_01player.mdl', 'models/player/tuxmale_02player.mdl', 'models/player/tuxmale_03player.mdl', 'models/player/tuxmale_04player.mdl', 'models/player/tuxmale_05player.mdl', 'models/player/tuxmale_06player.mdl', 'models/player/tuxmale_07player.mdl', 'models/player/tuxmale_08player.mdl', 'models/player/tuxmale_09player.mdl'},
     weapons = {},
     command = 'cazino',
     category = "Гражданские",
@@ -103,7 +103,7 @@ TEAM_CAZINO = rp.addTeam('Владелец Казино', {
 
 TEAM_HOBOKING = rp.addTeam('Предводитель бездомных', {
     color = Color(80, 45, 10),
-    model = 'models/player/vitalya.mdl',
+    model = 'models/jessev92/player/l4d/m9-hunter.mdl',
     weapons = {},
     command = 'hoboking',
     max = 1,
@@ -115,9 +115,9 @@ TEAM_HOBOKING = rp.addTeam('Предводитель бездомных', {
     candemote = false,
 })
 
-TEAM_HOBO = rp.addTeam('Бездомные', {
+TEAM_HOBO = rp.addTeam('Бездомный', {
     color = Color(80, 45, 10),
-    model = 'models/player/vitalya.mdl',
+    model = 'models/jessev92/player/l4d/m9-hunter.mdl',
     weapons = {},
     command = 'hobo',
     max = 0,
@@ -131,7 +131,7 @@ TEAM_HOBO = rp.addTeam('Бездомные', {
 
 TEAM_BITMINER = rp.addTeam('Битмайнер', {
     color = Color(255, 215, 0),
-    model = 'models/player/vitalya.mdl',
+    model = 'models/player/group01/reflect.mdl',
     weapons = {},
     command = 'bitminer',
     max = 4,
@@ -160,23 +160,9 @@ TEAM_DOCTOR = rp.addTeam('Доктор', {
     medic = true
 })
 
-TEAM_FERMER = rp.addTeam('Фермер', {
-    color = Color(107, 142, 35),
-    model = 'models/player/vitalya.mdl',
-    weapons = {},
-    command = 'fermer',
-    max = 4,
-    salary = 500,
-    spawns = citizen_spawns,
-    admin = 0,
-    hasLicense = false,
-    category = "Гражданские",
-    candemote = false,
-})
-
 TEAM_PROSTITUTE = rp.addTeam('Проститутка', {
     color = Color(255, 105, 180),
-    model = 'models/player/vitalya.mdl',
+    model = 'models/player/group01/dahlia0o0.mdl',
     weapons = {},
     command = 'prostitute',
     max = 4,
@@ -190,7 +176,7 @@ TEAM_PROSTITUTE = rp.addTeam('Проститутка', {
 
 TEAM_GUN = rp.addTeam('Продавец Оружия', {
     color = Color(255, 165, 0),
-    model = 'models/rashkinsk/sidor.mdl',
+    model = 'models/player/mechanic.mdl',
     weapons = {},
     command = 'gundealer',
     max = 3,
@@ -205,23 +191,9 @@ TEAM_GUN = rp.addTeam('Продавец Оружия', {
     hasLicense = false
 })
 
-TEAM_AGRONOM = rp.addTeam('Агроном', {
-    color = Color(46, 139, 87),
-    model = 'models/player/vitalya.mdl',
-    weapons = {},
-    command = 'agronom',
-    max = 3,
-    salary = 600,
-    spawns = citizen_spawns,
-    admin = 0,
-    hasLicense = false,
-    category = "Гражданские",
-    candemote = false,
-})
-
 TEAM_BANKER = rp.addTeam('Банкир', {
     color = Color(34, 139, 34),
-    model = 'models/player/vitalya.mdl',
+    model = 'models/player/valley/pennyworth.mdl',
     weapons = {},
     command = 'banker',
     max = 2,
@@ -235,7 +207,7 @@ TEAM_BANKER = rp.addTeam('Банкир', {
 
 TEAM_GUARD = rp.addTeam('Охраник', {
     color = Color(70, 80, 95),
-    model = 'models/player/vitalya.mdl',
+    model = {'models/kerry/player/merriweather/male_01.mdl', 'models/kerry/player/merriweather/male_02.mdl', 'models/kerry/player/merriweather/male_03.mdl', 'models/kerry/player/merriweather/male_04.mdl', 'models/kerry/player/merriweather/male_05.mdl', 'models/kerry/player/merriweather/male_06.mdl', 'models/kerry/player/merriweather/male_07.mdl', 'models/kerry/player/merriweather/male_08.mdl', 'models/kerry/player/merriweather/male_09.mdl'},
     weapons = {},
     command = 'guard',
     max = 5,
@@ -249,7 +221,7 @@ TEAM_GUARD = rp.addTeam('Охраник', {
 
 TEAM_BARTENDER = rp.addTeam('Бармен', {
     color = Color(153, 102, 51, 255),
-    model = 'models/player/eli.mdl',
+    model = {'models/player/clanof05/male_06.mdl', 'models/player/clanof05/male_05.mdl', 'models/player/clanof05/male_04.mdl', 'models/player/clanof05/male_08.mdl', 'models/player/clanof05/male_09.mdl'},
     weapons = {},
     command = 'bartender',
     max = 5,
@@ -265,7 +237,7 @@ TEAM_BARTENDER = rp.addTeam('Бармен', {
 
 TEAM_COOK = rp.addTeam('Повар', {
     color = Color(255, 192, 203),
-    model = 'models/rashkinsk/staruska.mdl',
+    model = 'models/ecott/chefcitizen.mdl',
     weapons = {},
     command = 'cook',
     max = 3,
@@ -280,7 +252,7 @@ TEAM_COOK = rp.addTeam('Повар', {
 
 TEAM_MINER = rp.addTeam('Шахтёр', {
     color = Color(112, 128, 144),
-    model = 'models/player/vitalya.mdl',
+    model = 'models/cultist/miner_f.mdl',
     weapons = {},
     command = 'miner',
     max = 5,
@@ -312,7 +284,7 @@ TEAM_FISHER = rp.addTeam('Рыболов', {
 
 TEAM_POLICE = rp.addTeam('Полиция', {
     color = Color(60, 80, 255),
-    model = "models/player/santosrp/Male_02_santosrp.mdl", "models/player/santosrp/Male_04_santosrp.mdl", "models/player/santosrp/Male_05_santosrp.mdl", "models/player/santosrp/Male_06_santosrp.mdl", "models/player/santosrp/Male_07_santosrp.mdl", "models/player/santosrp/Male_08_santosrp.mdl", "models/player/santosrp/Male_09_santosrp.mdl",
+    model = {"models/player/santosrp/Male_02_santosrp.mdl", "models/player/santosrp/Male_04_santosrp.mdl", "models/player/santosrp/Male_05_santosrp.mdl", "models/player/santosrp/Male_06_santosrp.mdl", "models/player/santosrp/Male_07_santosrp.mdl", "models/player/santosrp/Male_08_santosrp.mdl", "models/player/santosrp/Male_09_santosrp.mdl"},
     CanRaid = 'Рейдить',
     weapons = {'weapon_taser', 'weapon_finebook', 'arrest_baton', 'rwp_tfa_pist_mp443', 'stun_baton', 'door_ram', 'handcuffs', 'weaponchecker'},
     spawns = police_spawns,
@@ -334,7 +306,7 @@ TEAM_POLICE = rp.addTeam('Полиция', {
 
 TEAM_CHIEF = rp.addTeam('Начальник полиции', {
     color = Color(60, 80, 255),
-    model = "models/player/santosrp/Male_02_santosrp.mdl", "models/player/santosrp/Male_04_santosrp.mdl", "models/player/santosrp/Male_05_santosrp.mdl", "models/player/santosrp/Male_06_santosrp.mdl", "models/player/santosrp/Male_07_santosrp.mdl", "models/player/santosrp/Male_08_santosrp.mdl", "models/player/santosrp/Male_09_santosrp.mdl",
+    model = {"models/player/santosrp/Male_02_santosrp.mdl", "models/player/santosrp/Male_04_santosrp.mdl", "models/player/santosrp/Male_05_santosrp.mdl", "models/player/santosrp/Male_06_santosrp.mdl", "models/player/santosrp/Male_07_santosrp.mdl", "models/player/santosrp/Male_08_santosrp.mdl", "models/player/santosrp/Male_09_santosrp.mdl"},
     CanRaid = 'Рейдить',
     weapons = {'weapon_taser', 'weapon_finebook', 'arrest_baton', 'unarrest_baton', 'rwp_tfa_pist_mp416rex', 'rwp_tfa_assault_ak74', 'rwp_tfa_shotgun_becas12m', 'stun_baton', 'door_ram', 'handcuffs', 'weaponchecker'},
     spawns = police_spawns,
@@ -352,20 +324,6 @@ TEAM_CHIEF = rp.addTeam('Начальник полиции', {
     CannotOwnDoors = true,
     hasLicense = true,
     selldoors = true,
-})
-
-TEAM_SUPERVISOR = rp.addTeam('SuperVisor', {
-    color = Color(50, 70, 220),
-    model = 'models/player/vitalya.mdl',
-    weapons = {},
-    command = 'supervisor',
-    max = 2,
-    salary = 1500,
-    spawns = police_spawns,
-    admin = 0,
-    hasLicense = true,
-    category = "Гос структуры",
-    candemote = true,
 })
 
 TEAM_JAGGEROMON = rp.addTeam('Джагернаут', {
@@ -583,29 +541,6 @@ TEAM_MOBBOSS = rp.addTeam('Глава Бандитов', {
     canLite = true,
     candemote = false,
     PlayerSpawn = function(pl) pl:SetArmor(250) pl:SetHealth(200) end
-})
-
-TEAM_GROMILA = rp.addTeam('Громила', {
-    color = Color(192, 192, 192),
-    model = 'models/kerry/killa_suka_blat/killa_blat.mdl',
-    CanRaid = 'Рейдить',
-    CanMug = 'Грабить',
-    CanHostage = 'Брать в заложники',
-    weapons = {'moneychecker', 'rwp_tfa_smg_aks74u', 'rwp_tfa_pist_ot33'},
-    command = 'gromila',
-    max = 4,
-    salary = 750,
-    admin = 0,
-    spawns = citizen_spawns,
-    category = "Криминал",
-    description = 'Криминальный громила, обеспечивающий силовое преимущество в разборках.',
-    user = true,
-    canVzri = true,
-    canHavy = true,
-    canLite = true,
-    candemote = true,
-    vip = true,
-    PlayerSpawn = function(pl) pl:SetArmor(200) pl:SetMaxHealth(150) pl:SetHealth(150) end
 })
 --[[
 TEAM_MANIAC = rp.addTeam('Маньяк', {
