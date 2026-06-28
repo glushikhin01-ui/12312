@@ -1,4 +1,6 @@
 if SERVER then
+    resource.AddWorkshop("3698615604") -- мэр
+    resource.AddWorkshop("3311770844 ") -- админ
     resource.AddWorkshop( "617364029" )
     resource.AddWorkshop( "204120003" )
     resource.AddWorkshop( "214368962" )

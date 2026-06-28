@@ -1,0 +1,60 @@
+Модели профессий
+
+Сутенер: https://steamcommunity.com/sharedfiles/filedetails/?id=1170760871 ✅
+Бандит: https://steamcommunity.com/sharedfiles/filedetails/?id=412149725 ✅
+Опытный Бандит: https://steamcommunity.com/sharedfiles/filedetails/?id=412149725 ✅
+Трерорист: https://steamcommunity.com/sharedfiles/filedetails/?id=597440322 ✅
+Наемный Убийца: https://steamcommunity.com/sharedfiles/filedetails/?id=213276429 ✅
+Опытный Убийа: https://steamcommunity.com/sharedfiles/filedetails/?id=1843708002 ✅ 
+Глава Бандитов: https://steamcommunity.com/sharedfiles/filedetails/?id=226935476 ✅
+Маньяка: https://steamcommunity.com/sharedfiles/filedetails/?id=786949701 ЗАМЕНА
+Метоварщик: https://steamcommunity.com/sharedfiles/filedetails/?id=810090879 ✅
+Взломщик: https://steamcommunity.com/sharedfiles/filedetails/?id=1700547049 ✅
+Проф Взломщик: https://steamcommunity.com/sharedfiles/filedetails/?id=1700547049 ✅
+Гровер: https://steamcommunity.com/sharedfiles/filedetails/?id=775344741 ✅
+Карманик: https://steamcommunity.com/sharedfiles/filedetails/?id=1712135857 ✅
+Хулиган: https://steamcommunity.com/sharedfiles/filedetails/?id=1493279443 ✅ 
+----------------------------------
+Com SWAT: https://steamcommunity.com/sharedfiles/filedetails/?id=794609277 ✅ 
+Shturm SWAT: https://steamcommunity.com/sharedfiles/filedetails/?id=794609277 ✅ 
+Medic SWAT: https://steamcommunity.com/sharedfiles/filedetails/?id=794609277 ✅ 
+Sniper SWAT: https://steamcommunity.com/sharedfiles/filedetails/?id=794609277 ✅
+----------------------------------
+Гражданский: https://steamcommunity.com/sharedfiles/filedetails/?id=617364029 ✅ 
+Владелец Казика: https://steamcommunity.com/sharedfiles/filedetails/?id=204120003 ✅ 
+Предводитель бездомных и бездомные: https://steamcommunity.com/sharedfiles/filedetails/?id=214368962 ✅
+Битмайнер: https://steamcommunity.com/sharedfiles/filedetails/?id=323409288 ✅
+Проститутка: https://steamcommunity.com/sharedfiles/filedetails/?id=323393207 ✅
+Продавец Оружия: https://steamcommunity.com/sharedfiles/filedetails/?id=734781319 ✅
+Банкир: https://steamcommunity.com/sharedfiles/filedetails/?id=906408930 ✅
+Охраник: https://steamcommunity.com/sharedfiles/filedetails/?id=738724607  ✅
+Бармен: https://steamcommunity.com/sharedfiles/filedetails/?id=617364029 ✅
+Повар: https://steamcommunity.com/sharedfiles/filedetails/?id=2983611653 ✅
+Шахтёр: https://steamcommunity.com/sharedfiles/filedetails/?id=1182053993 ✅
+---------------------------------
+Полиция и начальник: https://steamcommunity.com/sharedfiles/filedetails/?id=608936011 ✅ 
+SuperVisioir
+Джагер: https://steamcommunity.com/sharedfiles/filedetails/?id=579592077 ✅ 
+FBI: https://steamcommunity.com/sharedfiles/filedetails/?id=107411755 ✅ 
+Телак Мэра - Сами думайте
+Мэр - Сами думайте
+
+Рыболов: https://steamcommunity.com/sharedfiles/filedetails/?id=677129372 -- ЗАМЕНА
+Доктор: https://steamcommunity.com/sharedfiles/filedetails/?id=238499436 -- ЗАМЕНА
+Нелегальный торговец: https://steamcommunity.com/sharedfiles/filedetails/?id=849938632 ЗАМЕНА
+
+
+
+ЛИЧНЫЕ МОДЕЛИ
+
+Agent P models/zhennywhenny/phineasandferb/AgentP_PM.mdl
+( "Billy Fortnite", "models/player/billy_fn_pm.mdl" )
+player_manager.AddValidModel( "Doom Slayer - Fortnite", "models/player/doom_fn_pm.mdl" )
+player_manager.AddValidModel( "Midas", "models/mrshlapa/fortnite/characters/midas/midas_pm.mdl" )
+( "Jack Skellington Fortnite", "models/player/jack_fn_pm.mdl" )
+("Nochica M", "models/sheepylord/Nochica/Nochica_normal_pm.mdl");
+player_manager.AddValidModel("Nochica", "models/sheepylord/Nochica/Nochica_pm.mdl");
+player_manager.AddValidModel( "Pumpking King - Fortnite", "models/player/pumpking_fn_pm.mdl" )
+("Safety First Steve - Fortnite", "models/arctic0ne/fortnite/characters/steve_playermodel.mdl")
+
+models/fortnite/pladue.mdl

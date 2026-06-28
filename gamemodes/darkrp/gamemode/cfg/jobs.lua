@@ -388,7 +388,7 @@ TEAM_MAYORGUARD = rp.addTeam('Телахранитель Мэра', {
 
 TEAM_MAYOR = rp.addTeam('Мэр', {
     color = Color(240, 0, 0, 255),
-    model = 'models/player/putin.mdl',
+    model = 'models/youtubers/supersus/super_sus.mdl',
     weapons = {},
     spawns = {
         rp_downtown_tits_v2 = {Vector(-655.03216552734, 5975.2939453125, 80.03125) }
@@ -753,7 +753,7 @@ TEAM_SNIPERSWAT = rp.addTeam('Sniper SWAT', {
 
 TEAM_ADMIN = rp.addTeam('Администрация', {
     color = Color(51, 128, 255),
-    model = 'models/death_a_grim_bundle/player_models/death_painted/death_painted_01.mdl',
+    model = 'models/cyanblue/fortnite/perfect_shadow/perfect_shadow.mdl',
     weapons = {'weapon_keypadchecker'},
     command = 'staff',
     max = 0,
@@ -1299,7 +1299,18 @@ TEAM_MOTOMOTO = rp.addTeam("Мото мото", {
 if TEAM_GANGSTER and TEAM_PROTHIEF then
     rp.addGroupChat(TEAM_GANGSTER, TEAM_EXPGANGSTER, TEAM_MOBBOSS, TEAM_THIEF, TEAM_PROTHIEF)
 end
-rp.addGroupChat(TEAM_CHIEF, TEAM_POLICE, TEAM_MAYOR, TEAM_SUPERVISOR, TEAM_JAGGEROMON, TEAM_FBI, TEAM_MAYORGUARD, TEAM_SWAT, TEAM_SWATM, TEAM_MEDICSWAT, TEAM_SNIPERSWAT)
+rp.addGroupChat(
+    TEAM_CHIEF,
+    TEAM_POLICE,
+    TEAM_MAYOR,
+    TEAM_JAGGEROMON,
+    TEAM_FBI,
+    TEAM_MAYORGUARD,
+    TEAM_SWAT,
+    TEAM_SWATM,
+    TEAM_MEDICSWAT,
+    TEAM_SNIPERSWAT
+)
 if TEAM_HOBO and TEAM_HOBOKING then
     rp.addGroupChat(TEAM_HOBO, TEAM_HOBOKING)
 end
@@ -1308,27 +1319,37 @@ end
 rp.DefaultTeam = TEAM_CITIZEN
 
 -- Police classes
-rp.CivilProtection = {
-    [TEAM_CHIEF] = true,
-    [TEAM_POLICE] = true,
-    [TEAM_SUPERVISOR] = true,
-    [TEAM_JAGGEROMON] = true,
-    [TEAM_FBI] = true,
-    [TEAM_MAYORGUARD] = true,
-    [TEAM_SWATM] = true,
-    [TEAM_SWAT] = true,
-    [TEAM_MEDICSWAT] = true,
-    [TEAM_SNIPERSWAT] = true,
-    [TEAM_MAYOR] = true
+rp.CivilProtection = {}
+
+local civilProtectionTeams = {
+    TEAM_CHIEF,
+    TEAM_POLICE,
+    TEAM_SUPERVISOR,
+    TEAM_JAGGEROMON,
+    TEAM_FBI,
+    TEAM_MAYORGUARD,
+    TEAM_SWATM,
+    TEAM_SWAT,
+    TEAM_MEDICSWAT,
+    TEAM_SNIPERSWAT,
+    TEAM_MAYOR
 }
+
+for _, teamId in ipairs(civilProtectionTeams) do
+    if teamId then
+        rp.CivilProtection[teamId] = true
+    end
+end
 
 -- Mayor
 rp.MayorTeam = TEAM_MAYOR
 
 -- Gov classes
-rp.Government = {
-    [TEAM_MAYOR] = true
-}
+rp.Government = {}
+
+if TEAM_MAYOR then
+    rp.Government[TEAM_MAYOR] = true
+end
 
 --leak by matveicher
 --vk group - https://vk.com/codespill
