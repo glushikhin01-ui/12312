@@ -1,5 +1,0 @@
-"VertexlitGeneric"
-{
-	"$basetexture" "models/player/doom_fn/doom_fn_acc"
-	"$bumpmap" "models/player/doom_fn/doom_fn_acc_normal"
-}

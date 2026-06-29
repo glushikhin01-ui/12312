@@ -1,4 +1,9 @@
 if SERVER then
+
+	-- Свепы сансея 28.06
+	resource.AddWorkshop("375416144")
+	resource.AddWorkshop("1710471313")	
+
     -- ЛИЧНЫЕ МОДЕЛИ 28.06
     resource.AddWorkshop("3742180095")
     resource.AddWorkshop("3418985959")
