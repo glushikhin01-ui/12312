@@ -4,6 +4,14 @@
 --ds server - https://discord.gg/V329W7Ce8g
 --ds - matveicher
 
+local player_meta = FindMetaTable("Player")
+if SERVER and player_meta and not player_meta.GetDonates then
+    local persist_path = "igs/modules/extra/donates_persist.lua"
+    if file.Exists("lua/" .. persist_path, "GAME") then
+        include(persist_path)
+    end
+end
+
 -- --[[-------------------------------------------------------------------------
 -- 	Чат команды
 -- ---------------------------------------------------------------------------]]
@@ -289,7 +297,7 @@ end)
 hook.Add("PlayerButtonDown","IGS.UI",function(pl, iButton)
 	if iButton == IGS.C.MENUBUTTON and (pl.nextmenudonate or 0) - CurTime() < 0 then
 		scc.run(pl, "igs")
-		pl.nextmenudonate = CurTime() + 5  -- FIX: кулдаун только при нажатии нужной кнопки
+		pl.nextmenudonate = CurTime() + 5  
 	end
 end)
 

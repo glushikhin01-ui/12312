@@ -1,5 +1,8 @@
 if not SERVER then return end
 
+local player_meta = FindMetaTable("Player")
+if not player_meta then return end
+
 file.CreateDir("igs_donates")
 
 local function getFilePath(pl)

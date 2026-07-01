@@ -135,6 +135,14 @@ if (SERVER) then
 else		
 	local color_white = Color(235,235, 235)
 	local fr
+	local req_bg = Color(42, 43, 46)
+	local req_btn_accept = Color(78, 170, 104)
+	local req_btn_accept_hover = Color(90, 190, 118)
+	local req_btn_decline = Color(218, 62, 68)
+	local req_btn_decline_hover = Color(232, 78, 84)
+	local req_btn_neutral = Color(58, 59, 63)
+	local req_btn_neutral_hover = Color(72, 73, 78)
+	local grad_mat = Material("vgui/gradient_down")
 	local PANEL = {}
 	function PANEL:Init()
 		local w, h = chat.GetChatBoxSize()
@@ -142,7 +150,9 @@ else
 		h = h * .75
 		y = y - (h + 5)
 		
-		self.w, self.h = w * .5, h
+		self.w, self.h = math.max(w * .56, 316), math.max(h, 213)
+		self.gap = 24
+		self.side_w = math.max(self.w * 0.72, 230)
 		self.h3 = self.h * 1.5
 
 		self.Requests = {}
@@ -172,26 +182,43 @@ else
 		self.PlayerList:SetSize(self.w - 10, self.h - 37)
 	end
 
-	function PANEL:ApplySchemeSettings()
-		self.lblTitle:SetTextColor(ui.col.Close)
-		self.lblTitle:SetFont('ui.22')
-	end
-
-	function PANEL:SetStage(state)
-		if (state == 1) then
-			self:SizeTo(self.w, self.h, 0.175, 0, 0.25, cback)
-		elseif (state == 2) then
-			self:SizeTo(self.w * 2, self.h, 0.175, 0, 0.25, cback)
-		else
-			self:SizeTo(self.w * 2, self.h3, 0.175, 0, 0.25)
+		function PANEL:ApplySchemeSettings()
+			self.lblTitle:SetTextColor(ui.col.Close)
+			self.lblTitle:SetFont('ui.22')
 		end
-	end
+
+		function PANEL:Paint(w, h)
+			local lw = math.min(self.w, w)
+			draw.RoundedBox(15, 0, 0, lw, h, req_bg)
+			surface.SetDrawColor(218, 62, 68, 10)
+			surface.SetMaterial(grad_mat)
+			surface.DrawTexturedRectUV(0, 0, lw, h, 0, 1, 1, 0)
+		end
+
+		function PANEL:SetStage(state)
+			if (state == 1) then
+				self:SizeTo(self.w, self.h, 0.175, 0, 0.25, cback)
+			elseif (state == 2) then
+				self:SizeTo(self.w + self.gap + self.side_w, self.h, 0.175, 0, 0.25, cback)
+			else
+				self:SizeTo(self.w + self.gap + self.side_w, self.h3, 0.175, 0, 0.25)
+			end
+		end
 
 	function PANEL:AddRequest(pl, msg, startTime)
 		local pnl = ui.Create('ba_menu_player')
 		pnl.SteamID = pl:SteamID()
 		pnl:SetPlayer(pl)
 		pnl:SetStartTime(startTime)
+		pnl.Paint = function(s, w, h)
+			local isSelected = s.Selected
+			local bg = isSelected and Color(82, 83, 88) or Color(255, 255, 255, 24)
+			draw.RoundedBox(12, 0, 0, w, h, bg)
+		end
+		pnl.Name:SetTextColor(color_white)
+		pnl.Checkbox.Paint = function(s, w, h)
+			draw.RoundedBox(6, 0, 0, w, h, pnl.Selected and Color(218, 62, 68) or Color(70, 71, 76))
+		end
 		pnl.Checkbox.DoClick = function()
 			if (self.Player ~= pnl) then
 				if (self.Player ~= nil and IsValid(self.Player)) then
@@ -199,11 +226,15 @@ else
 				end
 				self.Player = pnl
 				pnl.Selected = true
-				self:SetStage(2)
 				self:OpenRequest(pnl.ID)
+				self:SetStage(2)
 			else
 				self.Player = nil
 				pnl.Selected = false
+				if IsValid(self.CurRequest) then
+					self.CurRequest:Remove()
+					self.CurRequest = nil
+				end
 				self:SetStage(1)
 			end
 			self.ID = pnl.ID
@@ -224,10 +255,16 @@ else
 	end
 
 	function PANEL:RemoveRequest(id)
+		if not self.Requests[id] then return end
 		self.Requests[id]:Remove()
 		table.remove(self.Requests, id)
+		if IsValid(self.CurRequest) and self.ID == id then
+			self.CurRequest:Remove()
+			self.CurRequest = nil
+		end
 		self.Player = nil
 		if (self.ID == id) then
+			self.ID = nil
 			self:SetStage(1)
 		end
 		
@@ -243,13 +280,23 @@ else
 		if !pnl then return end
 
 		self.CurRequest = ui.Create('ui_panel', function(s, p)
-			s:SetPos(self.w, 32)
-			s:SetSize(self.w - 5, self.h - 37)
+			s:SetPos(self.w + self.gap, 0)
+			s:SetSize(self.side_w, self.h)
+			s.Paint = function(_, w, h)
+				draw.RoundedBox(15, 0, 0, w, h, req_bg)
+				surface.SetDrawColor(218, 62, 68, 10)
+				surface.SetMaterial(grad_mat)
+				surface.DrawTexturedRectUV(0, 0, w, h, 0, 1, 1, 0)
+			end
 		end, self)
+
 		ui.Create('DButton', function(s, p)
-			s:SetPos(5, 5)
-			s:SetSize(p:GetWide() * .5 - 7.5, 25)
+			s:SetPos(10, p:GetTall() - 38)
+			s:SetSize((p:GetWide() - 30) * .5, 28)
 			s:SetText('Принять')
+			s.Paint = function(btn, w, h)
+				draw.RoundedBox(10, 0, 0, w, h, btn:IsHovered() and req_btn_accept_hover or req_btn_accept)
+			end
 			s.DoClick = function()
 				if (IsValid(pnl.Player)) then
 					RunConsoleCommand('ba', 'Treq', pnl.Player:SteamID())
@@ -257,9 +304,12 @@ else
 			end
 		end, self.CurRequest)
 		ui.Create('DButton', function(s, p)
-			s:SetPos(p:GetWide() * .5 + 2.5, 5)
-			s:SetSize(p:GetWide() * .5 - 7.5, 25)
+			s:SetPos(20 + (p:GetWide() - 30) * .5, p:GetTall() - 38)
+			s:SetSize((p:GetWide() - 30) * .5, 28)
 			s:SetText('Отклонить')
+			s.Paint = function(btn, w, h)
+				draw.RoundedBox(10, 0, 0, w, h, btn:IsHovered() and req_btn_decline_hover or req_btn_decline)
+			end
 			s.DoClick = function()
 				if (IsValid(pnl.Player)) then
 					RunConsoleCommand('ba', 'Rreq', pnl.Player:SteamID())
@@ -267,20 +317,10 @@ else
 			end
 		end, self.CurRequest)
 
-		ui.Create('DButton', function(s, p)
-			s:SetPos(5, 35)
-			s:SetSize(p:GetWide() - 10, 25)
-			s:SetText('Скопировать SteamID')
-			s.DoClick = function()
-				if !IsValid( pnl.Player ) then return end
-				SetClipboardText(pnl.Player:SteamID())
-				LocalPlayer():ChatPrint('Скопировано')
-			end
-		end, self.CurRequest)
-
 		local l = ba.ui.Label(pnl.Message or '', self.CurRequest, {font = 'ba.ui.22', color = ui.col.Close, wrap = true})
-		l:SetSize(self.w - 15, self.h - 37 - 70)
-		l:SetPos(5, 65)
+		l:SetContentAlignment(7)
+		l:SetSize(self.CurRequest:GetWide() - 20, self.CurRequest:GetTall() - 78)
+		l:SetPos(10, 10)
 	end
 	vgui.Register('ba_adminchat', PANEL, 'DFrame')
 

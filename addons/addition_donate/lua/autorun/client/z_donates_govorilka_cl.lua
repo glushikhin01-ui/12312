@@ -8,8 +8,10 @@ local Tag = "KylDonate:Govorilka"
 
 local char_to_hex = function(c) return string.format("%%%02X", string.byte(c)) end
 local function urlencode(url)
-    return tostring(url or ""):gsub("
-", " ")
+    return tostring(url or "")
+        :gsub("\r\n", " ")
+        :gsub("\n", " ")
+        :gsub("\r", " ")
         :gsub("([^%w ])", char_to_hex)
         :gsub(" ", "+")
 end

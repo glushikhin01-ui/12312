@@ -105,7 +105,7 @@ rp.AddEntity('Большой Экран', {
 })
 
 -- money printer
-rp.AddEntity("Денежный Принтер", {
+--[[ rp.AddEntity("Денежный Принтер", {
 	ent = "derma_printer",
 	model = "models/phoenixprinters/dermaprinter.mdl",
 	price = 15000,
@@ -118,7 +118,7 @@ rp.AddEntity("Денежный Принтер", {
 		eui.battlepass.AddProgress(pl, 14)
 	end
 })
-
+--]]
 rp.AddEntity("Денежный Принтер", {
 	ent = "derma_printer",
 	model = "models/phoenixprinters/dermaprinter.mdl",
