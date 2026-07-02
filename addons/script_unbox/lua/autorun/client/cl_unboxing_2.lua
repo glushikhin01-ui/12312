@@ -1033,6 +1033,28 @@ net.Receive("StartClientSpinAnimation",function()
 
 end)  
 
+local function ub_getUpgradeItems( upgrade )
+	if not IsValid( upgrade ) then return nil end
+	if istable( upgrade.Items ) then return upgrade.Items end
+	if upgrade.GetItems then return upgrade:GetItems( ) end
+	if IsValid( upgrade.Page ) and upgrade.Page.GetItems then return upgrade.Page:GetItems( ) end
+	return nil
+end
+
+local function ub_removeSelectedUpgradeItem( upgrade )
+	if not IsValid( upgrade ) or upgrade.IsMoney then return end
+	if not upgrade.GetLeft then return end
+
+	local left = upgrade:GetLeft( )
+	if not left then return end
+
+	local items = ub_getUpgradeItems( upgrade )
+	local left_item = items and items[ left ]
+	if left_item and IsValid( left_item.panel ) then
+		left_item.panel:Remove( )
+	end
+end
+
 net.Receive("StartClientUpgradeAnimation",function()
 
 	local mode = net.ReadUInt( 3 )
@@ -1046,15 +1068,8 @@ net.Receive("StartClientUpgradeAnimation",function()
 			BUC2.DonateUpgradePanel:DoSpin( false )
 		end
 
-		local upgrade = BUC2.DonateUpgradePanel
-		if (mode == 1 or mode == 2) and not upgrade.IsMoney then
-			local left = upgrade:GetLeft( )
-			if left then
-				local left_item = upgrade.Items[ left ]
-				if left_item and IsValid( left_item.panel ) then
-					left_item.panel:Remove( )
-				end
-			end
+		if mode == 1 or mode == 2 then
+			ub_removeSelectedUpgradeItem( BUC2.DonateUpgradePanel )
 		end
 		return
 	end
@@ -1075,15 +1090,8 @@ net.Receive("StartClientUpgradeAnimation",function()
 		BUC2.buttonsLocked = false
 	end
 
-	local upgrade = poorApi.pages.Upgrade
-	if (mode == 1 or mode == 2) and not upgrade.IsMoney then
-		local left = upgrade:GetLeft( )
-		if left then
-			local left_item = upgrade.Items[ left ]
-			if left_item and IsValid( left_item.panel ) then
-				left_item.panel:Remove( )
-			end
-		end
+	if mode == 1 or mode == 2 then
+		ub_removeSelectedUpgradeItem( poorApi.pages.Upgrade )
 	end
 
 end)
@@ -1600,8 +1608,12 @@ function ub_createUpgrade( )
 	page:Dock( FILL )
 	page:InvalidateParent( true )
 	page:SetTall( poorApi.pages.Upgrade:GetTall( ) )
+	poorApi.pages.Upgrade.Page = page
 	poorApi.pages.Upgrade.DoSpin = function(s, b) page:DoSpin( b ) end
 	poorApi.pages.Upgrade.GetLeft = function(s) return page:GetLeft( ) end
+	poorApi.pages.Upgrade.GetRight = function(s) return page:GetRight( ) end
+	poorApi.pages.Upgrade.GetItems = function(s) return page:GetItems( ) end
+	poorApi.pages.Upgrade.GetLeftData = function(s) return page:GetLeftData( ) end
 end
 
 local SpinnerPanel = CompileFile "unbox/spinner.lua" {

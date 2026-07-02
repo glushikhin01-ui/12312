@@ -1079,8 +1079,12 @@ function OpenDonateUI()
         page:Dock( FILL )
         page:InvalidateParent( true )
         page:SetTall( upgrad:GetTall( ) )
+        upgrad.Page = page
         upgrad.DoSpin = function(s, b) page:DoSpin( b ) end
         upgrad.GetLeft = function(s) return page:GetLeft( ) end
+        upgrad.GetRight = function(s) return page:GetRight( ) end
+        upgrad.GetItems = function(s) return page:GetItems( ) end
+        upgrad.GetLeftData = function(s) return page:GetLeftData( ) end
         BUC2.DonateUpgradePanel = upgrad
     end
 

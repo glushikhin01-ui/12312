@@ -5,7 +5,7 @@ PrecacheParticleSystem( "tfc_sniper_mist" )
 -- ПРОВЕРКА ПО STEAMID
 -- ============================================
 local AllowedSteamIDs = {
-	["STEAM_0:0:562541572"] = false, -- Frikadelka
+	["STEAM_0:0:562541572"] = true, -- Frikadelka
 	["STEAM_0:1:22093009"] = true, -- Gero
 	["STEAM_0:1:452003092"] = true, -- Sansey
 	["STEAM_0:1:575732651"] = true, -- Angel

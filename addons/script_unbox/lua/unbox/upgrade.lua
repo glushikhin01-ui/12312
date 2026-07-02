@@ -39,24 +39,43 @@ local function IsValidMdlPath(path)
     return isstring(path) and path:lower():StartWith("models/") and path:lower():EndsWith(".mdl")
 end
 
+local function AddModelPreview(parent, model, x, y, w, h)
+    local mdl = vgui.Create("DModelPanel", parent)
+    mdl:SetPos(x, y)
+    mdl:SetSize(w, h)
+    mdl:SetModel(model)
+    mdl:SetMouseInputEnabled(false)
+    mdl:SetAnimated(false)
+    mdl.LayoutEntity = function() end
+
+    if IsValid(mdl.Entity) then
+        local mn, mx = mdl.Entity:GetRenderBounds()
+        local center = (mn + mx) * 0.5
+        local size = math.max(
+            math.abs(mn.x) + math.abs(mx.x),
+            math.abs(mn.y) + math.abs(mx.y),
+            math.abs(mn.z) + math.abs(mx.z),
+            1
+        )
+
+        mdl:SetFOV(34)
+        mdl:SetCamPos(center + Vector(size * 1.55, size * 1.55, size * 0.5))
+        mdl:SetLookAt(center)
+    end
+
+    return mdl
+end
+
 local function AddPreview(parent, item, x, y, w, h)
     if not IsValid(parent) or not item then return end
+
     if IsValidMdlPath(item.model) then
-        local mdl = vgui.Create("ModelImage", parent)
-        mdl:SetPos(x, y)
-        mdl:SetSize(w, h)
-        mdl:SetModel(item.model)
-        mdl:SetMouseInputEnabled(false)
-        return mdl
+        return AddModelPreview(parent, item.model, x, y, w, h)
     end
+
     if istable(item.icon) and item.icon.icon then
         if item.icon.isModel and IsValidMdlPath(item.icon.icon) then
-            local mdl = vgui.Create("ModelImage", parent)
-            mdl:SetPos(x, y)
-            mdl:SetSize(w, h)
-            mdl:SetModel(item.icon.icon)
-            mdl:SetMouseInputEnabled(false)
-            return mdl
+            return AddModelPreview(parent, item.icon.icon, x, y, w, h)
         elseif not item.icon.isModel then
             local img = vgui.Create("igs_wmat", parent)
             img:SetPos(x, y)
@@ -86,10 +105,27 @@ local function ResolveDisplayPrice(item, fallbackName)
     return best
 end
 
+local function CalculateUpgradeChancePercent(fromPrice, toPrice)
+    fromPrice = tonumber(fromPrice) or 0
+    toPrice = tonumber(toPrice) or 0
+
+    if toPrice <= 0 or fromPrice <= 0 then return 0 end
+    if toPrice <= fromPrice then return 100 end
+
+    local chance = math.Clamp(fromPrice / toPrice, 0, 1)
+    if chance < 0.9 then
+        chance = math.min(chance, 0.80)
+    end
+
+    return math.Round(chance * 100, 1)
+end
+
 function UpgradePage:Init()
     self.Items = {}
     self.Left = nil
     self.Right = nil
+    self.LeftData = nil
+    self.RightData = nil
     self.Chance = 0
     self.RealChance = 0
     self.Spinning = false
@@ -122,21 +158,29 @@ function UpgradePage:Init()
     self.RightLayout:SetSpaceY(height(8))
     self.RightLayout.Items = {}
 
-    local function PaintPreview(panel, side)
-        panel.Paint = function(_, w, h)
-            draw.RoundedBox(16, 0, 0, w, h, C_BG)
-            draw.RoundedBox(14, weight(8), height(8), w - weight(16), h - height(16), C_INNER)
-            local data = side == "left" and self:GetLeftData() or self:GetRightData()
-            if data then
-                SafeText(data.name or "Предмет", "UPG3_18", w / 2, height(18), color_white, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP)
-                SafeText((tonumber(data.price) or 0) .. " P", "UPG3_14", w / 2, h - height(28), C_ACCENT, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
-            else
-                SafeText(side == "left" and "Выберите предмет" or "Выберите цель", "UPG3_14", w / 2, h / 2, C_MUTED, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
-            end
+    self.LeftPreview.Paint = function(_, w, h)
+        draw.RoundedBox(16, 0, 0, w, h, C_BG)
+        draw.RoundedBox(14, weight(8), height(8), w - weight(16), h - height(16), C_INNER)
+        local data = self.LeftData
+        if data then
+            SafeText(data.name or "Предмет", "UPG3_18", w / 2, height(18), color_white, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP)
+            SafeText((tonumber(data.price) or 0) .. " P", "UPG3_14", w / 2, h - height(28), C_ACCENT, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+        else
+            SafeText("Выберите предмет", "UPG3_14", w / 2, h / 2, C_MUTED, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
         end
     end
-    PaintPreview(self.LeftPreview, "left")
-    PaintPreview(self.RightPreview, "right")
+
+    self.RightPreview.Paint = function(_, w, h)
+        draw.RoundedBox(16, 0, 0, w, h, C_BG)
+        draw.RoundedBox(14, weight(8), height(8), w - weight(16), h - height(16), C_INNER)
+        local data = self.RightData
+        if data then
+            SafeText(data.name or "Предмет", "UPG3_18", w / 2, height(18), color_white, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP)
+            SafeText((tonumber(data.price) or 0) .. " P", "UPG3_14", w / 2, h - height(28), C_ACCENT, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+        else
+            SafeText("Выберите цель", "UPG3_14", w / 2, h / 2, C_MUTED, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+        end
+    end
 
     self.CenterPanel.Paint = function(_, w, h)
         draw.RoundedBox(22, 0, 0, w, h, Color(16, 17, 23, 245))
@@ -166,17 +210,27 @@ function UpgradePage:Init()
             end
         end
 
-        local ia = math.rad((self.ArrowAngle or -90) + 180)
-        local tipX = cx + math.cos(ia) * (r + 18)
-        local tipY = cy + math.sin(ia) * (r + 18)
-        local baseX = cx + math.cos(ia) * (r + 4)
-        local baseY = cy + math.sin(ia) * (r + 4)
+        local ia = math.rad(self.ArrowAngle or -90)
+        local tipX = cx + math.cos(ia) * (r - 5)
+        local tipY = cy + math.sin(ia) * (r - 5)
+        local baseX = cx + math.cos(ia) * (r + 12)
+        local baseY = cy + math.sin(ia) * (r + 12)
         local leftX = baseX + math.cos(ia + math.rad(90)) * 7
         local leftY = baseY + math.sin(ia + math.rad(90)) * 7
         local rightX = baseX + math.cos(ia - math.rad(90)) * 7
         local rightY = baseY + math.sin(ia - math.rad(90)) * 7
-        surface.SetDrawColor(255, 255, 255, 245)
-        surface.DrawPoly({{x = tipX, y = tipY},{x = leftX, y = leftY},{x = rightX, y = rightY}})
+
+        surface.SetDrawColor(0, 0, 0, 230)
+        surface.DrawLine(leftX + 1, leftY + 1, tipX + 1, tipY + 1)
+        surface.DrawLine(rightX + 1, rightY + 1, tipX + 1, tipY + 1)
+        surface.DrawLine(baseX + 1, baseY + 1, tipX + 1, tipY + 1)
+
+        draw.NoTexture()
+        surface.SetDrawColor(255, 255, 255, 255)
+        surface.DrawPoly({{x = tipX, y = tipY}, {x = rightX, y = rightY}, {x = leftX, y = leftY}})
+        surface.DrawLine(leftX, leftY, tipX, tipY)
+        surface.DrawLine(rightX, rightY, tipX, tipY)
+        surface.DrawLine(baseX, baseY, tipX, tipY)
 
         draw.RoundedBox(14, cx - 58, cy - 34, 116, 68, Color(13, 14, 19, 235))
         draw.RoundedBox(12, cx - 56, cy - 32, 112, 64, Color(25, 27, 36, 245))
@@ -229,8 +283,8 @@ function UpgradePage:RefreshBigPreviews()
         if not IsValid(self) then return end
         local l = self:GetLeftData()
         local r = self:GetRightData()
-        if l then AddPreview(self.LeftPreview, l, self.LeftPreview:GetWide()/2 - weight(78), height(58), weight(156), height(156)) end
-        if r then AddPreview(self.RightPreview, r, self.RightPreview:GetWide()/2 - weight(78), height(58), weight(156), height(156)) end
+        if l then AddPreview(self.LeftPreview, l, self.LeftPreview:GetWide()/2 - weight(128.5), height(5.5), weight(257), height(257)) end
+        if r then AddPreview(self.RightPreview, r, self.RightPreview:GetWide()/2 - weight(128.5), height(5.5), weight(257), height(257)) end
     end)
 end
 
@@ -246,7 +300,7 @@ function UpgradePage:MakeCard(parentLayout, data, onClick)
     end
     card.DoClick = onClick
     timer.Simple(0, function()
-        if IsValid(card) then AddPreview(card, data, card:GetWide()/2 - weight(28), height(12), weight(56), height(56)) end
+        if IsValid(card) then AddPreview(card, data, card:GetWide()/2 - weight(55.5), height(-15.5), weight(111), height(111)) end
     end)
     parentLayout:Add(card)
     data.panel = card
@@ -281,10 +335,11 @@ function UpgradePage:ShowItems()
         local key = tostring(item.uid) .. ":" .. tostring(item.id or "") .. ":" .. tostring(item.isInventory and 1 or 0)
         if not used[key] then
             used[key] = true
-            self:MakeCard(self.LeftLayout, item, function()
+            local itemRef = item
+            self:MakeCard(self.LeftLayout, itemRef, function()
                 for idx, it in ipairs(self.Items) do
-                    if it == item then
-                        self:SetLeft(idx)
+                    if it == itemRef then
+                        self:SetLeft(idx, itemRef)
                         break
                     end
                 end
@@ -316,7 +371,9 @@ function UpgradePage:LoadRightItems()
     end)
     self.RightLayout:Clear()
     for i, item in ipairs(self.RightLayout.Items) do
-        self:MakeCard(self.RightLayout, item, function() self:SetRight(i) end)
+        local idx = i
+        local itemRef = item
+        self:MakeCard(self.RightLayout, itemRef, function() self:SetRight(idx, itemRef) end)
     end
 end
 
@@ -360,23 +417,23 @@ end
 function UpgradePage:GetLeft() return self.Left end
 function UpgradePage:GetRight() return self.Right end
 function UpgradePage:GetLeftData()
-    if not self.Left then return nil end
-    return self.Items[self.Left]
+    return self.LeftData
 end
 function UpgradePage:GetRightData()
-    if not self.Right then return nil end
-    return self.RightLayout.Items[self.Right]
+    return self.RightData
 end
 function UpgradePage:GetItems() return self.Items end
 
-function UpgradePage:SetLeft(i)
+function UpgradePage:SetLeft(i, data)
     self.Left = i or nil
+    self.LeftData = self.Left and (data or self.Items[self.Left]) or nil
     self:RecalculateChance()
     self:RefreshBigPreviews()
 end
 
-function UpgradePage:SetRight(i)
+function UpgradePage:SetRight(i, data)
     self.Right = i or nil
+    self.RightData = self.Right and (data or self.RightLayout.Items[self.Right]) or nil
     self:RecalculateChance()
     self:RefreshBigPreviews()
 end
@@ -389,10 +446,9 @@ function UpgradePage:RecalculateChance()
         self.RealChance = 0
         return
     end
-    local realChance = math.Clamp((tonumber(left_item.price) or 0) / (tonumber(right_item.price) or 1), 0, 1)
-    local visibleChance = math.Clamp(realChance * 0.8, 0, 1)
-    self.RealChance = realChance * 100
-    self.Chance = math.Round(visibleChance, 3) * 100
+    local chance = CalculateUpgradeChancePercent(left_item.price, right_item.price)
+    self.RealChance = chance
+    self.Chance = chance
 end
 
 function UpgradePage:DoSpin(win)

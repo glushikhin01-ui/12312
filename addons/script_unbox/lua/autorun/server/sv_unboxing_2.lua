@@ -215,6 +215,13 @@ local function Callback( ply, int )
 	net.Send( ply )
 end
 local function CalculateChance( toPrice, fromPrice, rightUID )
+	toPrice = tonumber( toPrice ) or 0
+	fromPrice = tonumber( fromPrice ) or 0
+
+	if toPrice <= 0 or fromPrice <= 0 then
+		return false
+	end
+
 	if toPrice <= fromPrice then
 		return true
 	end
