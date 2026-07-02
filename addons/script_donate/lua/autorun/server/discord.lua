@@ -6,11 +6,11 @@ util.AddNetworkString("DonateDiscord.OpenLink")
 DonateDiscord = DonateDiscord or {}
 DonateDiscord.Config = DonateDiscord.Config or {
     ClientID = "1431676108008329228",
-    RedirectURI = "http://212.22.93.35/discord",
+    RedirectURI = "http://93.115.101.104:12968/discord",
     Scope = "identify guilds",
     ServerID = 1,
 
-    SharedSecret = "CHANGE_ME",
+    SharedSecret = "0ccf0ba379c1e016a0086afbd44f51aa2d6efa90d22e295f2c0c080cb00ede99",
 
     TokenLifetime = 600,
 }
@@ -191,6 +191,16 @@ concommand.Add("donate_discord_mark_unlinked", function(admin, _, args)
 end)
 
 net.Receive("DonateDiscord.RequestLink", function(_, ply)
+    if not IsValid(ply) then return end
+
+    local row = sql.QueryRow(string.format("SELECT discord_id FROM donate_discord_users WHERE steamid64 = %s;", sql.SQLStr(ply:SteamID64())))
+    if row and row.discord_id and row.discord_id ~= "" then
+        ply:SetNWBool("DonateDiscord.Linked", true)
+        ply:SetNWString("DonateDiscord.ID", tostring(row.discord_id))
+        ply:ChatPrint("[Discord] Ваш аккаунт уже привязан к Discord ID " .. tostring(row.discord_id) .. ". Повторная привязка недоступна.")
+        return
+    end
+
     local authURL = DonateDiscord.GenerateAuthURL(ply)
 
     if authURL == "" then

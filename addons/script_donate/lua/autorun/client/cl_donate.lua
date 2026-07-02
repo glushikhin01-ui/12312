@@ -236,7 +236,7 @@ function OpenDonateUI()
         local isLinked = LocalPlayer():GetNWBool("DonateDiscord.Linked", false)
         local discordID = LocalPlayer():GetNWString("DonateDiscord.ID", "")
         if isLinked then
-            self:SetTooltip("Discord привязан" .. (discordID ~= "" and (" (" .. discordID .. ")") or "") .. "\nНажмите, чтобы перепривязать.")
+            self:SetTooltip("Discord привязан" .. (discordID ~= "" and (" (" .. discordID .. ")") or ""))
         else
             self:SetTooltip("Привязать Discord аккаунт")
         end
@@ -1042,7 +1042,6 @@ function OpenDonateUI()
                 end
                 local preview = vgui.Create('DButton', main)
                 preview:SetSize(height(29)*1.3, height(29)*1.3)
-                -- Квадратик "состав" слева от кнопки Купить
                 preview:SetPos(weight(62)*1.3, height(23)*1.3)
                 preview:SetText('')
                 preview:SetTooltip('Состав кейса')
@@ -1111,7 +1110,7 @@ function OpenDonateUI()
         upgrad:SetSize(weight(1400),height(950))
         upgrad:SetPos(weight(480),height(68))
         upgrad.Paint = function(self,w,h)
-            -- Убраны Ellipse_4/Ellipse_5: если материалов нет, Garry's Mod рисует розово-черный ERROR за кругом апгрейда.
+
         end
         local page = vgui.CreateFromTable( UpgradePage, upgrad, "Upgrade Panel" )
         page:Dock( FILL )
@@ -1664,7 +1663,6 @@ function OpenDonateUI()
         CreateBanner(dashboardPanel, 886, 0, 494, 328, "f6donate/x3ak.png", "X3", Color(116, 239, 117))
         CreateBanner(dashboardPanel, 886, 348, 494, 404, "f6donate/1000az.png", "+1000 AZ", Color(248, 193, 100))
 
-        -- Arizona+ Buy Button
         local buyBtn = vgui.Create("DButton", dashboardPanel)
         buyBtn:SetSize(weight(280), height(60))
         buyBtn:SetPos(weight(1400-280-20), height(950-60-20))
@@ -1812,6 +1810,12 @@ hook.Add("Think", "DonateKEYReplace", function()
     end
 
     hook.Remove("Think", "DonateKEYReplace")
+end)
+
+hook.Add("OnPauseMenuShow", "BUC2_BlockEscMenuWhileDonateOpen", function()
+    if isOpen then
+        return false 
+    end
 end)
 
 net.Receive("DonateDiscord.OpenLink", function()
