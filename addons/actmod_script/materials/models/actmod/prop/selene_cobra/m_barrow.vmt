@@ -1,0 +1,25 @@
+VertexLitGeneric
+{
+	$basetexture	models/actmod/glow
+	$envmap			env_cubemap
+
+	$surfaceprop	plastic
+	$selfillum		1
+	$phong			1
+
+	$phongboost		50
+	$phongexponent	200
+	$phongfresnelranges	"[.1 0.5 2]"
+
+	Proxies
+	{
+		Sine
+		{
+			resultVar	$color2
+			sineperiod	0.25
+			sinemin		0.5
+			sinemax		1
+		}
+
+	}
+}

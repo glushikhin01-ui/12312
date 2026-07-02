@@ -1,8 +1,11 @@
 if SERVER then
 
-	-- Свепы сансея 28.06
+	-- Свепы сансея 28.06.2026
 	resource.AddWorkshop("375416144")
-	resource.AddWorkshop("1710471313")	
+	resource.AddWorkshop("1710471313")
+	-- Act Mod 02.07.2026
+	resource.AddWorkshop("2538387266")
+	resource.AddWorkshop("2615656036")
 
     -- ЛИЧНЫЕ МОДЕЛИ 28.06
     resource.AddWorkshop("3742180095")

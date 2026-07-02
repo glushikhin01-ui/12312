@@ -2,6 +2,7 @@ if not SERVER then return end
 
 util.AddNetworkString("DonateDiscord.RequestLink")
 util.AddNetworkString("DonateDiscord.OpenLink")
+util.AddNetworkString("DonateDiscord.SuccessLink")
 
 DonateDiscord = DonateDiscord or {}
 DonateDiscord.Config = DonateDiscord.Config or {
@@ -127,37 +128,62 @@ function DonateDiscord.GenerateAuthURL(ply)
     return url
 end
 
+function DonateDiscord.CleanSteamID(id)
+    id = tostring(id or "")
+    id = string.gsub(id, "[\"']", "")
+    return string.Trim(id)
+end
+
+function DonateDiscord.GetPlayerDBRow(ply)
+    if not IsValid(ply) then return nil end
+    local sid64 = DonateDiscord.CleanSteamID(ply:SteamID64())
+    local sid = DonateDiscord.CleanSteamID(ply:SteamID())
+    local uid = DonateDiscord.CleanSteamID(ply:UniqueID())
+
+    local query = string.format(
+        "SELECT * FROM donate_discord_users WHERE TRIM(steamid64) = %s OR TRIM(steamid64) = %s OR TRIM(steamid64) = %s LIMIT 1;",
+        sql.SQLStr(sid64),
+        sql.SQLStr(sid),
+        sql.SQLStr(uid)
+    )
+    return sql.QueryRow(query)
+end
+
 function DonateDiscord.MarkLinked(steamid64, discordID, roleSynced)
+    steamid64 = DonateDiscord.CleanSteamID(steamid64)
+    discordID = string.Trim(tostring(discordID or ""))
+
     sql.Query(string.format(
         "REPLACE INTO donate_discord_users (steamid64, discord_id, role_synced, linked_time) VALUES (%s, %s, %d, %d);",
-        sql.SQLStr(tostring(steamid64)),
-        sql.SQLStr(tostring(discordID or "")),
+        sql.SQLStr(steamid64),
+        sql.SQLStr(discordID),
         roleSynced and 1 or 0,
         os.time()
     ))
 
     for _, ply in ipairs(player.GetAll()) do
-        if ply:SteamID64() ~= tostring(steamid64) then continue end
-
-        ply:SetNWBool("DonateDiscord.Linked", true)
-        ply:SetNWString("DonateDiscord.ID", tostring(discordID or ""))
-        ply:SetNWBool("DonateDiscord.RoleSynced", roleSynced == true)
-
-        ply:ChatPrint("[Discord] Аккаунт Discord успешно привязан.")
+        if DonateDiscord.CleanSteamID(ply:SteamID64()) == steamid64 or DonateDiscord.CleanSteamID(ply:SteamID()) == steamid64 then
+            ply:SetNWBool("DonateDiscord.Linked", true)
+            ply:SetNWString("DonateDiscord.ID", discordID)
+            ply:SetNWBool("DonateDiscord.RoleSynced", roleSynced == true)
+            net.Start("DonateDiscord.SuccessLink")
+            net.Send(ply)
+            ply:ChatPrint("[Discord] Аккаунт Discord успешно привязан.")
+        end
     end
 end
 
 function DonateDiscord.MarkUnlinked(steamid64)
-    sql.Query(string.format("DELETE FROM donate_discord_users WHERE steamid64 = %s;", sql.SQLStr(tostring(steamid64))))
+    steamid64 = DonateDiscord.CleanSteamID(steamid64)
+    sql.Query(string.format("DELETE FROM donate_discord_users WHERE steamid64 = %s;", sql.SQLStr(steamid64)))
 
     for _, ply in ipairs(player.GetAll()) do
-        if ply:SteamID64() ~= tostring(steamid64) then continue end
-
-        ply:SetNWBool("DonateDiscord.Linked", false)
-        ply:SetNWString("DonateDiscord.ID", "")
-        ply:SetNWBool("DonateDiscord.RoleSynced", false)
-
-        ply:ChatPrint("[Discord] Привязка Discord сброшена.")
+        if DonateDiscord.CleanSteamID(ply:SteamID64()) == steamid64 or DonateDiscord.CleanSteamID(ply:SteamID()) == steamid64 then
+            ply:SetNWBool("DonateDiscord.Linked", false)
+            ply:SetNWString("DonateDiscord.ID", "")
+            ply:SetNWBool("DonateDiscord.RoleSynced", false)
+            ply:ChatPrint("[Discord] Привязка Discord сброшена.")
+        end
     end
 end
 
@@ -190,42 +216,109 @@ concommand.Add("donate_discord_mark_unlinked", function(admin, _, args)
     print("[DonateDiscord] Unlinked:", steamid64)
 end)
 
+function DonateDiscord.CheckLinkedExternal(ply, callback)
+    if not IsValid(ply) then return end
+    local sid64 = DonateDiscord.CleanSteamID(ply:SteamID64())
+    if not sid64 or sid64 == "" then
+        if callback then callback(false, nil) end
+        return
+    end
+
+    local baseURI = string.match(DonateDiscord.Config.RedirectURI or "", "^(https?://[^/]+)")
+    if not baseURI or baseURI == "" then
+        if callback then callback(false, nil) end
+        return
+    end
+
+    local secret = DonateDiscord.Config.SharedSecret or "CHANGE_ME"
+    local url = baseURI .. "/api/status?steamid64=" .. sid64 .. "&secret=" .. secret
+
+    http.Fetch(url, function(body, len, headers, code)
+        if not IsValid(ply) then return end
+        if code == 200 and body then
+            local data = util.JSONToTable(body)
+            if data and data.ok and data.linked then
+                local did = tostring(data.discord_id or "")
+                sql.Query(string.format(
+                    "REPLACE INTO donate_discord_users (steamid64, discord_id, role_synced, linked_time) VALUES (%s, %s, %d, %d);",
+                    sql.SQLStr(sid64),
+                    sql.SQLStr(did),
+                    data.role_synced and 1 or 0,
+                    os.time()
+                ))
+                ply:SetNWBool("DonateDiscord.Linked", true)
+                ply:SetNWString("DonateDiscord.ID", did)
+                ply:SetNWBool("DonateDiscord.RoleSynced", data.role_synced == true)
+                net.Start("DonateDiscord.SuccessLink")
+                net.Send(ply)
+                if callback then callback(true, did) end
+                return
+            end
+        end
+        if callback then callback(false, nil) end
+    end, function(err)
+        if callback then callback(false, nil) end
+    end)
+end
+
 net.Receive("DonateDiscord.RequestLink", function(_, ply)
     if not IsValid(ply) then return end
 
-    local row = sql.QueryRow(string.format("SELECT discord_id FROM donate_discord_users WHERE steamid64 = %s;", sql.SQLStr(ply:SteamID64())))
-    if row and row.discord_id and row.discord_id ~= "" then
+    if (ply.NextDiscordRequest or 0) > CurTime() then
+        ply:ChatPrint("[Discord] Подождите перед повторной отправкой запроса.")
+        return
+    end
+    ply.NextDiscordRequest = CurTime() + 10
+
+    DonateDiscord.SyncPlayer(ply)
+
+    if ply:GetNWBool("DonateDiscord.Linked", false) then
+        ply:ChatPrint("[Discord] Ваш аккаунт уже привязан. Повторная привязка недоступна.")
+        return
+    end
+
+    local row = DonateDiscord.GetPlayerDBRow(ply)
+    if row then
         ply:SetNWBool("DonateDiscord.Linked", true)
-        ply:SetNWString("DonateDiscord.ID", tostring(row.discord_id))
-        ply:ChatPrint("[Discord] Ваш аккаунт уже привязан к Discord ID " .. tostring(row.discord_id) .. ". Повторная привязка недоступна.")
+        if row.discord_id then
+            ply:SetNWString("DonateDiscord.ID", tostring(row.discord_id))
+        end
+        net.Start("DonateDiscord.SuccessLink")
+        net.Send(ply)
+        ply:ChatPrint("[Discord] Ваш аккаунт уже привязан к Discord" .. (row.discord_id and row.discord_id ~= "" and (" ID " .. tostring(row.discord_id)) or "") .. ". Повторная привязка недоступна.")
         return
     end
 
-    local authURL = DonateDiscord.GenerateAuthURL(ply)
+    DonateDiscord.CheckLinkedExternal(ply, function(isLinked, did)
+        if not IsValid(ply) then return end
+        if isLinked then
+            ply:ChatPrint("[Discord] Ваш аккаунт уже привязан к Discord" .. (did and did ~= "" and (" ID " .. did) or "") .. ". Повторная привязка недоступна.")
+            return
+        end
 
-    if authURL == "" then
-        ply:ChatPrint("[Discord] Не настроена ссылка авторизации. Проверь настройки в discord.lua")
-        return
-    end
+        local authURL = DonateDiscord.GenerateAuthURL(ply)
 
-    net.Start("DonateDiscord.OpenLink")
-        net.WriteString(authURL)
-    net.Send(ply)
+        if authURL == "" then
+            ply:ChatPrint("[Discord] Не настроена ссылка авторизации. Проверь настройки в discord.lua")
+            return
+        end
+
+        net.Start("DonateDiscord.OpenLink")
+            net.WriteString(authURL)
+        net.Send(ply)
+    end)
 end)
 
 function DonateDiscord.SyncPlayer(ply)
     if not IsValid(ply) then return end
-    local steamid64 = ply:SteamID64()
 
-    local row = sql.QueryRow(string.format("SELECT * FROM donate_discord_users WHERE steamid64 = %s;", sql.SQLStr(steamid64)))
-    if row and row.discord_id and row.discord_id ~= "" then
+    local row = DonateDiscord.GetPlayerDBRow(ply)
+    if row then
         ply:SetNWBool("DonateDiscord.Linked", true)
-        ply:SetNWString("DonateDiscord.ID", tostring(row.discord_id))
+        ply:SetNWString("DonateDiscord.ID", tostring(row.discord_id or ""))
         ply:SetNWBool("DonateDiscord.RoleSynced", tonumber(row.role_synced) == 1 or row.role_synced == "true")
     else
-        ply:SetNWBool("DonateDiscord.Linked", false)
-        ply:SetNWString("DonateDiscord.ID", "")
-        ply:SetNWBool("DonateDiscord.RoleSynced", false)
+        DonateDiscord.CheckLinkedExternal(ply)
     end
 end
 
@@ -234,6 +327,16 @@ hook.Add("PlayerInitialSpawn", "DonateDiscord.SyncOnJoin", function(ply)
         if not IsValid(ply) then return end
         DonateDiscord.SyncPlayer(ply)
     end)
+end)
+
+hook.Add("Net_donOpen", "DonateDiscord.SyncOnMenuOpen", function(_, ply)
+    if IsValid(ply) then DonateDiscord.SyncPlayer(ply) end
+end)
+
+timer.Create("DonateDiscord.SyncAllPlayers", 15, 0, function()
+    for _, ply in ipairs(player.GetAll()) do
+        if IsValid(ply) then DonateDiscord.SyncPlayer(ply) end
+    end
 end)
 
 timer.Create("DonateDiscord.PendingCleanup", 60, 0, function()

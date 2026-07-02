@@ -1,0 +1,5 @@
+"LightmappedGeneric"
+{
+	"$basetexture" "models/actmod/bow_v1/everything"
+	"$translucent" 1
+}

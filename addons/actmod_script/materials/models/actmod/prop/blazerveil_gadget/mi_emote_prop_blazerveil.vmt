@@ -1,0 +1,28 @@
+"VertexlitGeneric"
+{
+	"$basetexture" "models/actmod/prop/blazerveil_gadget/blazerveil_d"
+	"$bumpmap" "models/actmod/prop/blazerveil_gadget/blazerveil_n"
+	//$lightwarptexture "models/actmod/prop/blazerveil_gadget/blazerveil_s"
+	//$stretch "models/actmod/prop/blazerveil_gadget/blazerveil_s"
+	//"$bumpstretch" "models/actmod/prop/blazerveil_gadget/blazerveil_f"
+	//$envmap env_cubemap
+	//$halflambert 0
+	//$diffuseexp 1
+
+	"$model" "1"
+	"$phong" "1"
+	"$phongexponent" "5"
+	//"$phongexponenttexture" "models\actmod\prop\blazerveil_gadget\blazerveil_s"
+	"$phongboost" "0.5"
+	"$phongalbedotint" "1"
+	"$phongtint" "[.5 .5 .2]"
+	"$phongfresnelranges"	"[0.9 0.9 0.5]"
+	"$ambientocclusion" "1"
+	//$detail "models/actmod/prop/blazerveil_gadget/blazerveil_s"
+
+	//"$envmapmode" "1"
+	//"$envmap" "env_cubemap"
+	//"$envmapmask" "models\actmod\prop\blazerveil_gadget\blazerveil_s"
+	//"$envmapsaturation" "0.2"
+	//"$envmapcontrast" "1"
+}

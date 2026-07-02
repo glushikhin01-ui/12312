@@ -1,0 +1,16 @@
+"VertexlitGeneric"
+{
+	"$basetexture" "models/actmod/prop/troops_gadget/prop_troops_gadget_d"
+	"$bumpmap" "models/actmod/prop/troops_gadget/prop_troops_gadget_n"
+	"$nocull" "1"
+	//"$alphatest" "1"
+
+	"$model" "1"
+	"$phong" "1"
+	"$phongexponent" "15"
+	"$phongboost" "0.6"
+	"$phongalbedotint" "1"
+	"$phongtint" "[1 .95 .95]"
+	"$phongfresnelranges"	"[0.5 6 10]"
+	"$ambientocclusion" "1"
+}

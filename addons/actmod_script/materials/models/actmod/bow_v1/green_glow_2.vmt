@@ -1,0 +1,25 @@
+"vertexlitGeneric"
+{
+	"$basetexture" "models/actmod/bow_v1/green_glow_2"
+	"$bumpmap" "models/actmod/bow_v1/normal"
+
+$additive 1
+"$phongexponenttexture" "models/actmod/bow_v1/everything"
+"$phongexponent" "5"
+"$phongalbedotint" 1
+"$phong" "1"
+//"$color2" "[.75 .75 .75]" 
+	"$phongboost"	"20.5"          
+                //"$phongtint" "[1.02 1.52 1.48]" 
+	"$phongfresnelranges"	"[.15 .15 .15]"
+
+"$nodecal" 1
+	 $selfillummask "models/actmod/bow_v1/everything"
+                "$selfillumtexture" "models/actmod/bow_v1/everything"
+                "$selfillum" 1
+                "$selfillumtint" "[1 15 1]"
+
+"$rimlight" "1" 
+"$rimlightexponent" "0.5" 
+"$rimlightboost" "40" 
+}

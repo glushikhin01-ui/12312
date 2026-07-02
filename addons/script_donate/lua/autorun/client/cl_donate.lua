@@ -94,6 +94,80 @@ function generateTape(itemID)
     return itemList
 end
 
+function BUC2_ShowURLWindow(title, url, desc)
+    if not url or url == "" then return end
+    SetClipboardText(url)
+
+    if IsValid(BUC2_ActiveURLFrame) then BUC2_ActiveURLFrame:Remove() end
+
+    local wnd = vgui.Create('DFrame')
+    BUC2_ActiveURLFrame = wnd
+    wnd:SetSize(weight(500), height(250))
+    wnd:Center()
+    wnd:SetTitle('')
+    wnd:MakePopup()
+    wnd:ShowCloseButton(false)
+    wnd.OnKeyCodePressed = function(self, key)
+        if key == KEY_ESCAPE then return end
+    end
+
+    wnd.Paint = function(self, w, h)
+        draw.RoundedBox(12, 0, 0, w, h, Color(25, 25, 25, 250))
+        draw.SimpleText(title or 'Ссылка создана', 'DermaLarge', w/2, height(30), Color(255, 255, 255), 1, 1)
+        draw.SimpleText(desc or 'Ссылка автоматически скопирована в буфер обмена.', 'DermaDefault', w/2, height(70), Color(200, 200, 200), 1, 1)
+    end
+
+    local cls = vgui.Create('DButton', wnd)
+    cls:SetSize(weight(30), height(30))
+    cls:SetPos(wnd:GetWide() - weight(40), height(10))
+    cls:SetText('')
+    cls.Paint = function(self, w, h)
+        draw.RoundedBox(6, 0, 0, w, h, self:IsHovered() and Color(255, 100, 100) or Color(200, 50, 50))
+        draw.SimpleText('X', 'DermaDefaultBold', w/2, h/2, Color(255, 255, 255), 1, 1)
+    end
+    cls.DoClick = function() wnd:Remove() end
+
+    local textEntry = vgui.Create('DTextEntry', wnd)
+    textEntry:SetPos(weight(30), height(100))
+    textEntry:SetSize(weight(440), height(40))
+    textEntry:SetFont('DermaDefault')
+    textEntry:SetText(url)
+    textEntry.OnKeyCodeTyped = function(self, code)
+        if code == KEY_ESCAPE then return true end
+    end
+    textEntry.Paint = function(self, w, h)
+        draw.RoundedBox(8, 0, 0, w, h, Color(15, 15, 15))
+        self:DrawTextEntryText(Color(255, 255, 255), Color(30, 130, 255), Color(255, 255, 255))
+    end
+
+    local copyBtn = vgui.Create('DButton', wnd)
+    copyBtn:SetPos(weight(30), height(165))
+    copyBtn:SetSize(weight(210), height(45))
+    copyBtn:SetText('')
+    copyBtn.Paint = function(self, w, h)
+        draw.RoundedBox(8, 0, 0, w, h, self:IsHovered() and Color(70, 180, 80) or Color(50, 150, 60))
+        draw.SimpleText('СКОПИРОВАТЬ', 'DermaDefaultBold', w/2, h/2, Color(255, 255, 255), 1, 1)
+    end
+    copyBtn.DoClick = function()
+        SetClipboardText(url)
+        if LocalPlayer() and LocalPlayer().ChatPrint then
+            LocalPlayer():ChatPrint("[Donate] Ссылка скопирована в буфер обмена!")
+        end
+    end
+
+    local openBtn = vgui.Create('DButton', wnd)
+    openBtn:SetPos(weight(260), height(165))
+    openBtn:SetSize(weight(210), height(45))
+    openBtn:SetText('')
+    openBtn.Paint = function(self, w, h)
+        draw.RoundedBox(8, 0, 0, w, h, self:IsHovered() and Color(30, 140, 255) or Color(20, 110, 220))
+        draw.SimpleText('ОТКРЫТЬ В БРАУЗЕРЕ', 'DermaDefaultBold', w/2, h/2, Color(255, 255, 255), 1, 1)
+    end
+    openBtn.DoClick = function()
+        gui.OpenURL(url)
+    end
+end
+
 local isOpen = false
 local donateVGUI = nil
 local frame
@@ -197,7 +271,13 @@ function OpenDonateUI()
                 self.inventoryBtn:SetPos(self.plusBtn:GetX() + self.plusBtn:GetWide() + weight(12), height(50))
             end
             if IsValid(self.discordBtn) and IsValid(self.inventoryBtn) then
-                self.discordBtn:SetPos(self.inventoryBtn:GetX() + self.inventoryBtn:GetWide() + weight(8), height(50))
+                local isLinked = ply:GetNWBool("DonateDiscord.Linked", false)
+                if isLinked then
+                    self.discordBtn:SetVisible(false)
+                else
+                    self.discordBtn:SetVisible(true)
+                    self.discordBtn:SetPos(self.inventoryBtn:GetX() + self.inventoryBtn:GetWide() + weight(8), height(50))
+                end
             end
         end
     end
@@ -257,6 +337,12 @@ function OpenDonateUI()
         end
     end
     discordBtn.DoClick = function()
+        if LocalPlayer():GetNWBool("DonateDiscord.Linked", false) then
+            if LocalPlayer().ChatPrint then
+                LocalPlayer():ChatPrint("[Discord] Ваш аккаунт уже привязан к Discord! Повторная привязка не требуется.")
+            end
+            return
+        end
         net.Start("DonateDiscord.RequestLink")
         net.SendToServer()
     end
@@ -270,6 +356,9 @@ function OpenDonateUI()
         Dep:SetTitle('') 
         Dep:MakePopup() 
         Dep:ShowCloseButton(false) 
+        Dep.OnKeyCodePressed = function(self, key)
+            if key == KEY_ESCAPE then return end
+        end
         Dep.Paint = function(self,w,h)
             draw.RoundedBox(12,0,0,w,h,Color(25, 25, 25, 250))
             draw.SimpleText('Пополнение баланса','DermaLarge',w/2,height(30),Color(255,255,255),1,1)
@@ -290,6 +379,13 @@ function OpenDonateUI()
         text:SetSize(weight(320),height(40))
         text:SetFont('DermaLarge')
         text:SetNumeric(true)
+        text.OnKeyCodeTyped = function(self, code)
+            if code == KEY_ENTER then
+                oplat:DoClick()
+            elseif code == KEY_ESCAPE then
+                return true
+            end
+        end
         text.Paint = function(self,w,h)
             draw.RoundedBox(8,0,0,w,h,Color(15,15,15))
             self:DrawTextEntryText(Color(255, 255, 255), Color(30, 130, 255), Color(255, 255, 255))
@@ -305,12 +401,14 @@ function OpenDonateUI()
         oplat.DoClick = function()
             local am = tonumber(text:GetValue() or 0)
             if am > 0 then
+                oplat:SetEnabled(false)
                 IGS.GetPaymentURL(am, function(url)
+                    if IsValid(oplat) then oplat:SetEnabled(true) end
+                    if IsValid(Dep) then Dep:Remove() end
                     if url and url ~= "" then
-                        gui.OpenURL(url)
+                        BUC2_ShowURLWindow('Пополнение баланса', url, 'Ссылка для оплаты скопирована в буфер обмена.')
                     end
                 end)
-                Dep:Remove()
             end
         end
     end
@@ -1813,7 +1911,7 @@ hook.Add("Think", "DonateKEYReplace", function()
 end)
 
 hook.Add("OnPauseMenuShow", "BUC2_BlockEscMenuWhileDonateOpen", function()
-    if isOpen then
+    if isOpen or IsValid(BUC2_ActiveURLFrame) or IsValid(activeDep) then
         return false 
     end
 end)
@@ -1822,12 +1920,16 @@ net.Receive("DonateDiscord.OpenLink", function()
     local url = net.ReadString()
     if not url or url == "" then return end
 
-    gui.OpenURL(url)
-    SetClipboardText(url)
+    if BUC2_ShowURLWindow then
+        BUC2_ShowURLWindow("Привязка Discord", url, "Ссылка для авторизации скопирована в буфер обмена.")
+    else
+        gui.OpenURL(url)
+        SetClipboardText(url)
+    end
 
     if chat and chat.AddText then
-        chat.AddText(Color(88, 101, 242), "[Discord] ", Color(255, 255, 255), "Ссылка для привязки открыта в браузере и скопирована в буфер обмена!")
+        chat.AddText(Color(88, 101, 242), "[Discord] ", Color(255, 255, 255), "Ссылка для привязки скопирована в буфер обмена!")
     else
-        LocalPlayer():ChatPrint("[Discord] Ссылка для привязки открыта в браузере и скопирована в буфер обмена!")
+        LocalPlayer():ChatPrint("[Discord] Ссылка для привязки скопирована в буфер обмена!")
     end
 end)

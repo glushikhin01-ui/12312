@@ -1,0 +1,6 @@
+"VertexlitGeneric"
+{
+	"$basetexture" "models/actmod/prop/troops_gadget/black"
+	"$nocull" "1"
+	//"$alphatest" "1"
+}

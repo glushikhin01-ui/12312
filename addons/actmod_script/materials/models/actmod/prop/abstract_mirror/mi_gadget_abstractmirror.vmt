@@ -1,0 +1,13 @@
+"VertexlitGeneric"
+{
+	"$basetexture" "models/actmod/prop/abstract_mirror/prop_abstractmirror_d"
+	"$bumpmap" "models/actmod/prop/abstract_mirror/prop_abstractmirror_n"
+	"$surfaceprop" "metal"
+	"$selfillum" "1"
+	"$phong" "1"
+	"$phongboost" "2"
+	"$halflambert" "1"
+	"$phongexponent" "30"
+	"$phongfresnelranges"	"[.1 .5 1.0]"
+
+}
