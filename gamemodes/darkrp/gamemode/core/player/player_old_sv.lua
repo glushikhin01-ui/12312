@@ -220,7 +220,7 @@ function PLAYER:ChangeTeam(t, force)
 
 		else
 			local count = self:GetVar('doorCount')
-			local amt = (count * rp.cfg.DoorCostMin)
+			local amt = (count * rp.doors.GetUniformPrice(self))
 			self:DoorUnOwnAll()
 			self:AddMoney(amt, 'Купил дверь')
 			rp.Notify(self, NOTIFY_SUCCESS, term.Get('DoorsSold'), count, rp.FormatMoney(amt))

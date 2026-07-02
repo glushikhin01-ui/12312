@@ -128,7 +128,7 @@ hook('PostDrawTranslucentRenderables', 'rp.doors.PostDrawTranslucentRenderables'
 					if not IsDoorHotel( ent ) then 
 					 	if ent:DoorIsOwnable() and not isteamown then
 					 		drawLockedInfo(ent)
-					 		drawtext('' ..rp.FormatMoney(LocalPlayer():Wealth(rp.cfg.DoorCostMin, rp.cfg.DoorCostMax) * ent:GetNWInt("PriceMultiplier")), color_green)
+					 		drawtext('' .. rp.FormatMoney(ent:GetPropertyPrice(LocalPlayer())), color_green)
 					 		drawtext('Кнопка F2 Арендовать', color_white)
 						elseif (not ent:DoorIsOwnable()) then
 					 		-- Group Own

@@ -53,7 +53,7 @@ timer.Create('SendAdverMessagesOtec', 240, 0, function()
         SendMessageAll(color_white,'Контент сервера F4>Контент')
     elseif otec_message_number == 6 then
         otec_message_number = otec_message_number + 1
-        SendMessageAll(color_white,'На сервере действует политическая система за мэра и депутатов.')
+        SendMessageAll(color_white,'На сервере действует политическая система за мэра и голосующих граждан.')
     elseif otec_message_number == 7 then
         otec_message_number = otec_message_number + 1
         SendMessageAll(color_white,'Discord сервера: https://discord.gg/arizonaroleplay')

@@ -206,39 +206,28 @@ rp.AddCommand('buydoor', function(pl, text, args)
 		return
 	end
 
-	local cost = pl:Wealth(rp.cfg.DoorCostMin, rp.cfg.DoorCostMax)
-	local mul = 0
-	local tdoor = pl:GetEyeTrace().Entity
-	for k, v in pairs(rp.cfg.Doors) do 
-		if table.HasValue( v.MapIDs,tdoor:GetDoorID() ) then
-			for _, s in pairs(v.MapIDs) do 
-				mul = mul + 1
-			end
-			if v.Teams then
-				return rp.Notify(pl, 1, 'Вы не можете купить эту дверь!')
-			end
-		end
+	local ent = pl:GetEyeTrace().Entity
+	if not IsValid(ent) or not ent:IsDoor() or (ent:GetPos():DistToSqr(pl:GetPos()) >= 13225) then return end
+
+	local info = ent:GetPropertyInfo()
+	if not info then return end
+	if info.Teams then
+		return rp.Notify(pl, 1, 'Вы не можете купить эту дверь!')
 	end
-	-- print(cost * mul)
-	if not pl:CanAfford(cost * mul) then
+
+	local cost = ent:GetPropertyPrice(pl)
+	if not pl:CanAfford(cost) then
 		rp.Notify(pl, NOTIFY_ERROR, term.Get('CannotAfford'))
 		return
 	end
 
-	local ent = pl:GetEyeTrace().Entity
-	if IsValid(ent) and ent:IsDoor() and ent:DoorIsOwnable() and (ent:GetPos():DistToSqr(pl:GetPos()) < 13225) then
-		for k, v in pairs(rp.cfg.Doors) do 
-			if table.HasValue(v.MapIDs,ent:GetDoorID()) then 
-				cost = cost * #v.MapIDs
-			end
-		end
+	if ent:DoorIsOwnable() then
 		pl:TakeMoney(cost, 'Купил дверь')
 		
 		local percentPrice = mayor_system:calculate_tax(2, cost)
 		mayor_system:add_balance( percentPrice )
 
 		rp.Notify(pl, NOTIFY_SUCCESS, term.Get('DoorBought'), ent:GetPropertyName(), rp.FormatMoney(cost)) 
-		-- print("debug bought")
 		ent:DoorOwn(pl)
 	end
 end)
@@ -271,17 +260,11 @@ end)
 :AddParam(cmd.PLAYER_ENTITY)
 
 rp.AddCommand('selldoor', function(pl, text, args)
-	local mul = 1
 	local ent = pl:GetEyeTrace().Entity
 	if IsValid(ent) and ent:IsDoor() and ent:DoorOwnedBy(pl) and (ent:GetPos():DistToSqr(pl:GetPos()) < 13225) then
-		
-		for k, v in pairs(rp.cfg.Doors) do 
-			if table.HasValue(v.MapIDs,ent:GetDoorID()) then 
-				mul = mul * #v.MapIDs
-			end
-		end
-		pl:AddMoney(rp.cfg.DoorCostMin * (mul*0.7), 'Продажа двери')
-		rp.Notify(pl, NOTIFY_SUCCESS, term.Get('DoorSold'), ent:GetPropertyName(), rp.FormatMoney(rp.cfg.DoorCostMin * (mul*0.7)))
+		local amount = math.floor(ent:GetPropertyPrice(pl) * 0.7)
+		pl:AddMoney(amount, 'Продажа двери')
+		rp.Notify(pl, NOTIFY_SUCCESS, term.Get('DoorSold'), ent:GetPropertyName(), rp.FormatMoney(amount))
 		ent:DoorUnOwn(pl)
 	end
 end)
@@ -378,7 +361,7 @@ rp.AddCommand('sellall', function(pl, text, args)
 		return
 	end
 	local count = pl:GetVar('doorCount')
-	local amt = (count * rp.cfg.DoorCostMin)
+	local amt = (count * rp.doors.GetUniformPrice(pl))
 	pl:DoorUnOwnAll()
 	pl:AddMoney(amt, 'Продажа всех дверей')
 	rp.Notify(pl, NOTIFY_SUCCESS, term.Get('DoorsSold'), count, rp.FormatMoney(amt))

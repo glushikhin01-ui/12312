@@ -48,6 +48,7 @@ local itemShadowMat = Material("bu2/item_shadow.png","smooth noclamp")
 
 local matCache = {}
 local logo2mat = Material('materials/eui/default/logo2.png', 'smooth')
+local discordIconMat = Material("f4menu/icons8-discord-24.png", "smooth")
 local function CreateMaterials(arguments)
     if not matCache[arguments] then
         matCache[arguments] = Material('hud/'..arguments..'.png', 'smooth')
@@ -195,6 +196,9 @@ function OpenDonateUI()
             if IsValid(self.inventoryBtn) then
                 self.inventoryBtn:SetPos(self.plusBtn:GetX() + self.plusBtn:GetWide() + weight(12), height(50))
             end
+            if IsValid(self.discordBtn) and IsValid(self.inventoryBtn) then
+                self.discordBtn:SetPos(self.inventoryBtn:GetX() + self.inventoryBtn:GetWide() + weight(8), height(50))
+            end
         end
     end
 
@@ -211,9 +215,9 @@ function OpenDonateUI()
     topBalBox.inventoryBtn = inventoryBtn
     inventoryBtn:SetSize(height(40), height(40))
     inventoryBtn:SetText('')
-    inventoryBtn:SetTooltip('Инвентарь')
+    inventoryBtn:SetTooltip(false)
     inventoryBtn.Paint = function(self, w, h)
-        draw.RoundedBox(8, 0, 0, w, h, self:IsHovered() and Color(70,70,78,245) or Color(45,45,52,235))
+        draw.RoundedBox(8, 0, 0, w, h, self:IsHovered() and Color(70,70,78,160) or Color(45,45,52,120))
         local gap = math.floor(w * 0.13)
         local sz = math.floor((w - gap * 3) / 2)
         for ix = 0, 1 do
@@ -221,6 +225,21 @@ function OpenDonateUI()
                 draw.RoundedBox(3, gap + ix * (sz + gap), gap + iy * (sz + gap), sz, sz, Color(105,105,112,255))
             end
         end
+    end
+
+    local discordBtn = vgui.Create('DButton', topBalBox)
+    topBalBox.discordBtn = discordBtn
+    discordBtn:SetSize(height(40), height(40))
+    discordBtn:SetText('')
+    discordBtn:SetTooltip(false)
+    discordBtn.Paint = function(self, w, h)
+        draw.RoundedBox(8, 0, 0, w, h, self:IsHovered() and Color(70,70,78,160) or Color(45,45,52,120))
+        surface.SetDrawColor(255, 255, 255, self:IsHovered() and 255 or 235)
+        surface.SetMaterial(discordIconMat)
+        local iconSize = math.floor(h * 0.9)
+        surface.DrawTexturedRect((w - iconSize) / 2, (h - iconSize) / 2, iconSize, iconSize)
+    end
+    discordBtn.DoClick = function()
     end
 
     plusBtn.DoClick = function()

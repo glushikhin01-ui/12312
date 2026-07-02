@@ -34,6 +34,13 @@ local function ChangeLaws()
 		self:SetText('Сохранить')
 		self.DoClick = function()
 			if string.len(Laws) <= 3 then LocalPlayer():ChatPrint('Текст закона слишком короткий.') return end
+			local lawCount = 0
+			for _, law in ipairs(string.Split(Laws, '\n')) do
+				if string.Trim(law) ~= '' then
+					lawCount = lawCount + 1
+				end
+			end
+			if lawCount > 10 then LocalPlayer():ChatPrint('Максимум 10 законов.') return end
 			if #string.Wrap('DermaDefault', Laws, 325 - 10) >= 15 then LocalPlayer():ChatPrint('Доска законов переполнена.') return end
 			net.Start('rp.SendLaws')
 				net.WriteString(string.Trim(Laws))

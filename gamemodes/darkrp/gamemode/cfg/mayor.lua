@@ -19,7 +19,7 @@ end
 
 function mayor_system.GetParty(name)
     if not nw.GetGlobal('party') then return end
-    if name then return nw.GetGlobal('party') == nam end
+    if name then return nw.GetGlobal('party') == name end
     return nw.GetGlobal('party')
 end
 

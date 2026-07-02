@@ -45,6 +45,11 @@ local function setupDoors()
 			data.Name = 'Property #' .. id
 		end
 
+		if (not istable(data.MapIDs)) then
+			ErrorNoHalt(string.format('[rp.doors] Invalid MapIDs for property "%s" (#%s)\n', tostring(data.Name), tostring(id)))
+			continue
+		end
+
 		data.NetworkID = 'DoorData.' .. id
 		data.DoorCount = #data.MapIDs
 		data.SellPrice = math.floor(rp.cfg.DoorCostMin * data.DoorCount)
@@ -77,9 +82,16 @@ local function setupDoors()
 
 			if (SERVER) then
 				local ent = ents.GetMapCreatedEntity(v)
+				if (not IsValid(ent)) then
+					ErrorNoHalt(string.format('[rp.doors] Door entity with MapCreationID %s was not found for property "%s"\n', tostring(v), tostring(data.Name)))
+					continue
+				end
+
 				rp.doors.EntMap[data.NetworkID][#rp.doors.EntMap[data.NetworkID] + 1] = ent
 
-				ent:DoorLock(data.Locked == true)
+				if ent.DoorLock then
+					ent:DoorLock(data.Locked == true)
+				end
 
 				ent:SetNetVar('DoorID', v)
 			end
@@ -149,16 +161,18 @@ function ENTITY:GetPropertyName()
 	return (data and data.Title and (data.Title ~= '')) and data.Title or (self:GetPropertyInfo() and self:GetPropertyInfo().Name or '')
 end
 
-function ENTITY:GetPropertyPrice(pl)
+local DOOR_PRICE_PERCENT = 0.025
 
-	--Ищем сигнатуры дверей и записываем в локальную ячейку
-	local coast = 1
-	for k, v in pairs(rp.cfg.Doors) do 
-		if table.HasValue(v.MapIDs,self:GetDoorID()) then 
-			coast = coast * #v.MapIDs
-		end
-	end
-	return pl:Wealth(rp.cfg.DoorCostMin, rp.cfg.DoorCostMax) * self:GetPropertyInfo().DoorCount * coast
+function rp.doors.GetUniformPrice(pl)
+	if (not IsValid(pl)) then return 0 end
+	return math.max(math.floor(pl:GetMoney() * DOOR_PRICE_PERCENT), 1)
+end
+
+function ENTITY:GetPropertyPrice(pl)
+	local info = self:GetPropertyInfo()
+	if (not info) or (not IsValid(pl)) then return 0 end
+
+	return rp.doors.GetUniformPrice(pl)
 end
 
 function ENTITY:GetPropertySellPrice()

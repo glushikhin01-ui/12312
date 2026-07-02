@@ -25,8 +25,10 @@ end
 
 local math_floor 	= math.floor
 local math_min 		= math.min
+local math_max 		= math.max
 function PLAYER:Wealth(min, max)
-	return math_min(math_floor(min + ((max - min) * (self:GetMoney()/25000000))), max)
+	local value = math_floor(min + ((max - min) * (self:GetMoney()/25000000)))
+	return math_min(math_max(value, min), max)
 end
 
 function PLAYER:HasLicense()

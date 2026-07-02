@@ -869,6 +869,13 @@ pnls = {
 					//net.SendToServer()
 
 					if string.len(Laws) <= 3 then LocalPlayer():ChatPrint('Текст закона слишком короткий.') return end
+					local lawCount = 0
+					for _, law in ipairs(string.Split(Laws, '\n')) do
+						if string.Trim(law) ~= '' then
+							lawCount = lawCount + 1
+						end
+					end
+					if lawCount > 10 then LocalPlayer():ChatPrint('Максимум 10 законов.') return end
 					if #string.Wrap('DermaDefault', Laws, 325 - 10) >= 15 then LocalPlayer():ChatPrint('Доска законов переполнена.') return end
 					net.Start('rp.SendLaws')
 						net.WriteString(string.Trim(Laws))
@@ -1511,7 +1518,7 @@ pnls = {
 					draw.SimpleText(k, "just::mayor::reason_list", ss(232), mid, color_white, 1, 1)
 					draw.SimpleText(v.ideology, "just::mayor::reason_list", ss(416), mid, color_white, 1, 1)
 
-					draw.SimpleText(table.Count(mayor_system.GetDeputats(k)) .. '/' .. team.NumPlayers(TEAM_DEP), "just::mayor::reason_list", w-ss(18), mid, Color(255,255,255,90), 2, 1)
+					draw.SimpleText(table.Count(mayor_system.GetDeputats(k)) .. '/5', "just::mayor::reason_list", w-ss(18), mid, Color(255,255,255,90), 2, 1)
 				end
 				pnl.DoClick = function(self)
 					selected = k
@@ -1574,7 +1581,7 @@ pnls = {
 
 				drawIcon('withdraw',margin,margin,w_btns,w_btns,Lerp(self.lerpHover,255,0))
 
-				draw.SimpleText("Список депутатов", "just::mayor::lockdownstart", mtextbtn, h*.5, LerpColor(self.lerpHover, color_white, color_black), 0, 1)
+				draw.SimpleText("Список граждан", "just::mayor::lockdownstart", mtextbtn, h*.5, LerpColor(self.lerpHover, color_white, color_black), 0, 1)
 			end
 			withdraw.OnMousePressed = function()
 				if(IsValid(mayorMenu)) then mayorMenu:SetVisible(false) end
@@ -1582,7 +1589,7 @@ pnls = {
 				local tbl = {}
 
 				for k, v in next, player.GetAll() do
-					if v:Team() ~= TEAM_DEP then continue end
+					if v:Team() ~= TEAM_CITIZEN then continue end
 
 					tbl[#tbl + 1] = v
 				end
