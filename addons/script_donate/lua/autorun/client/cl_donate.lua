@@ -231,15 +231,34 @@ function OpenDonateUI()
     topBalBox.discordBtn = discordBtn
     discordBtn:SetSize(height(40), height(40))
     discordBtn:SetText('')
-    discordBtn:SetTooltip(false)
+    discordBtn:SetTooltip("Привязать Discord аккаунт")
+    discordBtn.Think = function(self)
+        local isLinked = LocalPlayer():GetNWBool("DonateDiscord.Linked", false)
+        local discordID = LocalPlayer():GetNWString("DonateDiscord.ID", "")
+        if isLinked then
+            self:SetTooltip("Discord привязан" .. (discordID ~= "" and (" (" .. discordID .. ")") or "") .. "\nНажмите, чтобы перепривязать.")
+        else
+            self:SetTooltip("Привязать Discord аккаунт")
+        end
+    end
     discordBtn.Paint = function(self, w, h)
-        draw.RoundedBox(8, 0, 0, w, h, self:IsHovered() and Color(70,70,78,160) or Color(45,45,52,120))
+        local isLinked = LocalPlayer():GetNWBool("DonateDiscord.Linked", false)
+        local bgCol = self:IsHovered() and Color(70,70,78,160) or Color(45,45,52,120)
+        if isLinked then
+            bgCol = self:IsHovered() and Color(40, 110, 60, 180) or Color(30, 80, 45, 140)
+        end
+        draw.RoundedBox(8, 0, 0, w, h, bgCol)
         surface.SetDrawColor(255, 255, 255, self:IsHovered() and 255 or 235)
         surface.SetMaterial(discordIconMat)
         local iconSize = math.floor(h * 0.9)
         surface.DrawTexturedRect((w - iconSize) / 2, (h - iconSize) / 2, iconSize, iconSize)
+        if isLinked then
+            draw.RoundedBox(4, w - 10, h - 10, 8, 8, Color(80, 255, 80))
+        end
     end
     discordBtn.DoClick = function()
+        net.Start("DonateDiscord.RequestLink")
+        net.SendToServer()
     end
 
     plusBtn.DoClick = function()
@@ -1793,4 +1812,18 @@ hook.Add("Think", "DonateKEYReplace", function()
     end
 
     hook.Remove("Think", "DonateKEYReplace")
+end)
+
+net.Receive("DonateDiscord.OpenLink", function()
+    local url = net.ReadString()
+    if not url or url == "" then return end
+
+    gui.OpenURL(url)
+    SetClipboardText(url)
+
+    if chat and chat.AddText then
+        chat.AddText(Color(88, 101, 242), "[Discord] ", Color(255, 255, 255), "Ссылка для привязки открыта в браузере и скопирована в буфер обмена!")
+    else
+        LocalPlayer():ChatPrint("[Discord] Ссылка для привязки открыта в браузере и скопирована в буфер обмена!")
+    end
 end)
