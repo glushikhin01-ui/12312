@@ -1,8 +1,22 @@
-surface.CreateFont("MM_14",{font="Tahoma",size=14,weight=500})
-surface.CreateFont("Donate_16",{font="Tahoma",size=16,weight=700,extended=true})
-surface.CreateFont("Donate_18",{font="Tahoma",size=18,weight=800,extended=true})
-surface.CreateFont("Donate_20",{font="Tahoma",size=20,weight=900,extended=true})
-surface.CreateFont("Donate_22",{font="Tahoma",size=22,weight=900,extended=true})
+-- Адаптивный масштаб донат-меню под разные разрешения.
+-- Старый вариант отдельно растягивал X и Y, из-за чего на 1600x900 / 1290x780
+-- часть интерфейса могла уезжать за экран и кнопки становились недоступны.
+local DONATE_DESIGN_W, DONATE_DESIGN_H = 1920, 1080
+local function DonateUIScale()
+    local sw, sh = ScrW(), ScrH()
+    if sw <= 0 or sh <= 0 then return 1 end
+    return math.Clamp(math.min(sw / DONATE_DESIGN_W, sh / DONATE_DESIGN_H), 0.58, 1)
+end
+
+local function DonateFontSize(size)
+    return math.max(10, math.floor((tonumber(size) or 12) * DonateUIScale() + 0.5))
+end
+
+surface.CreateFont("MM_14",{font="Tahoma",size=DonateFontSize(14),weight=500})
+surface.CreateFont("Donate_16",{font="Tahoma",size=DonateFontSize(16),weight=700,extended=true})
+surface.CreateFont("Donate_18",{font="Tahoma",size=DonateFontSize(18),weight=800,extended=true})
+surface.CreateFont("Donate_20",{font="Tahoma",size=DonateFontSize(20),weight=900,extended=true})
+surface.CreateFont("Donate_22",{font="Tahoma",size=DonateFontSize(22),weight=900,extended=true})
 
 buttonsLockeds = false
 
@@ -56,8 +70,8 @@ local function CreateMaterials(arguments)
     return matCache[arguments]
 end
 
-local function weight(w) return (w / 1920) * ScrW() end
-local function height(h) return (h / 1080) * ScrH() end
+local function weight(w) return math.floor((tonumber(w) or 0) * DonateUIScale() + 0.5) end
+local function height(h) return math.floor((tonumber(h) or 0) * DonateUIScale() + 0.5) end
 
 function generateTape(itemID)
     local totalChance = 0

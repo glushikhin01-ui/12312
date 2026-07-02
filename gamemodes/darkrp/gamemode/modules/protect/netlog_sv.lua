@@ -8,19 +8,64 @@ local bn = {
 	["properties"] = true,
 	["Keypad"] = true,
 	["PlayerIsLoaded"] = true,
-  	["rp.RunCommand"] = true,
-  	["AdvBone_ToolBoneManip_SendToSv"] = true,
-  	["AdvBone_EntBoneInfoTable_GetFromSv"] = true,
-  	["VC_StatesRequestInit"] = true,
-  	["VC_SetStateBool"] = true,
-  	["DpcPoseSelect"] = true,
+	["rp.RunCommand"] = true,
+	["AdvBone_ToolBoneManip_SendToSv"] = true,
+	["AdvBone_EntBoneInfoTable_GetFromSv"] = true,
+	["VC_StatesRequestInit"] = true,
+	["VC_SetStateBool"] = true,
+	["DpcPoseSelect"] = true,
 }
+
+local actmodPrefixes = {
+	"A_AM.ActMod",
+	"ActMod",
+	"ClToSv_",
+	"SvToCl_",
+	"CToS_",
+	"SToC_",
+	"AM_",
+	"avs_",
+	"LTD.",
+	"wts",
+	"nwp",
+	"aLAT",
+	"iError",
+	"i_MenuTErr",
+	"CHangeMap",
+	"CancelCamera",
+	"EndActSV",
+	"GetAllErrTabAct",
+	"GetLisGpNow",
+	"GetLogs",
+	"GetTableFromPly",
+	"LoadSutep",
+	"Logs",
+	"Ply",
+	"ReLoadLua",
+	"ReYourListPly",
+	"SCVCom",
+	"SC_T_PlyP_ToCl",
+	"SGTab",
+	"SLSBListD",
+	"SandDataKeysTSV",
+	"SetTCl_MountedSV",
+	"StopAct",
+	"StpGtur",
+	"StratAct",
+}
+
+local function IsActmodNet(strName)
+	for _, prefix in ipairs(actmodPrefixes) do
+		if string.StartWith(strName, prefix) then return true end
+	end
+	return false
+end
 
 function net.Incoming( len, client )
 
 	local i = net.ReadHeader()
 	local strName = util.NetworkIDToString( i )
-	
+
 	if ( !strName ) then return end
 
 	local func = net.Receivers[ strName:lower() ]
@@ -32,8 +77,8 @@ function net.Incoming( len, client )
 	if net_log then
 		MsgC(RED, "[Net]", WHITE, "От " .. client:Nick() .. " (" .. client:SteamID64() .. ") [", RED, cache .. "/" .. net_cache, WHITE, "] | ", RED, strName, WHITE, " | Len - ", RED,  len .. "\n")
 	end
-	
-	if not bn[strName] then
+
+	if not bn[strName] and not IsActmodNet(strName) then
 		client.netcache = client.netcache and client.netcache + 1 or 1
 
 		if cache > net_cache then
@@ -74,7 +119,7 @@ concommand.Add("net_cache",function(ply,cmd,args)
 	print("[AntiNetFlooder] Кэш сейчас - " .. a)
 	if IsValid(ply) then ply:ChatPrint("[AntiNetFlooder] Кэш сейчас - " .. a) end
 end)
- 
+
 concommand.Add("net_log",function(ply,cmd,args)
 	if IsValid(ply) and not ply:HasAccess('*') then return end
 
